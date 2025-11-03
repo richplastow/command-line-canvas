@@ -3,13 +3,16 @@
   "version": "0.0.1",
   "description": "Renders an array of shapes as ANSI art",
   "keywords": [
+    "ansi",
+    "art",
     "canvas",
     "cli",
     "command-line",
-    "ansi",
-    "art",
-    "shapes",
-    "render"
+    "draw",
+    "graphics",
+    "library",
+    "render",
+    "shapes"
   ],
   "homepage": "https://richplastow.com/command-line-canvas/",
   "bugs": {
