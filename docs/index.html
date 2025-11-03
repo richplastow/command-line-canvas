@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>command-line-canvas</title>
+    <style>
+        :root {
+            color-scheme: light dark; /* opt-in to follow the OS's dark-mode */
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 
+                "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            margin: 40px;
+            line-height: 1.6;
+            color: CanvasText;
+            background: Canvas;
+        }
+
+        /* Default link styles using system colors. */
+        a {
+            color: LinkText;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        /* Visited links. */
+        a:visited {
+            color: VisitedText;
+        }
+
+        /* Active (pressed) links. */
+        a:active {
+            color: ActiveText;
+        }
+
+        /* Optional hover effect that stays theme-aware. */
+        a:hover {
+            opacity: 0.8; /* subtle, doesn’t override color */
+        }
+    </style>
+</head>
+<body>
+<h1 id="command-line-canvas">command-line-canvas</h1>
+<p><strong>Renders an array of shapes as ANSI art</strong></p>
+<ul>
+<li>Version: 0.0.1</li>
+<li>Created: 3rd November 2025 by Rich Plastow</li>
+<li>Updated: 3rd November 2025 by Rich Plastow</li>
+<li>GitHub:
+    <a href="https://github.com/richplastow/command-line-canvas"
+        >https://github.com/richplastow/command-line-canvas</a></li>
+<li>Live demo:
+    <a href="https://richplastow.com/command-line-canvas/"
+        >https://richplastow.com/command-line-canvas/</a></li>
+</ul>
+<h2 id="what-is-it-">What is it?</h2>
+<p>command-line-canvas is a JavaScript library for drawing text and shapes in
+    the terminal using ANSI escape codes. Great for creating complex (though
+    blocky) graphics for text-based UIs.</p>
+</body>
+</html>

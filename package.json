@@ -1,0 +1,33 @@
+{
+  "name": "command-line-canvas",
+  "version": "0.0.1",
+  "description": "Renders an array of shapes as ANSI art",
+  "keywords": [
+    "canvas",
+    "cli",
+    "command-line",
+    "ansi",
+    "art",
+    "shapes",
+    "render"
+  ],
+  "homepage": "https://richplastow.com/command-line-canvas/",
+  "bugs": {
+    "url": "https://github.com/richplastow/command-line-canvas/issues"
+  },
+  "license": "MIT",
+  "author": "Rich Plastow",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richplastow/command-line-canvas.git"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit && echo '\\xE2\\x9C\\x85 No type-errors found!'",
+    "test": "node test.js && echo '\\xE2\\x9C\\x85 All tests passed!'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.8.1"
+  },
+  "type": "module"
+}
