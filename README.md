@@ -3,8 +3,8 @@
 **Renders an array of shapes as ANSI art**
 
 - Version: 0.0.1
-- Created: 3rd November 2025 by Rich Plastow
-- Updated: 3rd November 2025 by Rich Plastow
+- Created: 5th November 2025 by Rich Plastow
+- Updated: 5th November 2025 by Rich Plastow
 - GitHub: <https://github.com/richplastow/command-line-canvas>
 - Live demo: <https://richplastow.com/command-line-canvas/>
 

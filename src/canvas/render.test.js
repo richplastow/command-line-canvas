@@ -114,4 +114,5 @@ eq(render(
 \x1B[48;2;0;181;0m\x1B[38;2;128;128;128m▄\x1B[48;2;0;179;0m\x1B[38;2;129;129;129m▄\x1B[0m
 `.trim());
 
+
 console.log('All render() tests passed.');

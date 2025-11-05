@@ -76,4 +76,5 @@ eq(canvas.render('truecolor'), `
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
 `.trim());
 
+
 console.log('All Canvas tests passed.');

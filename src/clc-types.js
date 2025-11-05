@@ -7,4 +7,6 @@
  *     yMin: number,
  *     yMax: number,
  * }} Bounds
+ *
+ * @typedef {'all-ink' | 'all-paper' | 'breton' | 'pinstripe'} Pattern
  */
