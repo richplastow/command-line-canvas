@@ -1,6 +1,7 @@
 import { validatePixel } from '../pixel/pixel-validators.js';
 import { Pixel } from '../pixel/pixel.js';
 import { validateCanvasExtent } from './canvas-validators.js';
+import { render } from './render.js';
 
 /** #### An ANSI canvas */
 export class Canvas {
@@ -44,6 +45,25 @@ export class Canvas {
                     background.b,
                 )
             )
+        );
+    }
+
+    /** #### Renders the canvas to an ANSI string
+     * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to render at
+     * @param {string} [xpx='Canvas render():'] Exception prefix, e.g. 'fn():'
+     * @returns {string} The rendered ANSI string
+     */
+    render(colorDepth, xpx = 'Canvas render():') {
+        return render(
+            {
+                xMin: 0,
+                xMax: this.xExtent,
+                yMin: 0,
+                yMax: this.yExtent,
+            },
+            colorDepth,
+            this.#pixels,
+            xpx,
         );
     }
 }

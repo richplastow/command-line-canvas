@@ -22,4 +22,4 @@ throws(() => new Pixel(0, 0, NaN), {
 
 eq(new Pixel(0, 12.34, 255), { r: 0, g: 12.34, b: 255 });
 
-console.log(`All Pixel tests passed.`);
+console.log('All Pixel tests passed.');

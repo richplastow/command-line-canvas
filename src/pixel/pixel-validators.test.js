@@ -48,4 +48,4 @@ throws(() => validatePixel(new Date(), 'nope'),
 eq(validatePixel(new Pixel(0, 12.34, 255), 'validPixel'), void 0);
 
 
-console.log(`All pixel-validators.js tests passed.`);
+console.log('All pixel-validators.js tests passed.');
