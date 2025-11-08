@@ -4,7 +4,7 @@
 
 - Version: 0.0.1
 - Created: 5th November 2025 by Rich Plastow
-- Updated: 5th November 2025 by Rich Plastow
+- Updated: 8th November 2025 by Rich Plastow
 - GitHub: <https://github.com/richplastow/command-line-canvas>
 - Live demo: <https://richplastow.com/command-line-canvas/>
 

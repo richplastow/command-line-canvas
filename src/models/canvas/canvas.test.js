@@ -16,8 +16,8 @@ throws(() => new Canvas(new Set([])), {
 // @ts-expect-error
 throws(() => new Canvas(px), {
     message: /^Canvas: xExtent type is 'undefined' not 'number'$/ });
-throws(() => new Canvas(px, 256, 0), {
-    message: /^Canvas: xExtent 256 is greater than 255$/ });
+throws(() => new Canvas(px, 3841, 0), {
+    message: /^Canvas: xExtent 3841 is greater than 3840$/ });
 // @ts-expect-error
 throws(() => new Canvas(px, 12, '34'), {
     message: /^Canvas: yExtent type is 'string' not 'number'$/ });
@@ -52,28 +52,57 @@ eq(canvas, {
 throws(() => canvas.render(), {
     message: /^Canvas render\(\): colorDepth is type 'undefined' not 'string'$/ });
 // @ts-expect-error
-throws(() => canvas.render(24, 'myRender():'), {
+throws(() => canvas.render(24, 'ansi', 'myRender():'), {
     message: /^myRender\(\): colorDepth is type 'number' not 'string'$/ });
 // @ts-expect-error
-throws(() => canvas.render('16color', 'myRender():'), {
+throws(() => canvas.render('16color', 'ansi', 'myRender():'), {
     message: /^myRender\(\): colorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/ });
+// @ts-expect-error
+throws(() => canvas.render('256color'), {
+    message: /^Canvas render\(\): outputFormat is type 'undefined' not 'string'$/ });
+// @ts-expect-error
+throws(() => canvas.render('256color', [], 'myRender():'), {
+    message: /^myRender\(\): outputFormat is type 'object' not 'string'$/ });
+// @ts-expect-error
+throws(() => canvas.render('256color', 'invalid', 'myRender():'), {
+    message: /^myRender\(\): outputFormat is not one of 'ansi'\|'buffer'\|'html'$/ });
 
 
 // `canvas.render()` valid.
 
-eq(canvas.render('monochrome'), `
+eq(canvas.render('monochrome', 'ansi'), `
 ██
 ██
 `.trim());
 
-eq(canvas.render('256color'), `
+eq(canvas.render('256color', 'ansi'), `
 \x1B[48;5;47m\x1B[38;5;47m▄\x1B[48;5;47m\x1B[38;5;47m▄\x1B[0m
 \x1B[48;5;47m\x1B[38;5;47m▄\x1B[48;5;47m\x1B[38;5;47m▄\x1B[0m
 `.trim());
 
-eq(canvas.render('truecolor'), `
+eq(canvas.render('truecolor', 'ansi'), `
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
+`.trim());
+
+eq(canvas.render('monochrome', 'buffer'), new Uint8Array([
+     12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
+     12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
+]));
+
+eq(canvas.render('monochrome', 'html'), `
+██
+██
+`.trim());
+
+eq(canvas.render('256color', 'html'), `
+<b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b><b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b>
+<b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b><b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b>
+`.trim());
+
+eq(canvas.render('truecolor', 'html'), `
+<b style="background:rgb(12,255,56);color:rgb(12,255,56)">▄</b><b style="background:rgb(12,255,56);color:rgb(12,255,56)">▄</b>
+<b style="background:rgb(12,255,56);color:rgb(12,255,56)">▄</b><b style="background:rgb(12,255,56);color:rgb(12,255,56)">▄</b>
 `.trim());
 
 

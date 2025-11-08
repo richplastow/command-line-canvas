@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 2: Right Triangles - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-01.html">Previous</a></li>
+            <li><a href="example-03.html">Next</a></li>
+        </ul>
+    </nav>
+    <h1>Example 2: Right Triangles</h1>
+    <p>Four right triangles with light-magenta fill and navy outline on a
+        light-blue background, each using a different `flip` value.</p>
+</header>
+<p>Copies 'buffer' data into a canvas element.</p>
+<canvas id="output"></canvas>
+
+<script type="module">
+    import { Canvas } from '../src/models/canvas/canvas.js';
+    import { Color } from '../src/models/color/color.js';
+    import { Pixel } from '../src/models/pixel/pixel.js';
+    import { Primitive } from '../src/models/primitive/primitive.js';
+    import { Shape } from '../src/models/shape/shape.js';
+
+    // Create an 80x48 pixel canvas with light-blue background.
+    const lightBlue = new Pixel(173, 216, 230);
+    const canvas = new Canvas(lightBlue, 800, 480);
+
+    // Create colors.
+    const lightMagenta = new Color(255, 128, 255, 1);
+    const navy = new Color(0, 0, 128, 1);
+    const transparent = new Color(0, 0, 0, 0);
+
+    // Four triangle-right primitives positioned in a 2x2 grid.
+    const pTopLeft = new Primitive(
+        'flip-x-and-y', // flip
+        'union',        // joinMode
+        'triangle-right',
+        0,              // rotate
+        1,              // scale
+        { x: -3, y: -2 } // translate
+    );
+
+    const pTopRight = new Primitive(
+        'flip-x',
+        'union',
+        'triangle-right',
+        0,
+        1,
+        { x: 3, y: -2 }
+    );
+
+    const pBottomLeft = new Primitive(
+        'flip-y',
+        'union',
+        'triangle-right',
+        0,
+        1,
+        { x: -3, y: 2 }
+    );
+
+    const pBottomRight = new Primitive(
+        'no-flip',
+        'union',
+        'triangle-right',
+        0,
+        1,
+        { x: 3, y: 2 }
+    );
+
+    const shape = new Shape(
+        'normal',            // blendMode
+        'no-flip',
+        lightMagenta,        // ink
+        transparent,         // paper
+        'all-ink',           // pattern
+        [pTopLeft, pTopRight, pBottomLeft, pBottomRight], // primitives
+        0,                   // rotate
+        1,                   // scale
+        navy,                // strokeColor
+        'outside',           // strokePosition
+        2,                   // strokeWidth (px)
+        { x: 0, y: 0 }       // translate
+    );
+
+    canvas.addShape(shape);
+
+    // Render to the canvas element.
+    const canvasElement = document.getElementById('output');
+    canvasElement.width = canvas.xExtent;
+    canvasElement.height = canvas.yExtent;
+    const ctx = canvasElement.getContext('2d');
+    const imageData = ctx.createImageData(canvas.xExtent, canvas.yExtent);
+    const data = imageData.data;
+    const pixelData = canvas.render('truecolor', 'buffer');
+    data.set(pixelData); // fast, native bulk copy
+    ctx.putImageData(imageData, 0, 0);
+</script>
+</body>
+</html>

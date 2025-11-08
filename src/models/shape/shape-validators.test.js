@@ -4,14 +4,15 @@ import { Primitive } from '../primitive/primitive.js';
 import {
     validateBlendMode,
     validateColor,
+    validateFlip,
     validatePattern,
     validatePrimitives,
     validateRotate,
     validateScale,
+    validateShape,
     validateStrokePosition,
     validateStrokeWidth,
     validateTranslate,
-    validateShape,
 } from './shape-validators.js';
 import { Shape } from './shape.js';
 
@@ -58,6 +59,26 @@ validateColor(new Color(0, 0, 0, 0));
 validateColor(new Color(255, 255, 255, 1));
 
 
+// `validateFlip()` invalid.
+
+// @ts-expect-error
+throws(() => validateFlip(), {
+    message: /^flip is type 'undefined' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateFlip(123), {
+    message: /^flip is type 'number' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateFlip('invalid'), {
+    message: /^flip is not one of 'flip-x'\|'flip-x-and-y'\|'flip-y'\|'no-flip'$/ });
+
+// `validateFlip()` valid.
+
+validateFlip('flip-x');
+validateFlip('flip-x-and-y');
+validateFlip('flip-y');
+validateFlip('no-flip');
+
+
 // `validatePattern()` invalid.
 
 // @ts-expect-error
@@ -99,10 +120,11 @@ throws(() => validatePrimitives([{}]), {
 // `validatePrimitives()` valid.
 
 const p = new Primitive(
+    'flip-x', // flip
     'union', // joinMode
     'circle', // kind
     0, // rotate
-    { x: 1, y: 1 }, // scale
+    1, // scale
     { x: 0, y: 0 }, // translate
 );
 validatePrimitives([]);
@@ -133,23 +155,21 @@ validateRotate(10);
 
 // @ts-expect-error
 throws(() => validateScale(), {
-    message: /^scale is type 'undefined' not 'object'$/ });
-throws(() => validateScale(null), {
-    message: /^scale is null, not an object$/ });
+    message: /^scale is type 'undefined' not 'number'$/ });
 // @ts-expect-error
-throws(() => validateScale([]), {
-    message: /^scale is an array, not an object$/ });
-throws(() => validateScale({ x: -1, y: 1 }), {
-    message: /^scale\.x -1 is less than 0$/ });
-throws(() => validateScale({ x: 1, y: NaN }), {
-    message: /^scale\.y NaN is not a valid number$/ });
+throws(() => validateScale('2'), {
+    message: /^scale is type 'string' not 'number'$/ });
+throws(() => validateScale(NaN), {
+    message: /^scale NaN is not a valid number$/ });
+throws(() => validateScale(-1), {
+    message: /^scale -1 is less than 0$/ });
 
 
 // `validateScale()` valid.
 
-validateScale({ x: 0, y: 0 });
-validateScale({ x: 1, y: 1 });
-validateScale({ x: 2.5, y: 0.5 });
+validateScale(0);
+validateScale(1);
+validateScale(3.5);
 
 
 // `validateStrokePosition()` invalid.
@@ -238,12 +258,13 @@ const c = new Color(0, 0, 0, 1);
 validateShape(
     new Shape(
         'normal', // blendMode
+        'flip-x', // flip
         c, // ink
         c, // paper
         'all-ink', // pattern
         [p], // primitives
         0, // rotate
-        { x: 1, y: 1 }, // scale
+    1, // scale
         c, // strokeColor
         'center', // strokePosition
         0, // strokeWidth

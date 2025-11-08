@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 7: Overlay Blend Mode - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-06.html">Previous</a></li>
+            <li><span>Next</span></li>
+        </ul>
+    </nav>
+    <h1>Example 7: Overlay Blend Mode</h1>
+    <p>Four overlapping circles, each in its own Shape using the 'screen' blend mode. Background is mid-grey.</p>
+</header>
+<pre id="output"></pre>
+
+<script type="module">
+    import { Canvas } from '../src/models/canvas/canvas.js';
+    import { Color } from '../src/models/color/color.js';
+    import { Pixel } from '../src/models/pixel/pixel.js';
+    import { Primitive } from '../src/models/primitive/primitive.js';
+    import { Shape } from '../src/models/shape/shape.js';
+
+    // Create an 80x24 pixel canvas with mid-grey background.
+    const greyBg = new Pixel(128, 128, 128);
+    const canvas = new Canvas(greyBg, 80, 48);
+
+    // Colors for inks and outlines.
+    const inks = [
+        new Color(80, 60, 10, 1), // dark-grey-orange
+        new Color(160, 200, 255, 1), // light-blue
+        new Color(128, 128, 128, 1), // mid-grey
+        new Color(255, 255, 0, 0.3), // translucent yellow
+    ];
+    const outlines = [
+        new Color(30, 30, 100, 1), // dark-blue
+        new Color(0, 0, 0, 1), // black
+        new Color(255, 255, 255, 1), // white
+        new Color(64, 64, 64, 1), // dark-grey
+    ];
+
+    // Four primitives (circles) positioned along the x axis, overlapping.
+    const primitives = [
+        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: -4.5, y: 0 }),
+        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: -1.5, y: 0 }),
+        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: 1.5, y: 0 }),
+        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: 4.5, y: 0 }),
+    ];
+
+    const blendModes = ['overlay', 'overlay', 'overlay', 'overlay'];
+
+    // Create four separate shapes, each with one circle primitive and a different blend mode.
+    for (let i = 0; i < 4; i++) {
+        const s = new Shape(
+            blendModes[i],     // blendMode
+            'no-flip',         // flip
+            inks[i],           // ink
+            new Color(0,0,0,0),// paper transparent
+            'all-ink',         // pattern
+            [primitives[i]],   // primitives array with single circle
+            0,                 // rotate
+            1,                 // scale
+            outlines[i],       // strokeColor
+            'outside',         // strokePosition
+            2,                 // strokeWidth in pixels
+            { x: 0, y: 0 },    // translate
+        );
+        canvas.addShape(s);
+    }
+
+    const htmlOutput = canvas.render('truecolor', 'html');
+    document.getElementById('output').innerHTML = htmlOutput;
+</script>
+</body>
+</html>

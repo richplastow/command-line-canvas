@@ -1,22 +1,27 @@
 /** @fileoverview Runs all unit tests */
 
 // Canvas.
-import './src/canvas/canvas-validators.test.js';
-import './src/canvas/canvas.test.js';
-import './src/canvas/render.test.js';
+import './src/models/canvas/canvas-validators.test.js';
+import './src/models/canvas/canvas.test.js';
+import './src/utilities/encoders/encode-ansi.test.js';
+import './src/utilities/encoders/encode-html.test.js';
+import './src/utilities/encoders/encode-buffer.test.js';
 
 // Color.
-import './src/color/color-validators.test.js';
-import './src/color/color.test.js';
+import './src/models/color/color-validators.test.js';
+import './src/models/color/color.test.js';
 
 // Pixel.
-import './src/pixel/pixel-validators.test.js';
-import './src/pixel/pixel.test.js';
+import './src/models/pixel/pixel-validators.test.js';
+import './src/models/pixel/pixel.test.js';
 
 // Primitive.
-import './src/primitive/primitive-validators.test.js';
-import './src/primitive/primitive.test.js';
+import './src/models/primitive/primitive-validators.test.js';
+import './src/models/primitive/primitive.test.js';
 
 // Shape.
-import './src/shape/shape-validators.test.js';
-import './src/shape/shape.test.js';
+import './src/models/shape/shape-validators.test.js';
+import './src/models/shape/shape.test.js';
+
+// SDFs and AABBs.
+import './src/utilities/sdfs-and-aabbs/compound.test.js';

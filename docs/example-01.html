@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 1: Yellow Circles - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><span>Previous</span></li>
+            <li><a href="example-02.html">Next</a></li>
+        </ul>
+    </nav>
+    <h1>Example 1: Yellow&nbsp;Circles</h1>
+    <p>Two unioned yellow circles with black outline on a navy background, rendered as ANSI art.</p>
+</header>
+<p>
+    This example converts the canvas to an ANSI string, and then converts that
+    to HTML. Later examples render directly to HTML, or use a &lt;canvas&gt;
+    element, which is way more efficient.
+</p>
+<pre id="output"></pre>
+
+<script type="module">
+    import { Canvas } from '../src/models/canvas/canvas.js';
+    import { Color } from '../src/models/color/color.js';
+    import { Pixel } from '../src/models/pixel/pixel.js';
+    import { Primitive } from '../src/models/primitive/primitive.js';
+    import { Shape } from '../src/models/shape/shape.js';
+
+    // Create an 80x48 pixel canvas with navy background.
+    const navyBg = new Pixel(10, 10, 100);
+    const canvas = new Canvas(navyBg, 80, 48);
+
+    // Create colors.
+    const yellow = new Color(255, 255, 0, 1);
+    const black = new Color(0, 0, 0, 1);
+    const transparent = new Color(0, 0, 0, 0);
+
+    // Create a circle primitive at the center.
+    const circle1 = new Primitive(
+        'no-flip',
+        'union',         // joinMode
+        'circle',        // kind
+        0,               // rotate
+        1,               // scale
+        { x: 0, y: 0 }   // translate (center of world-space)
+    );
+
+    const circle2 = new Primitive(
+        'no-flip',
+        'union',         // joinMode
+        'circle',        // kind
+        0,               // rotate
+        0.5,             // scale
+        { x: 1, y: -1 }  // translate (center of world-space)
+    );
+
+    // Create a shape with the circle.
+    const circleShape = new Shape(
+        'normal',        // blendMode
+        'no-flip',
+        yellow,          // ink (fill color)
+        transparent,     // paper (not used for solid fill)
+        'all-ink',       // pattern
+        [circle1, circle2], // primitives
+        0,               // rotate
+        2,               // scale
+        black,           // strokeColor
+        'outside',       // strokePosition
+        2,               // strokeWidth
+        { x: 0, y: 0 }   // translate
+    );
+
+    // Add the shape to the canvas.
+    canvas.addShape(circleShape);
+
+    // Render to truecolor ANSI and display.
+    const ansiOutput = canvas.render('truecolor', 'ansi');
+    document.getElementById('output').innerHTML = ansiToHtml(ansiOutput);
+
+    // Converts truecolor ANSI to HTML.
+    // "\x1B[48;2;11;22;33m\x1B[38;2;44;55;66m▄" becomes:
+    // "<b style="background:rgb(11,22,33);color:rgb(44,55,66)">▄</b>".
+    // "[0m\n" becomes just a newline.
+    function ansiToHtml(ansi) {
+        // Split into lines.
+        const lines = ansi.split('[0m\n');
+        let html = [];
+        for (let i = 0; i < lines.length; i++) {
+            // Split using the "▄" character.
+            const pixelPairs = lines[i].split('▄');
+            for (let j = 0; j < pixelPairs.length - 1; j++) { // -1 to skip last empty
+                const pair = pixelPairs[j];
+                // Each pair defines the background and foreground colors.
+                const [bgRaw, fgRaw] = pair.split('\x1B[38;2;');
+                const bgRGB = bgRaw.slice(7, -1).split(';'); // the 7 chars in "\x1B[48;2;" and the 1 char "m"
+                const fgRGB = fgRaw.slice(0, -1).split(';'); // -1 to remove the trailing "m"
+                const [br,bg,bb] = bgRGB;
+                const [fr,fg,fb] = fgRGB;
+                const el =
+                    `<b style="background:rgb(${br},${bg},${bb});` +
+                    `color:rgb(${fr},${fg},${fb})">` +
+                    '▄</b>';
+                html.push(el);
+            }
+            html.push('\n');
+        }
+        return html.join('');
+    }
+</script>
+</body>
+</html>

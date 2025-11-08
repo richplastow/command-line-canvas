@@ -1,14 +1,34 @@
 import { throws } from 'node:assert';
 import {
+    validateFlip,
     validateJoinMode,
     validateKind,
+    validatePrimitive,
     validateRotate,
     validateScale,
     validateTranslate,
-    validatePrimitive,
 } from './primitive-validators.js';
 import { Primitive } from './primitive.js';
 
+
+// `validateFlip()` invalid.
+
+// @ts-expect-error
+throws(() => validateFlip(), {
+    message: /^flip is type 'undefined' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateFlip(123), {
+    message: /^flip is type 'number' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateFlip('invalid'), {
+    message: /^flip is not one of 'flip-x'\|'flip-x-and-y'\|'flip-y'\|'no-flip'$/ });
+
+// `validateFlip()` valid.
+
+validateFlip('flip-x');
+validateFlip('flip-x-and-y');
+validateFlip('flip-y');
+validateFlip('no-flip');
 
 // `validateJoinMode()` invalid.
 
@@ -39,14 +59,14 @@ throws(() => validateKind({}), {
     message: /^kind is type 'object' not 'string'$/ });
 // @ts-expect-error
 throws(() => validateKind('hexagon'), {
-    message: /^kind is not one of 'circle'\|'square'\|'triangle'$/ });
+    message: /^kind is not one of 'circle'\|'square'\|'triangle-right'$/ });
 
 
 // `validateKind()` valid.
 
 validateKind('circle');
 validateKind('square');
-validateKind('triangle');
+validateKind('triangle-right');
 
 
 // `validateRotate()` invalid.
@@ -72,33 +92,21 @@ validateRotate(10);
 
 // @ts-expect-error
 throws(() => validateScale(), {
-    message: /^scale is type 'undefined' not 'object'$/ });
-throws(() => validateScale(null), {
-    message: /^scale is null, not an object$/ });
+    message: /^scale is type 'undefined' not 'number'$/ });
 // @ts-expect-error
-throws(() => validateScale([]), {
-    message: /^scale is an array, not an object$/ });
-// @ts-expect-error
-throws(() => validateScale({ x: 'not a number', y: 1 }), {
-    message: /^scale\.x is type 'string' not 'number'$/ });
-throws(() => validateScale({ x: NaN, y: 1 }), {
-    message: /^scale\.x NaN is not a valid number$/ });
-throws(() => validateScale({ x: -0.001, y: 1 }), {
-    message: /^scale\.x -0\.001 is less than 0$/ });
-// @ts-expect-error
-throws(() => validateScale({ x: 1, y: '2' }), {
-    message: /^scale\.y is type 'string' not 'number'$/ });
-throws(() => validateScale({ x: 1, y: NaN }), {
-    message: /^scale\.y NaN is not a valid number$/ });
-throws(() => validateScale({ x: 1, y: -1 }), {
-    message: /^scale\.y -1 is less than 0$/ });
+throws(() => validateScale('1'), {
+    message: /^scale is type 'string' not 'number'$/ });
+throws(() => validateScale(NaN), {
+    message: /^scale NaN is not a valid number$/ });
+throws(() => validateScale(-0.001), {
+    message: /^scale -0\.001 is less than 0$/ });
 
 
 // `validateScale()` valid.
 
-validateScale({ x: 0, y: 0 });
-validateScale({ x: 1, y: 1 });
-validateScale({ x: 2.5, y: 0.5 });
+validateScale(0);
+validateScale(1);
+validateScale(2.5);
 
 
 // `validateTranslate()` invalid.
@@ -150,9 +158,9 @@ throws(() => validatePrimitive(new Map(), 'test:'), {
 
 // `validatePrimitive()` valid.
 
-validatePrimitive(new Primitive('union', 'circle', 0, { x: 1, y: 1 },
+validatePrimitive(new Primitive('flip-x', 'union', 'circle', 0, 1,
     { x: 0, y: 0 }));
-validatePrimitive(new Primitive('difference', 'triangle', -1.5, { x: 0, y: 2 },
+validatePrimitive(new Primitive('no-flip', 'difference', 'triangle-right', -1.5, 0,
     { x: -10, y: 10 }));
 
 

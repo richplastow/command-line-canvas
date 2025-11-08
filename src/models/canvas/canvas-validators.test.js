@@ -2,9 +2,10 @@ import { throws, deepStrictEqual as eq } from 'node:assert/strict';
 import { Pixel } from '../pixel/pixel.js';
 import {
     validateBounds,
-    validateCanvasExtent,
     validateCanvas,
+    validateCanvasExtent,
     validateColorDepth,
+    validateOutputFormat,
     validatePixels,
 } from './canvas-validators.js';
 import { Canvas } from './canvas.js';
@@ -56,15 +57,15 @@ throws(() => validateCanvasExtent(NaN),
     { message: /^extent NaN is not an integer$/});
 throws(() => validateCanvasExtent(0, 'zero:'),
     { message: /^zero: 0 is less than 1$/});
-throws(() => validateCanvasExtent(256, 'too big'),
-    { message: /^too big 256 is greater than 255$/});
+throws(() => validateCanvasExtent(3841, 'too big'),
+    { message: /^too big 3841 is greater than 3840$/});
 
 
 // validateCanvasExtent() valid.
 
 eq(validateCanvasExtent(1, 'min():'), void 0);
 eq(validateCanvasExtent(123), void 0);
-eq(validateCanvasExtent(255, 'max'), void 0);
+eq(validateCanvasExtent(3840, 'max'), void 0);
 
 
 // validateCanvas() invalid.
@@ -107,8 +108,28 @@ throws(() => validateColorDepth('16color', 'myColorDepth'),
 // validateColorDepth() valid.
 
 eq(validateColorDepth('monochrome'), void 0);
-eq(validateColorDepth('256color', 'Canvas.render(): colorDepth'), void 0);
+eq(validateColorDepth('256color', 'canvas.render(): colorDepth'), void 0);
 eq(validateColorDepth('truecolor'), void 0);
+
+
+// validateOutputFormat() invalid.
+
+// @ts-expect-error
+throws(() => validateOutputFormat(),
+    { message: /^outputFormat is type 'undefined' not 'string'$/});
+// @ts-expect-error
+throws(() => validateOutputFormat(123, 'formatCheck'),
+    { message: /^formatCheck is type 'number' not 'string'$/});
+// @ts-expect-error
+throws(() => validateOutputFormat('jpg', 'myOutputFormat'),
+    { message: /^myOutputFormat is not one of 'ansi'\|'buffer'\|'html'$/});
+
+
+// validateOutputFormat() valid.
+
+eq(validateOutputFormat('ansi'), void 0);
+eq(validateOutputFormat('buffer', 'canvas.render(): outputFormat'), void 0);
+eq(validateOutputFormat('html'), void 0);
 
 
 // validatePixels() invalid.
@@ -136,21 +157,21 @@ throws(() => validatePixels([[p, null, p]], 'myPixels'),
 throws(() => validatePixels([[p, p], [p, p], [[p], p]], 'arr'),
     { message: /^arr\[2\]\[0\] is an array, not an object$/});
 // @ts-expect-error
-throws(() => validatePixels([[p, p, 'abc']], 'Canvas.render(): pixels'),
-    { message: /^Canvas\.render\(\): pixels\[0\]\[2\] is type 'string' not 'object'$/});
+throws(() => validatePixels([[p, p, 'abc']], 'canvas.render(): pixels'),
+    { message: /^canvas\.render\(\): pixels\[0\]\[2\] is type 'string' not 'object'$/});
 // @ts-expect-error
 throws(() => validatePixels([[{}]]),
     { message: /^pixels\[0\]\[0\] is an instance of 'Object' not 'Pixel'$/});
 throws(() => validatePixels([[]]),
     { message: /^pixels extentX is zero$/});
-const over255X = Array(256).fill(null).map(() => new Pixel(0, 0, 0));
-throws(() => validatePixels([over255X]),
-    { message: /^pixels extentX 256 is greater than 255$/});
+const over3840X = Array(3841).fill(null).map(() => new Pixel(0, 0, 0));
+throws(() => validatePixels([over3840X]),
+    { message: /^pixels extentX 3841 is greater than 3840$/});
 throws(() => validatePixels([]),
     { message: /^pixels extentY is zero$/});
-const over255Y = Array(256).fill(null).map(() => [new Pixel(0, 0, 0)]);
-throws(() => validatePixels(over255Y),
-    { message: /^pixels extentY 256 is greater than 255$/});
+const over3840Y = Array(3841).fill(null).map(() => [new Pixel(0, 0, 0)]);
+throws(() => validatePixels(over3840Y),
+    { message: /^pixels extentY 3841 is greater than 3840$/});
 const px = new Pixel(0, 0, 0);
 throws(() => validatePixels([[px, px], [px], [px, px]], 'myPixels'),
     { message: /^myPixels\[1\] extentX 1 !== first row 2$/});

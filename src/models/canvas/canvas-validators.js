@@ -2,12 +2,12 @@ import { Canvas } from "./canvas.js";
 import { Pixel } from "../pixel/pixel.js";
 
 /**
- * @typedef {import('../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../clc-types.js').Bounds} Bounds
  */
 
 /** #### Checks that a 'bounds' object is valid
  * @param {Bounds} bounds The bounds object to check
- * @param {string} [xpx='bounds'] Exception prefix, e.g. 'Canvas.render(): bounds'
+ * @param {string} [xpx='bounds'] Exception prefix, e.g. 'canvas.render(): bounds'
  */
 export const validateBounds = (bounds, xpx = 'bounds') => {
     if (bounds === null) throw TypeError(
@@ -47,8 +47,8 @@ export const validateCanvasExtent = (extent, xpx = 'extent') => {
         `${xpx} ${extent} is not an integer`);
     if (extent < 1) throw RangeError(
         `${xpx} ${extent} is less than 1`);
-    if (extent > 255) throw RangeError(
-        `${xpx} ${extent} is greater than 255`);
+    if (extent > 3840) throw RangeError(
+        `${xpx} ${extent} is greater than 3840`);
 };
 
 /** #### Checks that a Canvas instance is valid
@@ -72,7 +72,7 @@ export const validateCanvas = (canvas, xpx = 'canvas') => {
 
 /** #### Checks that a color depth value is valid
  * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to check
- * @param {string} [xpx='colorDepth'] Exception prefix, e.g. 'Canvas.render(): colorDepth'
+ * @param {string} [xpx='colorDepth'] Exception prefix, e.g. 'canvas.render(): colorDepth'
  */
 export const validateColorDepth = (colorDepth, xpx = 'colorDepth') => {
     const validDepths = ['monochrome', '256color', 'truecolor'];
@@ -82,9 +82,21 @@ export const validateColorDepth = (colorDepth, xpx = 'colorDepth') => {
         `${xpx} is not one of '${validDepths.join("'|'")}'`);
 }
 
+/** #### Checks that an output format is valid
+ * @param {'ansi'|'buffer'|'html'} outputFormat The output format to check
+ * @param {string} [xpx='outputFormat'] Exception prefix, e.g. 'canvas.render(): outputFormat'
+ */
+export const validateOutputFormat = (outputFormat, xpx = 'outputFormat') => {
+    const validFormats = ['ansi', 'buffer', 'html'];
+    if (typeof outputFormat !== 'string') throw TypeError(
+        `${xpx} is type '${typeof outputFormat}' not 'string'`);
+    if (!validFormats.includes(outputFormat)) throw RangeError(
+        `${xpx} is not one of '${validFormats.join("'|'")}'`);
+};
+
 /** #### Checks that a 2D array of pixels is valid
  * @param {Pixel[][]} pixels The 2D array of pixels to check
- * @param {string} [xpx='pixels'] Exception prefix, e.g. 'Canvas.render(): pixels'
+ * @param {string} [xpx='pixels'] Exception prefix, e.g. 'canvas.render(): pixels'
  */
 export const validatePixels = (pixels, xpx = 'pixels') => {
     // Validate the outer-array.
@@ -135,10 +147,10 @@ export const validatePixels = (pixels, xpx = 'pixels') => {
     const extentY = y;
     if (extentX < 1) throw RangeError(
         `${xpx} extentX is zero`);
-    if (extentX > 255) throw RangeError(
-        `${xpx} extentX ${extentX} is greater than 255`);
+    if (extentX > 3840) throw RangeError(
+        `${xpx} extentX ${extentX} is greater than 3840`);
     if (extentY < 1) throw RangeError(
         `${xpx} extentY is zero`);
-    if (extentY > 255) throw RangeError(
-        `${xpx} extentY ${extentY} is greater than 255`);
+    if (extentY > 3840) throw RangeError(
+        `${xpx} extentY ${extentY} is greater than 3840`);
 }

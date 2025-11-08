@@ -3,6 +3,7 @@ import { Primitive } from '../primitive/primitive.js';
 import {
     validateBlendMode,
     validateColor,
+    validateFlip,
     validatePattern,
     validatePrimitives,
     validateRotate,
@@ -13,7 +14,7 @@ import {
 } from "./shape-validators.js";
 
 /**
- * @typedef {import('../clc-types.js').Pattern} Pattern
+ * @typedef {import('../../clc-types.js').Pattern} Pattern
  */
 
 /** #### Combines a list of primitives, with rendering instructions */
@@ -21,6 +22,10 @@ export class Shape {
     /** #### How this shape blends with underlying shapes
      * @type {'multiply'|'normal'|'overlay'|'screen'} */
     blendMode = 'normal';
+
+    /** #### How to reflect this shape, if at all
+     * @type {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} */
+    flip = 'no-flip';
 
     /** #### The foreground color
      * @type {Color} */
@@ -42,9 +47,9 @@ export class Shape {
      * @type {number} */
     rotate = 0;
 
-    /** #### Scale factors for x and y axes
-     * @type {{ x: number, y: number }} */
-    scale = { x: 1, y: 1 };
+    /** #### Uniform scale factor
+     * @type {number} */
+    scale = 1;
 
     /** #### The outline color
      * @type {Color} */
@@ -64,12 +69,13 @@ export class Shape {
 
     /**
      * @param {'multiply'|'normal'|'overlay'|'screen'} blendMode Blend mode
+     * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip Reflection
      * @param {Color} ink Foreground/fill color
      * @param {Color} paper Background color
      * @param {Pattern} pattern Fill pattern
      * @param {Primitive[]} primitives Array of primitives
      * @param {number} rotate Rotation in radians
-     * @param {{ x: number, y: number }} scale Scale factors
+     * @param {number} scale Uniform scale factor
      * @param {Color} strokeColor Stroke/outline color
      * @param {'inside'|'center'|'outside'} strokePosition Stroke position
      * @param {number} strokeWidth Stroke width in pixels
@@ -77,6 +83,7 @@ export class Shape {
      */
     constructor(
         blendMode,
+        flip,
         ink,
         paper,
         pattern,
@@ -89,6 +96,7 @@ export class Shape {
         translate,
     ) {
         validateBlendMode(blendMode, 'Shape: blendMode');
+        validateFlip(flip, 'Shape: flip');
         validateColor(ink, 'Shape: ink');
         validateColor(paper, 'Shape: paper');
         validatePattern(pattern, 'Shape: pattern');
@@ -101,6 +109,7 @@ export class Shape {
         validateTranslate(translate, 'Shape: translate');
 
         this.blendMode = blendMode;
+        this.flip = flip;
         this.ink = ink;
         this.paper = paper;
         this.pattern = pattern;

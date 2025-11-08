@@ -1,5 +1,18 @@
 import { Primitive } from "./primitive.js";
 
+/** #### Checks that a flip value is valid
+ * @TODO move all shared validators to a common location
+ * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip reflect-mode to check
+ * @param {string} [xpx='flip'] Exception prefix
+ */
+export const validateFlip = (flip, xpx = 'flip') => {
+    const validFlips = ['flip-x', 'flip-x-and-y', 'flip-y', 'no-flip'];
+    if (typeof flip !== 'string') throw TypeError(
+        `${xpx} is type '${typeof flip}' not 'string'`);
+    if (!validFlips.includes(flip)) throw RangeError(
+        `${xpx} is not one of '${validFlips.join("'|'")}'`);
+};
+
 /** #### Checks that a joinMode value is valid
  * @param {'union'|'difference'} joinMode The join mode to check
  * @param {string} [xpx='joinMode'] Exception prefix
@@ -13,11 +26,11 @@ export const validateJoinMode = (joinMode, xpx = 'joinMode') => {
 };
 
 /** #### Checks that a kind value is valid
- * @param {'circle'|'square'|'triangle'} kind The kind to check
+ * @param {'circle'|'square'|'triangle-right'} kind The kind to check
  * @param {string} [xpx='kind'] Exception prefix
  */
 export const validateKind = (kind, xpx = 'kind') => {
-    const validKinds = ['circle', 'square', 'triangle'];
+    const validKinds = ['circle', 'square', 'triangle-right'];
     if (typeof kind !== 'string') throw TypeError(
         `${xpx} is type '${typeof kind}' not 'string'`);
     if (!validKinds.includes(kind)) throw RangeError(
@@ -35,29 +48,17 @@ export const validateRotate = (rotate, xpx = 'rotate') => {
         `${xpx} ${rotate} is not a valid number`);
 };
 
-/** #### Checks that a scale object is valid
- * @param {{ x: number, y: number }} scale The scale object to check
+/** #### Checks that a uniform scale value is valid
+ * @param {number} scale The scale factor to check
  * @param {string} [xpx='scale'] Exception prefix
  */
 export const validateScale = (scale, xpx = 'scale') => {
-    if (scale === null) throw TypeError(
-        `${xpx} is null, not an object`);
-    if (Array.isArray(scale)) throw TypeError(
-        `${xpx} is an array, not an object`);
-    if (typeof scale !== 'object') throw TypeError(
-        `${xpx} is type '${typeof scale}' not 'object'`);
-    if (typeof scale.x !== 'number') throw TypeError(
-        `${xpx}.x is type '${typeof scale.x}' not 'number'`);
-    if (Number.isNaN(scale.x)) throw RangeError(
-        `${xpx}.x ${scale.x} is not a valid number`);
-    if (scale.x < 0) throw RangeError(
-        `${xpx}.x ${scale.x} is less than 0`);
-    if (typeof scale.y !== 'number') throw TypeError(
-        `${xpx}.y is type '${typeof scale.y}' not 'number'`);
-    if (Number.isNaN(scale.y)) throw RangeError(
-        `${xpx}.y ${scale.y} is not a valid number`);
-    if (scale.y < 0) throw RangeError(
-        `${xpx}.y ${scale.y} is less than 0`);
+    if (typeof scale !== 'number') throw TypeError(
+        `${xpx} is type '${typeof scale}' not 'number'`);
+    if (Number.isNaN(scale)) throw RangeError(
+        `${xpx} ${scale} is not a valid number`);
+    if (scale < 0) throw RangeError(
+        `${xpx} ${scale} is less than 0`);
 };
 
 /** #### Checks that a translate object is valid

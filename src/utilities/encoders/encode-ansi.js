@@ -1,30 +1,30 @@
 /**
- * @typedef {import('../clc-types.js').Bounds} Bounds
- * @typedef {import('../pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
  */
 
 import {
     validateBounds,
     validateColorDepth,
     validatePixels,
-} from './canvas-validators.js';
+} from '../../models/canvas/canvas-validators.js';
 
-/** #### Renders a canvas to an ANSI string
+/** #### Renders a 2D array of pixels to an ANSI string
  * - Note that only the `min` bounds are inclusive, so `xMax` and `yMax` are
- *   not rendered. If the `pixels` array has dimensions 3x2, `bounds` should be
- *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to render the whole canvas.
- * @param {Bounds} bounds The pixel bounds to render within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to render at
- * @param {Pixel[][]} pixels 2D array of pixels to render
- * @param {string} [xpx='render():'] Exception prefix, e.g. 'fn():'
+ *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
+ *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
+ * @param {Bounds} bounds The pixel bounds to encode within
+ * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to encode at
+ * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {string} [xpx='encodeAnsi():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
  */
-export const render = (
+export const encodeAnsi = (
     bounds,
     colorDepth,
     pixels,
-    xpx = 'render():',
+    xpx = 'encodeAnsi():',
     skipValidation = false
 ) => {
     if (!skipValidation) {
@@ -43,10 +43,10 @@ export const render = (
             `${xpx} bounds.yMax ${bounds.yMax} exceeds pixels extentY ${extentY}`);
     }
 
-    // If monochrome, the canvas will be rendered with Unicode 'Block Elements'
+    // If monochrome, the pixels will be encoded with Unicode 'Block Elements'
     // characters (plus space), and no ANSI escape codes - handy for unit tests.
     //
-    // Otherwise, pixels are rendered using the Unicode U+2584 'Lower Half Block'
+    // Otherwise, pixels are encoded using the Unicode U+2584 'Lower Half Block'
     // character. This is coloured using ANSI escape codes to set the background
     // (upper) and foreground (lower) colours.
     let lineReset;
