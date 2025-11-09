@@ -113,3 +113,24 @@ canvas {
     height: auto;
     image-rendering: pixelated;
 }
+
+
+/* BADGE */
+
+#w4-dev-badge {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    padding: 1px 7px 3px 8px;
+    border-radius: 4px;
+    background: CanvasText;
+    color: Canvas;
+    opacity: 0.6;
+    z-index: 1001;
+}
+
+#w4-dev-badge::after {
+    font-weight: bold;
+    letter-spacing: 2px;
+    content: '</>';
+}

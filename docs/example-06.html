@@ -20,12 +20,27 @@
 </header>
 <pre id="output"></pre>
 
+<!-- If running on localhost or local network and path includes "/docs/", add
+     .w4-is-dev class to body, show #w4-dev-badge, and set W4.isDev to true. -->
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
+
 <script type="module">
-    import { Canvas } from '../src/models/canvas/canvas.js';
-    import { Color } from '../src/models/color/color.js';
-    import { Pixel } from '../src/models/pixel/pixel.js';
-    import { Primitive } from '../src/models/primitive/primitive.js';
-    import { Shape } from '../src/models/shape/shape.js';
+    const base = '../src/models/'; // shared path to source code models
+    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape']; // model names
+    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+        ? await (async () => // if dev mode, import each model...
+            (await Promise.all(Ms.map(M => M.toLowerCase()) // ...in parallel...
+                .map(m => import(`${base}${m}/${m}.js`))) // ...from source...
+            ).reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc }, {})
+        )()
+        : await import('./command-line-canvas.js'); // ...otherwise use build
 
     // Create an 80x24 pixel canvas with mid-grey background.
     const greyBg = new Pixel(128, 128, 128);

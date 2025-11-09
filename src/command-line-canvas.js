@@ -1,0 +1,16 @@
+/** @fileoverview
+ * Bundles public command-line-canvas API into a single file for distribution
+ */
+
+// Helpers.
+// TODO
+
+// Models.
+export { Canvas } from './models/canvas/canvas.js';
+export { Color } from './models/color/color.js';
+export { Pixel } from './models/pixel/pixel.js';
+export { Primitive } from './models/primitive/primitive.js';
+export { Shape } from './models/shape/shape.js';
+
+// Utilities.
+// TODO

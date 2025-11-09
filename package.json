@@ -20,12 +20,15 @@
   },
   "license": "MIT",
   "author": "Rich Plastow",
+  "main": "./docs/command-line-canvas.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richplastow/command-line-canvas.git"
   },
   "scripts": {
+    "build": "rollup -c && echo '\\xE2\\x9C\\x85 Build succeeded!'",
     "check-types": "tsc --noEmit && echo '\\xE2\\x9C\\x85 No type-errors found!'",
+    "ok": "npm test && npm run check-types && npm run build",
     "test": "node test.js && echo '\\xE2\\x9C\\x85 All tests passed!'"
   },
   "dependencies": {},

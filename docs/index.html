@@ -39,7 +39,7 @@
     <ul>
         <li>Version: 0.0.1</li>
         <li>Created: 3rd November 2025 by Rich Plastow</li>
-        <li>Updated: 8th November 2025 by Rich Plastow</li>
+        <li>Updated: 9th November 2025 by Rich Plastow</li>
         <li>GitHub:
             <a href="https://github.com/richplastow/command-line-canvas"
                 >https://github.com/richplastow/command-line-canvas</a></li>
@@ -54,5 +54,16 @@
         blocky) graphics for text-based UIs.
     </p>
 </main>
+
+<!-- If running on localhost or local network and path includes "/docs/", add
+     .w4-is-dev class to body, show #w4-dev-badge, and set W4.isDev to true. -->
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
 </body>
 </html>
