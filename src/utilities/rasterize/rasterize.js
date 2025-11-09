@@ -1,11 +1,14 @@
+import { SIDE_IN_WORLD_UNITS } from '../../clc-constants.js';
 import { Pixel } from '../../models/pixel/pixel.js';
-import { aabbCompound, sdfCompound } from '../sdfs-and-aabbs/compound.js';
+import { sdfCompound } from '../sdfs-and-aabbs/compound.js';
+import { computeShapeAABBs } from './compute-shape-aabbs.js';
 import {
     blendChannel,
     clamp01,
     samplePatternColor,
     toByte,
 } from './rasterization-utilities.js';
+import { resetPixelGrid } from './reset-pixel-grid.js';
 
 // Feature flag to toggle bounding-box culling. When enabled, the renderer
 // will skip expensive SDF calculations for shapes whose world-space axis-
@@ -17,81 +20,48 @@ const ENABLE_BOX_CULLING = true;
 
 /** #### Draws an array of shapes into the pixel grid
  * - Mutates the provided pixels-array in-place.
- * @param {Pixel} background
- * @param {Pixel[][]} pixels
- * @param {{id:number,shape:object}[]} shapes
- * @param {number} xExtent
- * @param {number} yExtent
+ * @param {number} aaRegionPixels Anti-alias region width in pixels
+ * @param {Pixel} background Background color pixel
+ * @param {Pixel[][]} pixels Pixel grid to rasterize into
+ * @param {{id:number,shape:object}[]} shapes List of shapes to rasterize
+ * @param {number} worldUnitsPerPixel World units per pixel
+ * @param {number} xExtent Width of the pixel grid
+ * @param {number} yExtent Height of the pixel grid
  * @param {string} [xpx='rasterize():'] Exception prefix
  */
 export function rasterize(
+    aaRegionPixels,
     background,
     pixels,
     shapes,
+    worldUnitsPerPixel,
     xExtent,
     yExtent,
     xpx = 'rasterize():',
 ) {
-    const { r, g, b } = background;
-
-    // Reset the pixel grid to the background color, without recreating
-    // any Pixel or array instances.
-    for (let y = 0; y < yExtent; y++) {
-        for (let x = 0; x < xExtent; x++) {
-            const pixel = pixels[y][x];
-            pixel.r = r;
-            pixel.g = g;
-            pixel.b = b;
-        }
-    }
+    // Reset pixel grid to background.
+    resetPixelGrid(background, pixels, xExtent, yExtent);
 
     // Convert an anti-aliasing width specified in pixels to world-space
     // units. The renderer maps the smaller canvas dimension to 10.0 world
     // units, so one world unit per pixel is 10.0 / min(xExtent,yExtent).
     // Use aaRegionPixels to control how many screen pixels the AA band covers.
-    const worldUnitsPerPixel = 10.0 / Math.min(xExtent, yExtent);
-    const aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
     const aaRegion = aaRegionPixels * worldUnitsPerPixel;
 
-    // Precompute conservative axis-aligned bounding boxes (AABB) for each
-    // shape in world-space. These boxes are expanded by the anti-aliasing
-    // region so that edge pixels aren't incorrectly culled. We compute them
-    // once here so the inner pixel loop can cheaply skip shapes that cannot
-    // possibly affect a given pixel.
-    // Use helper functions colocated with SDFs to compute conservative AABBs
-    // for each shape. These helpers are in `src/sdf-and-aabbs/` and mirror
-    // the previous inline logic; keeping them next to SDFs helps maintain
-    // consistency when shapes change.
-    const shapeBoxes = shapes.map(({ shape }) => { // `id` is not needed here
-        // Base AA expansion in world units.
-        // Also expand outward for strokes that lie outside or are centred on
-        // the shape boundary so we don't accidentally cull stroke pixels.
-        const strokePx = typeof shape.strokeWidth === 'number' ? shape.strokeWidth : 0;
-        const strokeWorld = strokePx * worldUnitsPerPixel;
-        let outwardExtension;
-        switch (shape.strokePosition) {
-            case 'outside':
-                outwardExtension = strokeWorld;
-                break;
-            case 'inside':
-                outwardExtension = 0;
-                break;
-            case 'center':
-            default: // default to 'center' semantics if strokePosition is missing
-                outwardExtension = strokeWorld / 2;
-                break;
-        }
-        const expand = aaRegion + outwardExtension; // conservative expand
-        // Use an aggregate AABB which unions all primitive AABBs.
-        return aabbCompound(shape, expand);
-    });
+    // Precompute conservative axis-aligned bounding boxes (AABB) for each shape,
+    // so the inner pixel loop can cheaply skip shapes that can't affect a pixel.
+    const shapeBoxes = computeShapeAABBs(aaRegion, shapes, worldUnitsPerPixel);
 
     // Determine each pixel's color.
     // Precompute values that are constant across pixels to avoid repeated
     // work inside the nested loops.
     const aspectRatio = xExtent / yExtent;
-    const worldWidth = aspectRatio >= 1 ? 10.0 * aspectRatio : 10.0;
-    const worldHeight = aspectRatio >= 1 ? 10.0 : 10.0 / aspectRatio;
+    const worldWidth = aspectRatio >= 1
+        ? SIDE_IN_WORLD_UNITS * aspectRatio
+        : SIDE_IN_WORLD_UNITS;
+    const worldHeight = aspectRatio >= 1
+        ? SIDE_IN_WORLD_UNITS
+        : SIDE_IN_WORLD_UNITS / aspectRatio;
     const invCanvasWidth = 1.0 / xExtent;
     const invCanvasHeight = 1.0 / yExtent;
 

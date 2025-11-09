@@ -23,5 +23,8 @@ import './src/models/primitive/primitive.test.js';
 import './src/models/shape/shape-validators.test.js';
 import './src/models/shape/shape.test.js';
 
+// Rasterize.
+import './src/utilities/rasterize/rasterize.test.js';
+
 // SDFs and AABBs.
 import './src/utilities/sdfs-and-aabbs/compound.test.js';

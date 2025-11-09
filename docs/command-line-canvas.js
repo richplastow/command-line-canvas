@@ -1,32 +1,31 @@
-/** #### A pixel in an ANSI canvas */
-class Pixel {
-    /** #### Red value (0-255)
-     * @type {number} */
-    r = 0;
+/** @fileoverview constant values used throughout command-line-canvas */
 
-    /** #### Green value (0-255)
-     * @type {number} */
-    g = 0;
-
-    /** #### Blue value (0-255)
-     * @type {number} */
-    b = 0;
-
-    /**
-     * @param {number} r The red value (0-255)
-     * @param {number} g The green value (0-255)
-     * @param {number} b The blue value (0-255)
-     */
-    constructor(r, g, b) {
-        validateChannel(r, 'Pixel: r (red)');
-        validateChannel(g, 'Pixel: g (green)');
-        validateChannel(b, 'Pixel: b (blue)');
-
-        this.r = r;
-        this.g = g;
-        this.b = b;
-    }
-}
+/** #### The canvas's shorter side, when measured in world units
+ *
+ * The fixed virtual size of the smaller canvas dimension in world units.
+ *
+ * The renderer maps the smaller side of the pixel grid to, for example, 10.0
+ * world units, so shape maths can run in a resolution‑independent 'world' space.
+ *
+ * - 10.0 makes coordinates and SDF sizes intuitive and stable across different
+ *   pixel resolutions.
+ * 
+ * Effect of changing 10.0:
+ * - Larger value → more world units per pixel → shapes render larger on screen.
+ * - Smaller value → everything shrinks in pixels.
+ * - Changing this value is equivalent to zooming in/out on the canvas.
+ * 
+ * Example: for 80×24 canvas:
+ * - min = 24 → worldUnitsPerPixel = 10 / 24 ≈ 0.4167
+ * - aspectRatio = 80/24 ≈ 3.33 → worldWidth = 33.33, worldHeight = 10.0
+ *
+ * Why "10.0" not "10"?
+ * - Using a float makes it explicit that world units are floating-point.
+ * - Improves readability and intent for future maintainers.
+ *
+ * @type {number}
+ */
+const SIDE_IN_WORLD_UNITS = 10.0;
 
 /** #### Checks that a pixel channel is a number between 0 and 255 inclusive
  * - Note that channel values do not have to be integers
@@ -63,527 +62,33 @@ const validatePixel = (pixel, xpx = 'pixel') => {
     }
 };
 
-/**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a circle.
- */
-
-/**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- */
-
-/** #### Signed distance function for a circle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} r // radius, in world-space units
- * @returns {number}
- */
-const sdfCircle = (tx, ty, r) =>
-    Math.sqrt(tx * tx + ty * ty) - r;
-
-/** #### Axis-aligned bounding box for a circle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} r // radius, in world-space units
- * @param {number} expand World units to expand the box (e.g. for anti-aliasing)
- * @returns {Bounds}
- */
-const aabbCircle = (tx, ty, r, expand) => {
-    const expandedR = Math.abs(r) + expand;
-    return {
-        xMin: tx - expandedR,
-        xMax: tx + expandedR,
-        yMin: ty - expandedR,
-        yMax: ty + expandedR,
-    };
-};
-
-/**
- * @fileoverview
- * Miscellaneous small utilities for signed distance functions.
- */
-
-/**
- * #### Distance from a point to a line segment
- * - Returns the shortest Euclidean distance from point (px,py) to the
- *   segment defined by (ax,ay)-(bx,by).
- * @param {number} px
- * @param {number} py
- * @param {number} ax
- * @param {number} ay
- * @param {number} bx
- * @param {number} by
- * @returns {number}
- */
-const segmentDistance = (px, py, ax, ay, bx, by) => {
-    const vx = bx - ax;
-    const vy = by - ay;
-    const wx = px - ax;
-    const wy = py - ay;
-    const denom = vx * vx + vy * vy;
-    const t = denom === 0
-        ? 0
-        : Math.max(0, Math.min(1, (wx * vx + wy * vy) / denom));
-    const dx = ax + vx * t - px;
-    const dy = ay + vy * t - py;
-    return Math.hypot(dx, dy);
-};
-
-/**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a right triangle.
- */
-
-
-/** #### Signed distance function for a right triangle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} lx // horizontal side length, in world-space units
- * @param {number} ly // vertical side length, in world-space units
- * @returns {number}
- */
-const sdfTriangleRight = (tx, ty, lx, ly) => {
-    const absLx = Math.abs(lx);
-    const absLy = Math.abs(ly);
-    const halfLx = absLx / 2;
-    const halfLy = absLy / 2;
-
-    const ax = -halfLx;
-    const ay = -halfLy;
-    const bx = halfLx;
-    const by = -halfLy;
-    const cx = -halfLx;
-    const cy = halfLy;
-
-    const crossAB = (bx - ax) * (ty - ay) - (by - ay) * (tx - ax);
-    const crossBC = (cx - bx) * (ty - by) - (cy - by) * (tx - bx);
-    const crossCA = (ax - cx) * (ty - cy) - (ay - cy) * (tx - cx);
-    const inside = crossAB >= 0 && crossBC >= 0 && crossCA >= 0;
-
-    const dAB = segmentDistance(tx, ty, ax, ay, bx, by);
-    const dBC = segmentDistance(tx, ty, bx, by, cx, cy);
-    const dCA = segmentDistance(tx, ty, cx, cy, ax, ay);
-    const dist = Math.min(dAB, dBC, dCA);
-
-    return inside ? -dist : dist;
-};
-
-/** #### Axis-aligned bounding box for a right triangle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} lx // horizontal side length, in world-space units
- * @param {number} ly // vertical side length, in world-space units
- * @param {number} expand World units to expand the box (e.g. for AA)
- * @returns {Bounds}
- */
-const aabbTriangleRight = (tx, ty, lx, ly, expand) => {
-    const halfLx = Math.abs(lx) / 2;
-    const halfLy = Math.abs(ly) / 2;
-    return {
-        xMin: tx - halfLx - expand,
-        xMax: tx + halfLx + expand,
-        yMin: ty - halfLy - expand,
-        yMax: ty + halfLy + expand,
-    };
-};
-
-/**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * an aggregated array of primitives.
- */
-
-
-const FLIP_SIGNS = Object.freeze({
-    'no-flip': Object.freeze({ x: 1, y: 1 }),
-    'flip-x': Object.freeze({ x: -1, y: 1 }),
-    'flip-y': Object.freeze({ x: 1, y: -1 }),
-    'flip-x-and-y': Object.freeze({ x: -1, y: -1 }),
-});
-
-/**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/shape/shape.js').Shape} Shape
- */
-
-/** #### Composite signed distance function for a Shape made from primitives
- * Combines primitive SDFs left-to-right using join modes:
- * - 'union' -> min(a,b)
- * - 'difference' -> difference(a,b) == max(a, -b)
- * @param {Shape} shape
- * @param {number} worldX
- * @param {number} worldY
- * @returns {number}
- */
-const sdfCompound = (shape, worldX, worldY) => {
-    if (shape.primitives.length === 0) return 1e6;
-
-    const shapeScale = shape.scale || 1;
-    if (shapeScale === 0) return 1e6;
-
-    const shapeTx = shape.translate.x;
-    const shapeTy = shape.translate.y;
-    const shapeFlip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
-
-    const shapeLocalX = (worldX - shapeTx) * shapeFlip.x / shapeScale;
-    const shapeLocalY = (worldY - shapeTy) * shapeFlip.y / shapeScale;
-
-    let acc = null;
-
-    for (let i = 0; i < shape.primitives.length; i++) {
-        const p = shape.primitives[i];
-
-        const primScale = p.scale || 1;
-        if (primScale === 0) continue;
-
-        const primFlip = FLIP_SIGNS[p.flip] || FLIP_SIGNS['no-flip'];
-        const totalScale = shapeScale * primScale;
-
-        const localX = (shapeLocalX - p.translate.x) * primFlip.x / primScale;
-        const localY = (shapeLocalY - p.translate.y) * primFlip.y / primScale;
-
-        let dWorld = 1e6;
-        switch (p.kind) {
-            case 'circle': {
-                const dLocal = sdfCircle(localX, localY, 1);
-                dWorld = dLocal * totalScale;
-                break;
-            }
-            case 'triangle-right': {
-                // Use hard-coded local side lengths lx=1, ly=2.
-                const dLocal = sdfTriangleRight(localX, localY, 1, 2);
-                dWorld = dLocal * totalScale;
-                break;
-            }
-            default:
-                dWorld = 1e6;
-        }
-
-        if (acc === null) {
-            acc = dWorld;
-        } else if (p.joinMode === 'union') {
-            acc = Math.min(acc, dWorld);
-        } else {
-            acc = Math.max(acc, -dWorld);
-        }
-    }
-
-    return acc === null ? 1e6 : acc;
-};
-
-/** #### Axis-aligned bounding box for a composite shape
- * Unions primitive AABBs (converted to world-space by adding the shape's
- * position to each primitive's offset).
- * @param {Shape} shape
- * @param {number} expand Amount to expand each primitive's box (world units)
- * @returns {Bounds}
- */
-const aabbCompound = (shape, expand) => {
-
-    // Initialise to an 'inverted box', that any real AABB will intersect.
-    let out = { xMin: 1e9, xMax: -1e9, yMin: 1e9, yMax: -1e9 };
-
-    const shapeScale = shape.scale || 1;
-    if (shapeScale === 0) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
-
-    const shapeFlip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
-
-    for (let i = 0; i < shape.primitives.length; i++) {
-        const p = shape.primitives[i];
-        const primScale = p.scale || 1;
-        if (primScale === 0) continue;
-
-        const totalScale = shapeScale * primScale;
-        const primCenterX = shape.translate.x + (p.translate.x * shapeScale * shapeFlip.x);
-        const primCenterY = shape.translate.y + (p.translate.y * shapeScale * shapeFlip.y);
-
-        let box;
-        switch (p.kind) {
-            case 'circle': {
-                const scaledRadius = Math.abs(totalScale);
-                box = aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
-                break;
-            }
-            case 'triangle-right': {
-                const lx = totalScale * 1;
-                const ly = totalScale * 2;
-                box = aabbTriangleRight(primCenterX, primCenterY, lx, ly, expand);
-                break;
-            }
-            default:
-                box = { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
-        }
-
-        out.xMin = Math.min(out.xMin, box.xMin);
-        out.xMax = Math.max(out.xMax, box.xMax);
-        out.yMin = Math.min(out.yMin, box.yMin);
-        out.yMax = Math.max(out.yMax, box.yMax);
-    }
-
-    // If no primitives were processed, return a huge box.
-    if (out.xMin > out.xMax) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
-
-    return out;
-};
-
-/**
- * @fileoverview
- * Miscellaneous small utilities for rasterization.
- */
-
-const blendChannel = (mode, src, dst) => {
-    switch (mode) {
-        case 'multiply':
-            return clamp01(src * dst);
-        case 'screen':
-            return clamp01(1 - ((1 - clamp01(src)) * (1 - clamp01(dst))));
-        case 'overlay': {
-            const base = clamp01(dst);
-            const top = clamp01(src);
-            return base <= 0.5
-                ? clamp01(2 * base * top)
-                : clamp01(1 - (2 * (1 - base) * (1 - top)));
-        }
-        case 'normal':
-        default:
-            return clamp01(src);
-    }
-};
-
-const clamp01 = (value) => {
-    if (value <= 0) return 0;
-    if (value >= 1) return 1;
-    return value;
-};
-
-const samplePatternColor = (shape) => {
-    switch (shape.pattern) {
-        case 'all-paper':
-            return shape.paper;
-        case 'all-ink':
-        default:
-            // TODO support patterned fills (breton, pinstripe).
-            return shape.ink;
-    }
-};
-
-const toByte = (value) => Math.round(clamp01(value) * 255);
-
-/** #### Draws an array of shapes into the pixel grid
- * - Mutates the provided pixels-array in-place.
- * @param {Pixel} background
- * @param {Pixel[][]} pixels
- * @param {{id:number,shape:object}[]} shapes
- * @param {number} xExtent
- * @param {number} yExtent
- * @param {string} [xpx='rasterize():'] Exception prefix
- */
-function rasterize(
-    background,
-    pixels,
-    shapes,
-    xExtent,
-    yExtent,
-    xpx = 'rasterize():',
-) {
-    const { r, g, b } = background;
-
-    // Reset the pixel grid to the background color, without recreating
-    // any Pixel or array instances.
-    for (let y = 0; y < yExtent; y++) {
-        for (let x = 0; x < xExtent; x++) {
-            const pixel = pixels[y][x];
-            pixel.r = r;
-            pixel.g = g;
-            pixel.b = b;
-        }
-    }
-
-    // Convert an anti-aliasing width specified in pixels to world-space
-    // units. The renderer maps the smaller canvas dimension to 10.0 world
-    // units, so one world unit per pixel is 10.0 / min(xExtent,yExtent).
-    // Use aaRegionPixels to control how many screen pixels the AA band covers.
-    const worldUnitsPerPixel = 10.0 / Math.min(xExtent, yExtent);
-    const aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
-    const aaRegion = aaRegionPixels * worldUnitsPerPixel;
-
-    // Precompute conservative axis-aligned bounding boxes (AABB) for each
-    // shape in world-space. These boxes are expanded by the anti-aliasing
-    // region so that edge pixels aren't incorrectly culled. We compute them
-    // once here so the inner pixel loop can cheaply skip shapes that cannot
-    // possibly affect a given pixel.
-    // Use helper functions colocated with SDFs to compute conservative AABBs
-    // for each shape. These helpers are in `src/sdf-and-aabbs/` and mirror
-    // the previous inline logic; keeping them next to SDFs helps maintain
-    // consistency when shapes change.
-    const shapeBoxes = shapes.map(({ shape }) => { // `id` is not needed here
-        // Base AA expansion in world units.
-        // Also expand outward for strokes that lie outside or are centred on
-        // the shape boundary so we don't accidentally cull stroke pixels.
-        const strokePx = typeof shape.strokeWidth === 'number' ? shape.strokeWidth : 0;
-        const strokeWorld = strokePx * worldUnitsPerPixel;
-        let outwardExtension;
-        switch (shape.strokePosition) {
-            case 'outside':
-                outwardExtension = strokeWorld;
-                break;
-            case 'inside':
-                outwardExtension = 0;
-                break;
-            case 'center':
-            default: // default to 'center' semantics if strokePosition is missing
-                outwardExtension = strokeWorld / 2;
-                break;
-        }
-        const expand = aaRegion + outwardExtension; // conservative expand
-        // Use an aggregate AABB which unions all primitive AABBs.
-        return aabbCompound(shape, expand);
-    });
-
-    // Determine each pixel's color.
-    // Precompute values that are constant across pixels to avoid repeated
-    // work inside the nested loops.
-    const aspectRatio = xExtent / yExtent;
-    const worldWidth = aspectRatio >= 1 ? 10.0 * aspectRatio : 10.0;
-    const worldHeight = aspectRatio >= 1 ? 10.0 : 10.0 / aspectRatio;
-    const invCanvasWidth = 1.0 / xExtent;
-    const invCanvasHeight = 1.0 / yExtent;
-
-    // Precompute the world X coordinate for every column and the world Y
-    // coordinate for every row. This moves the division/multiplication out
-    // of the inner pixel loop which is executed for every pixel.
-    const worldXs = new Array(xExtent);
-    for (let i = 0; i < xExtent; i++) {
-        worldXs[i] = ((i + 0.5) * invCanvasWidth - 0.5) * worldWidth;
-    }
-    const worldYs = new Array(yExtent);
-    for (let j = 0; j < yExtent; j++) {
-        worldYs[j] = ((j + 0.5) * invCanvasHeight - 0.5) * worldHeight;
-    }
-
-    const inv255 = 1 / 255;
-
-    for (let y = 0; y < yExtent; y++) {
-        for (let x = 0; x < xExtent; x++) {
-            // Look up the precomputed world coordinates for this pixel and
-            // grab the backing pixel. We normalise to 0..1 so the blend
-            // math stays stable while multiple shapes accumulate colour.
-            const worldX = worldXs[x];
-            const worldY = worldYs[y];
-            const pixel = pixels[y][x];
-
-            let dstR = pixel.r * inv255;
-            let dstG = pixel.g * inv255;
-            let dstB = pixel.b * inv255;
-
-            // Step through each shape in paint order, applying stroke, fill
-            // and blend processing whenever the SDF says the pixel is hit.
-            for (let si = 0; si < shapes.length; si++) {
-                const shape = shapes[si].shape;
-                // Quick axis-aligned bounding-box culling. If enabled and the
-                // pixel's world coordinate lies outside the (conservative)
-                // box for this shape, skip SDF evaluation entirely.
-                {
-                    const box = shapeBoxes[si];
-                    if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
-                        continue; // shape cannot affect this pixel
-                    }
-                }
-                // Evaluate the composite signed distance for this Shape. Note
-                // that Shapes are composed of multiple primitives (union/
-                // difference).
-                const distance = sdfCompound(shape, worldX, worldY);
-
-                // Resolve the sampled fill colour/pattern once and convert
-                // SDF distance into an anti-aliased coverage factor.
-                const fillColor = samplePatternColor(shape);
-                let fillCoverage = 0;
-                if (distance < aaRegion / 2) {
-                    fillCoverage = Math.max(0, Math.min(1, (-distance + aaRegion / 2) / aaRegion));
-                }
-
-                const strokeColor = shape.strokeColor;
-                let strokeCoverage = 0;
-                if (typeof shape.strokeWidth === 'number' && shape.strokeWidth > 0 && strokeColor) {
-                    // Convert the stroke definition (stored in pixel units)
-                    // into world units, then work out how far the SDF sample
-                    // lies from the stroke band.
-                    const strokeWidthWorld = shape.strokeWidth * worldUnitsPerPixel;
-
-                    let bandMin = 0;
-                    let bandMax = 0;
-                    switch (shape.strokePosition) {
-                        case 'inside':
-                            bandMin = -strokeWidthWorld;
-                            bandMax = 0;
-                            break;
-                        case 'outside':
-                            bandMin = 0;
-                            bandMax = strokeWidthWorld;
-                            break;
-                        case 'center':
-                        default:
-                            bandMin = -strokeWidthWorld / 2;
-                            bandMax = strokeWidthWorld / 2;
-                            break;
-                    }
-
-                    let distToBand = 0;
-                    if (distance < bandMin) distToBand = bandMin - distance;
-                    else if (distance > bandMax) distToBand = distance - bandMax;
-                    else distToBand = 0;
-
-                    const aaEdge = aaRegion / 2;
-                    if (distToBand === 0) strokeCoverage = 1;
-                    else if (distToBand < aaEdge) strokeCoverage = 1 - (distToBand / aaEdge);
-                    else strokeCoverage = 0;
-                }
-
-                // Translate coverage into opacity by multiplying by the
-                // source alpha channel. Zero opacity lets us skip the blend.
-                const fillOpacity = fillCoverage * (fillColor?.a ?? 0);
-                const strokeOpacity = strokeCoverage * (strokeColor?.a ?? 0);
-
-                if (fillOpacity <= 0 && strokeOpacity <= 0) continue;
-
-                const fillR = fillOpacity > 0 ? fillColor.r * inv255 : 0;
-                const fillG = fillOpacity > 0 ? fillColor.g * inv255 : 0;
-                const fillB = fillOpacity > 0 ? fillColor.b * inv255 : 0;
-
-                const strokeR = strokeOpacity > 0 ? strokeColor.r * inv255 : 0;
-                const strokeG = strokeOpacity > 0 ? strokeColor.g * inv255 : 0;
-                const strokeB = strokeOpacity > 0 ? strokeColor.b * inv255 : 0;
-
-                const oneMinusStrokeOpacity = 1 - strokeOpacity;
-                const srcAlpha = clamp01(strokeOpacity + (fillOpacity * oneMinusStrokeOpacity));
-                if (srcAlpha <= 0) continue;
-
-                const premulR = (strokeR * strokeOpacity) + (fillR * fillOpacity * oneMinusStrokeOpacity);
-                const premulG = (strokeG * strokeOpacity) + (fillG * fillOpacity * oneMinusStrokeOpacity);
-                const premulB = (strokeB * strokeOpacity) + (fillB * fillOpacity * oneMinusStrokeOpacity);
-
-                const srcR = premulR / srcAlpha;
-                const srcG = premulG / srcAlpha;
-                const srcB = premulB / srcAlpha;
-
-                // TODO optimise known no-ops (multiply/white, screen/black, overlay/0.5 grey).
-                const blendMode = shape.blendMode;
-                const blendedR = blendChannel(blendMode, srcR, dstR);
-                const blendedG = blendChannel(blendMode, srcG, dstG);
-                const blendedB = blendChannel(blendMode, srcB, dstB);
-
-                // Store the blended result as the new destination. Staying in
-                // float space delays rounding until every shape is applied.
-                dstR = clamp01((blendedR * srcAlpha) + (dstR * (1 - srcAlpha)));
-                dstG = clamp01((blendedG * srcAlpha) + (dstG * (1 - srcAlpha)));
-                dstB = clamp01((blendedB * srcAlpha) + (dstB * (1 - srcAlpha)));
-            }
-
-            // Convert the accumulated float back into byte channels for
-            // downstream rendering.
-            pixel.r = toByte(dstR);
-            pixel.g = toByte(dstG);
-            pixel.b = toByte(dstB);
-        }
+/** #### A pixel in an ANSI canvas */
+class Pixel {
+    /** #### Red value (0-255)
+     * @type {number} */
+    r = 0;
+
+    /** #### Green value (0-255)
+     * @type {number} */
+    g = 0;
+
+    /** #### Blue value (0-255)
+     * @type {number} */
+    b = 0;
+
+    /**
+     * @param {number} r The red value (0-255)
+     * @param {number} g The green value (0-255)
+     * @param {number} b The blue value (0-255)
+     */
+    constructor(r, g, b) {
+        validateChannel(r, 'Pixel: r (red)');
+        validateChannel(g, 'Pixel: g (green)');
+        validateChannel(b, 'Pixel: b (blue)');
+
+        this.r = r;
+        this.g = g;
+        this.b = b;
     }
 }
 
@@ -1114,6 +619,560 @@ function index256ToRGB(index) {
 }
 
 /**
+ * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
+ * a circle.
+ */
+
+/**
+ * @typedef {import('../../clc-types.js').Bounds} Bounds
+ */
+
+/** #### Signed distance function for a circle
+ * @param {number} tx // center position (translate) x, in world-space units
+ * @param {number} ty // center position (translate) y, in world-space units
+ * @param {number} r // radius, in world-space units
+ * @returns {number}
+ */
+const sdfCircle = (tx, ty, r) =>
+    Math.sqrt(tx * tx + ty * ty) - r;
+
+/** #### Axis-aligned bounding box for a circle
+ * @param {number} tx // center position (translate) x, in world-space units
+ * @param {number} ty // center position (translate) y, in world-space units
+ * @param {number} r // radius, in world-space units
+ * @param {number} expand World units to expand the box (e.g. for anti-aliasing)
+ * @returns {Bounds}
+ */
+const aabbCircle = (tx, ty, r, expand) => {
+    const expandedR = Math.abs(r) + expand;
+    return {
+        xMin: tx - expandedR,
+        xMax: tx + expandedR,
+        yMin: ty - expandedR,
+        yMax: ty + expandedR,
+    };
+};
+
+/**
+ * @fileoverview
+ * Miscellaneous small utilities for signed distance functions.
+ */
+
+/**
+ * #### Distance from a point to a line segment
+ * - Returns the shortest Euclidean distance from point (px,py) to the
+ *   segment defined by (ax,ay)-(bx,by).
+ * @param {number} px
+ * @param {number} py
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @returns {number}
+ */
+const segmentDistance = (px, py, ax, ay, bx, by) => {
+    const vx = bx - ax;
+    const vy = by - ay;
+    const wx = px - ax;
+    const wy = py - ay;
+    const denom = vx * vx + vy * vy;
+    const t = denom === 0
+        ? 0
+        : Math.max(0, Math.min(1, (wx * vx + wy * vy) / denom));
+    const dx = ax + vx * t - px;
+    const dy = ay + vy * t - py;
+    return Math.hypot(dx, dy);
+};
+
+/**
+ * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
+ * a right triangle.
+ */
+
+
+/** #### Signed distance function for a right triangle
+ * @param {number} tx // center position (translate) x, in world-space units
+ * @param {number} ty // center position (translate) y, in world-space units
+ * @param {number} lx // horizontal side length, in world-space units
+ * @param {number} ly // vertical side length, in world-space units
+ * @returns {number}
+ */
+const sdfTriangleRight = (tx, ty, lx, ly) => {
+    const absLx = Math.abs(lx);
+    const absLy = Math.abs(ly);
+    const halfLx = absLx / 2;
+    const halfLy = absLy / 2;
+
+    const ax = -halfLx;
+    const ay = -halfLy;
+    const bx = halfLx;
+    const by = -halfLy;
+    const cx = -halfLx;
+    const cy = halfLy;
+
+    const crossAB = (bx - ax) * (ty - ay) - (by - ay) * (tx - ax);
+    const crossBC = (cx - bx) * (ty - by) - (cy - by) * (tx - bx);
+    const crossCA = (ax - cx) * (ty - cy) - (ay - cy) * (tx - cx);
+    const inside = crossAB >= 0 && crossBC >= 0 && crossCA >= 0;
+
+    const dAB = segmentDistance(tx, ty, ax, ay, bx, by);
+    const dBC = segmentDistance(tx, ty, bx, by, cx, cy);
+    const dCA = segmentDistance(tx, ty, cx, cy, ax, ay);
+    const dist = Math.min(dAB, dBC, dCA);
+
+    return inside ? -dist : dist;
+};
+
+/** #### Axis-aligned bounding box for a right triangle
+ * @param {number} tx // center position (translate) x, in world-space units
+ * @param {number} ty // center position (translate) y, in world-space units
+ * @param {number} lx // horizontal side length, in world-space units
+ * @param {number} ly // vertical side length, in world-space units
+ * @param {number} expand World units to expand the box (e.g. for AA)
+ * @returns {Bounds}
+ */
+const aabbTriangleRight = (tx, ty, lx, ly, expand) => {
+    const halfLx = Math.abs(lx) / 2;
+    const halfLy = Math.abs(ly) / 2;
+    return {
+        xMin: tx - halfLx - expand,
+        xMax: tx + halfLx + expand,
+        yMin: ty - halfLy - expand,
+        yMax: ty + halfLy + expand,
+    };
+};
+
+/**
+ * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
+ * an aggregated array of primitives.
+ */
+
+
+const FLIP_SIGNS = Object.freeze({
+    'no-flip': Object.freeze({ x: 1, y: 1 }),
+    'flip-x': Object.freeze({ x: -1, y: 1 }),
+    'flip-y': Object.freeze({ x: 1, y: -1 }),
+    'flip-x-and-y': Object.freeze({ x: -1, y: -1 }),
+});
+
+/**
+ * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../models/shape/shape.js').Shape} Shape
+ */
+
+/** #### Composite signed distance function for a Shape made from primitives
+ * Combines primitive SDFs left-to-right using join modes:
+ * - 'union' -> min(a,b)
+ * - 'difference' -> difference(a,b) == max(a, -b)
+ * @param {Shape} shape
+ * @param {number} worldX
+ * @param {number} worldY
+ * @returns {number}
+ */
+const sdfCompound = (shape, worldX, worldY) => {
+    if (shape.primitives.length === 0) return 1e6;
+
+    const shapeScale = shape.scale || 1;
+    if (shapeScale === 0) return 1e6;
+
+    const shapeTx = shape.translate.x;
+    const shapeTy = shape.translate.y;
+    const shapeFlip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
+
+    const shapeLocalX = (worldX - shapeTx) * shapeFlip.x / shapeScale;
+    const shapeLocalY = (worldY - shapeTy) * shapeFlip.y / shapeScale;
+
+    let acc = null;
+
+    for (let i = 0; i < shape.primitives.length; i++) {
+        const p = shape.primitives[i];
+
+        const primScale = p.scale || 1;
+        if (primScale === 0) continue;
+
+        const primFlip = FLIP_SIGNS[p.flip] || FLIP_SIGNS['no-flip'];
+        const totalScale = shapeScale * primScale;
+
+        const localX = (shapeLocalX - p.translate.x) * primFlip.x / primScale;
+        const localY = (shapeLocalY - p.translate.y) * primFlip.y / primScale;
+
+        let dWorld = 1e6;
+        switch (p.kind) {
+            case 'circle': {
+                const dLocal = sdfCircle(localX, localY, 1);
+                dWorld = dLocal * totalScale;
+                break;
+            }
+            case 'triangle-right': {
+                // Use hard-coded local side lengths lx=1, ly=2.
+                const dLocal = sdfTriangleRight(localX, localY, 1, 2);
+                dWorld = dLocal * totalScale;
+                break;
+            }
+            default:
+                dWorld = 1e6;
+        }
+
+        if (acc === null) {
+            acc = dWorld;
+        } else if (p.joinMode === 'union') {
+            acc = Math.min(acc, dWorld);
+        } else {
+            acc = Math.max(acc, -dWorld);
+        }
+    }
+
+    return acc === null ? 1e6 : acc;
+};
+
+/** #### Axis-aligned bounding box for a composite shape
+ * Unions primitive AABBs (converted to world-space by adding the shape's
+ * position to each primitive's offset).
+ * @param {Shape} shape
+ * @param {number} expand Amount to expand each primitive's box (world units)
+ * @returns {Bounds}
+ */
+const aabbCompound = (shape, expand) => {
+
+    // Initialise to an 'inverted box', that any real AABB will intersect.
+    let out = { xMin: 1e9, xMax: -1e9, yMin: 1e9, yMax: -1e9 };
+
+    const shapeScale = shape.scale || 1;
+    if (shapeScale === 0) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
+
+    const shapeFlip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
+
+    for (let i = 0; i < shape.primitives.length; i++) {
+        const p = shape.primitives[i];
+        const primScale = p.scale || 1;
+        if (primScale === 0) continue;
+
+        const totalScale = shapeScale * primScale;
+        const primCenterX = shape.translate.x + (p.translate.x * shapeScale * shapeFlip.x);
+        const primCenterY = shape.translate.y + (p.translate.y * shapeScale * shapeFlip.y);
+
+        let box;
+        switch (p.kind) {
+            case 'circle': {
+                const scaledRadius = Math.abs(totalScale);
+                box = aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
+                break;
+            }
+            case 'triangle-right': {
+                const lx = totalScale * 1;
+                const ly = totalScale * 2;
+                box = aabbTriangleRight(primCenterX, primCenterY, lx, ly, expand);
+                break;
+            }
+            default:
+                box = { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
+        }
+
+        out.xMin = Math.min(out.xMin, box.xMin);
+        out.xMax = Math.max(out.xMax, box.xMax);
+        out.yMin = Math.min(out.yMin, box.yMin);
+        out.yMax = Math.max(out.yMax, box.yMax);
+    }
+
+    // If no primitives were processed, return a huge box.
+    if (out.xMin > out.xMax) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
+
+    return out;
+};
+
+/** #### Computes axis-aligned bounding boxes (AABBs) for shapes in world-space
+ *
+ * - These AABBs are 'conservative', meaning they err on the side of being too
+ *   large rather than too small, to avoid incorrectly culling pixels that the
+ *   shape could affect.
+ * - Uses the AABB functions colocated with SDFs to compute the boxes.
+ *
+ * @param {number} aaRegion Anti-alias region in world units
+ * @param {{id:number,shape:object}[]} shapes List of shapes to rasterize
+ * @param {number} worldUnitsPerPixel World units per pixel
+ * @param {string} [xpx='computeShapeAABBs():'] Exception prefix
+ */
+
+const computeShapeAABBs = (
+    aaRegion,
+    shapes,
+    worldUnitsPerPixel,
+    xpx = 'computeShapeAABBs():',
+) =>
+    shapes.map(({ shape }) => { // `id` is not needed here
+        // Start by expanding boxes by the anti-alias region, so that edge
+        // pixels aren't culled.
+        let expand = aaRegion;
+
+        // Expand outward for strokes that lie outside or are centred on the
+        // shape boundary so we don't accidentally cull stroke pixels.
+        // Expansion is in world units, so convert stroke width from pixels.
+        switch (shape.strokePosition) {
+            case 'outside':
+                expand += shape.strokeWidth * worldUnitsPerPixel;
+                break;
+            case 'inside': // no further expansion needed
+                break;
+            case 'center':
+                expand += shape.strokeWidth * worldUnitsPerPixel / 2;
+                break;
+            default: // should be unreachable, if validateStrokePosition() was used
+                throw Error(`${xpx} invalid strokePosition`);
+        }
+
+        // Use an aggregate AABB which unions all primitive AABBs.
+        return aabbCompound(shape, expand);
+    });
+
+/**
+ * @fileoverview
+ * Miscellaneous small utilities for rasterization.
+ */
+
+const blendChannel = (mode, src, dst) => {
+    switch (mode) {
+        case 'multiply':
+            return clamp01(src * dst);
+        case 'screen':
+            return clamp01(1 - ((1 - clamp01(src)) * (1 - clamp01(dst))));
+        case 'overlay': {
+            const base = clamp01(dst);
+            const top = clamp01(src);
+            return base <= 0.5
+                ? clamp01(2 * base * top)
+                : clamp01(1 - (2 * (1 - base) * (1 - top)));
+        }
+        case 'normal':
+        default:
+            return clamp01(src);
+    }
+};
+
+const clamp01 = (value) => {
+    if (value <= 0) return 0;
+    if (value >= 1) return 1;
+    return value;
+};
+
+const samplePatternColor = (shape) => {
+    switch (shape.pattern) {
+        case 'all-paper':
+            return shape.paper;
+        case 'all-ink':
+        default:
+            // TODO support patterned fills (breton, pinstripe).
+            return shape.ink;
+    }
+};
+
+const toByte = (value) => Math.round(clamp01(value) * 255);
+
+/** #### Fills a pixel grid with a background colour
+ * - For efficiency, does not recreate any Pixel or array instances.
+ * @param {Object} background The background color object with r, g, b properties
+ * @param {Array} pixels 2D array of pixel objects to be reset
+ * @param {number} xExtent The width of the pixel grid
+ * @param {number} yExtent The height of the pixel grid
+ */
+const resetPixelGrid = (background, pixels, xExtent, yExtent) => {
+    const { r, g, b } = background;
+    for (let y = 0; y < yExtent; y++) {
+        for (let x = 0; x < xExtent; x++) {
+            const pixel = pixels[y][x];
+            pixel.r = r;
+            pixel.g = g;
+            pixel.b = b;
+        }
+    }
+};
+
+/** #### Draws an array of shapes into the pixel grid
+ * - Mutates the provided pixels-array in-place.
+ * @param {number} aaRegionPixels Anti-alias region width in pixels
+ * @param {Pixel} background Background color pixel
+ * @param {Pixel[][]} pixels Pixel grid to rasterize into
+ * @param {{id:number,shape:object}[]} shapes List of shapes to rasterize
+ * @param {number} worldUnitsPerPixel World units per pixel
+ * @param {number} xExtent Width of the pixel grid
+ * @param {number} yExtent Height of the pixel grid
+ * @param {string} [xpx='rasterize():'] Exception prefix
+ */
+function rasterize(
+    aaRegionPixels,
+    background,
+    pixels,
+    shapes,
+    worldUnitsPerPixel,
+    xExtent,
+    yExtent,
+    xpx = 'rasterize():',
+) {
+    // Reset pixel grid to background.
+    resetPixelGrid(background, pixels, xExtent, yExtent);
+
+    // Convert an anti-aliasing width specified in pixels to world-space
+    // units. The renderer maps the smaller canvas dimension to 10.0 world
+    // units, so one world unit per pixel is 10.0 / min(xExtent,yExtent).
+    // Use aaRegionPixels to control how many screen pixels the AA band covers.
+    const aaRegion = aaRegionPixels * worldUnitsPerPixel;
+
+    // Precompute conservative axis-aligned bounding boxes (AABB) for each shape,
+    // so the inner pixel loop can cheaply skip shapes that can't affect a pixel.
+    const shapeBoxes = computeShapeAABBs(aaRegion, shapes, worldUnitsPerPixel);
+
+    // Determine each pixel's color.
+    // Precompute values that are constant across pixels to avoid repeated
+    // work inside the nested loops.
+    const aspectRatio = xExtent / yExtent;
+    const worldWidth = aspectRatio >= 1
+        ? SIDE_IN_WORLD_UNITS * aspectRatio
+        : SIDE_IN_WORLD_UNITS;
+    const worldHeight = aspectRatio >= 1
+        ? SIDE_IN_WORLD_UNITS
+        : SIDE_IN_WORLD_UNITS / aspectRatio;
+    const invCanvasWidth = 1.0 / xExtent;
+    const invCanvasHeight = 1.0 / yExtent;
+
+    // Precompute the world X coordinate for every column and the world Y
+    // coordinate for every row. This moves the division/multiplication out
+    // of the inner pixel loop which is executed for every pixel.
+    const worldXs = new Array(xExtent);
+    for (let i = 0; i < xExtent; i++) {
+        worldXs[i] = ((i + 0.5) * invCanvasWidth - 0.5) * worldWidth;
+    }
+    const worldYs = new Array(yExtent);
+    for (let j = 0; j < yExtent; j++) {
+        worldYs[j] = ((j + 0.5) * invCanvasHeight - 0.5) * worldHeight;
+    }
+
+    const inv255 = 1 / 255;
+
+    for (let y = 0; y < yExtent; y++) {
+        for (let x = 0; x < xExtent; x++) {
+            // Look up the precomputed world coordinates for this pixel and
+            // grab the backing pixel. We normalise to 0..1 so the blend
+            // math stays stable while multiple shapes accumulate colour.
+            const worldX = worldXs[x];
+            const worldY = worldYs[y];
+            const pixel = pixels[y][x];
+
+            let dstR = pixel.r * inv255;
+            let dstG = pixel.g * inv255;
+            let dstB = pixel.b * inv255;
+
+            // Step through each shape in paint order, applying stroke, fill
+            // and blend processing whenever the SDF says the pixel is hit.
+            for (let si = 0; si < shapes.length; si++) {
+                const shape = shapes[si].shape;
+                // Quick axis-aligned bounding-box culling. If enabled and the
+                // pixel's world coordinate lies outside the (conservative)
+                // box for this shape, skip SDF evaluation entirely.
+                {
+                    const box = shapeBoxes[si];
+                    if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
+                        continue; // shape cannot affect this pixel
+                    }
+                }
+                // Evaluate the composite signed distance for this Shape. Note
+                // that Shapes are composed of multiple primitives (union/
+                // difference).
+                const distance = sdfCompound(shape, worldX, worldY);
+
+                // Resolve the sampled fill colour/pattern once and convert
+                // SDF distance into an anti-aliased coverage factor.
+                const fillColor = samplePatternColor(shape);
+                let fillCoverage = 0;
+                if (distance < aaRegion / 2) {
+                    fillCoverage = Math.max(0, Math.min(1, (-distance + aaRegion / 2) / aaRegion));
+                }
+
+                const strokeColor = shape.strokeColor;
+                let strokeCoverage = 0;
+                if (typeof shape.strokeWidth === 'number' && shape.strokeWidth > 0 && strokeColor) {
+                    // Convert the stroke definition (stored in pixel units)
+                    // into world units, then work out how far the SDF sample
+                    // lies from the stroke band.
+                    const strokeWidthWorld = shape.strokeWidth * worldUnitsPerPixel;
+
+                    let bandMin = 0;
+                    let bandMax = 0;
+                    switch (shape.strokePosition) {
+                        case 'inside':
+                            bandMin = -strokeWidthWorld;
+                            bandMax = 0;
+                            break;
+                        case 'outside':
+                            bandMin = 0;
+                            bandMax = strokeWidthWorld;
+                            break;
+                        case 'center':
+                        default:
+                            bandMin = -strokeWidthWorld / 2;
+                            bandMax = strokeWidthWorld / 2;
+                            break;
+                    }
+
+                    let distToBand = 0;
+                    if (distance < bandMin) distToBand = bandMin - distance;
+                    else if (distance > bandMax) distToBand = distance - bandMax;
+                    else distToBand = 0;
+
+                    const aaEdge = aaRegion / 2;
+                    if (distToBand === 0) strokeCoverage = 1;
+                    else if (distToBand < aaEdge) strokeCoverage = 1 - (distToBand / aaEdge);
+                    else strokeCoverage = 0;
+                }
+
+                // Translate coverage into opacity by multiplying by the
+                // source alpha channel. Zero opacity lets us skip the blend.
+                const fillOpacity = fillCoverage * (fillColor?.a ?? 0);
+                const strokeOpacity = strokeCoverage * (strokeColor?.a ?? 0);
+
+                if (fillOpacity <= 0 && strokeOpacity <= 0) continue;
+
+                const fillR = fillOpacity > 0 ? fillColor.r * inv255 : 0;
+                const fillG = fillOpacity > 0 ? fillColor.g * inv255 : 0;
+                const fillB = fillOpacity > 0 ? fillColor.b * inv255 : 0;
+
+                const strokeR = strokeOpacity > 0 ? strokeColor.r * inv255 : 0;
+                const strokeG = strokeOpacity > 0 ? strokeColor.g * inv255 : 0;
+                const strokeB = strokeOpacity > 0 ? strokeColor.b * inv255 : 0;
+
+                const oneMinusStrokeOpacity = 1 - strokeOpacity;
+                const srcAlpha = clamp01(strokeOpacity + (fillOpacity * oneMinusStrokeOpacity));
+                if (srcAlpha <= 0) continue;
+
+                const premulR = (strokeR * strokeOpacity) + (fillR * fillOpacity * oneMinusStrokeOpacity);
+                const premulG = (strokeG * strokeOpacity) + (fillG * fillOpacity * oneMinusStrokeOpacity);
+                const premulB = (strokeB * strokeOpacity) + (fillB * fillOpacity * oneMinusStrokeOpacity);
+
+                const srcR = premulR / srcAlpha;
+                const srcG = premulG / srcAlpha;
+                const srcB = premulB / srcAlpha;
+
+                // TODO optimise known no-ops (multiply/white, screen/black, overlay/0.5 grey).
+                const blendMode = shape.blendMode;
+                const blendedR = blendChannel(blendMode, srcR, dstR);
+                const blendedG = blendChannel(blendMode, srcG, dstG);
+                const blendedB = blendChannel(blendMode, srcB, dstB);
+
+                // Store the blended result as the new destination. Staying in
+                // float space delays rounding until every shape is applied.
+                dstR = clamp01((blendedR * srcAlpha) + (dstR * (1 - srcAlpha)));
+                dstG = clamp01((blendedG * srcAlpha) + (dstG * (1 - srcAlpha)));
+                dstB = clamp01((blendedB * srcAlpha) + (dstB * (1 - srcAlpha)));
+            }
+
+            // Convert the accumulated float back into byte channels for
+            // downstream rendering.
+            pixel.r = toByte(dstR);
+            pixel.g = toByte(dstG);
+            pixel.b = toByte(dstB);
+        }
+    }
+}
+
+/**
  * @typedef {import('../shape/shape.js').Shape} Shape
  */
 
@@ -1130,6 +1189,10 @@ class Canvas {
     /** #### The canvas's height
      * @type {number} */
     yExtent = 0;
+
+    /** Anti-aliasing region width in pixels
+     * @type {number} */
+    #aaRegionPixels = 0;
 
     /** #### ID of the most recently added shape
      * @type {number} */
@@ -1150,6 +1213,10 @@ class Canvas {
      * @type {{id: number, shape: Shape}[]} */
     #shapes = [];
 
+    /** World units per pixel
+     * @type {number} */
+    #worldUnitsPerPixel = 0;
+
     /**
      * @param {Pixel} background A pixel to clone across the canvas's background
      * @param {number} xExtent The canvas's width
@@ -1160,7 +1227,9 @@ class Canvas {
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
 
+        this.#aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
         this.background = background;
+        this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
         this.xExtent = xExtent;
         this.yExtent = yExtent;
 
@@ -1210,9 +1279,11 @@ class Canvas {
         // have occurred since the last time render() was called.
         if (this.#needsUpdate) {
             rasterize(
+                this.#aaRegionPixels,
                 this.background,
                 this.#pixels,
                 this.#shapes,
+                this.#worldUnitsPerPixel,
                 this.xExtent,
                 this.yExtent,
                 xpx,

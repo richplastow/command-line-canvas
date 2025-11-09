@@ -1,10 +1,15 @@
-import { validatePixel } from '../pixel/pixel-validators.js';
-import { Pixel } from '../pixel/pixel.js';
-import { rasterize } from '../../utilities/rasterize/rasterize.js';
-import { validateCanvasExtent, validateColorDepth, validateOutputFormat } from './canvas-validators.js';
+import { SIDE_IN_WORLD_UNITS } from '../../clc-constants.js';
 import { encodeAnsi } from '../../utilities/encoders/encode-ansi.js';
 import { encodeBuffer } from '../../utilities/encoders/encode-buffer.js';
 import { encodeHtml } from '../../utilities/encoders/encode-html.js';
+import { rasterize } from '../../utilities/rasterize/rasterize.js';
+import { validatePixel } from '../pixel/pixel-validators.js';
+import { Pixel } from '../pixel/pixel.js';
+import {
+    validateCanvasExtent,
+    validateColorDepth,
+    validateOutputFormat,
+} from './canvas-validators.js';
 
 /**
  * @typedef {import('../shape/shape.js').Shape} Shape
@@ -23,6 +28,10 @@ export class Canvas {
     /** #### The canvas's height
      * @type {number} */
     yExtent = 0;
+
+    /** Anti-aliasing region width in pixels
+     * @type {number} */
+    #aaRegionPixels = 0;
 
     /** #### ID of the most recently added shape
      * @type {number} */
@@ -43,6 +52,10 @@ export class Canvas {
      * @type {{id: number, shape: Shape}[]} */
     #shapes = [];
 
+    /** World units per pixel
+     * @type {number} */
+    #worldUnitsPerPixel = 0;
+
     /**
      * @param {Pixel} background A pixel to clone across the canvas's background
      * @param {number} xExtent The canvas's width
@@ -53,7 +66,9 @@ export class Canvas {
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
 
+        this.#aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
         this.background = background;
+        this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
         this.xExtent = xExtent;
         this.yExtent = yExtent;
 
@@ -103,9 +118,11 @@ export class Canvas {
         // have occurred since the last time render() was called.
         if (this.#needsUpdate) {
             rasterize(
+                this.#aaRegionPixels,
                 this.background,
                 this.#pixels,
                 this.#shapes,
+                this.#worldUnitsPerPixel,
                 this.xExtent,
                 this.yExtent,
                 xpx,
