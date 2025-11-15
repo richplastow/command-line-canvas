@@ -78,6 +78,7 @@ export function rasterize(
                         continue; // shape cannot affect this pixel
                     }
                 }
+
                 // Evaluate the composite signed distance for this Shape. Note
                 // that Shapes are composed of multiple primitives (union/
                 // difference).
@@ -95,8 +96,10 @@ export function rasterize(
                 const strokeCoverage = computeStrokeCoverage(
                     aaRegionHalf,
                     distance,
+                    shape.scale,
                     shape.strokeColor,
                     shape.strokePosition,
+                    shape.strokeUnit,
                     shape.strokeWidth,
                     worldUnitsPerPixel,
                     xpx,

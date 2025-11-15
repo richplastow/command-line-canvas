@@ -128,6 +128,18 @@ export const validateStrokePosition = (strokePosition,
         `${xpx} is not one of '${validPositions.join("'|'")}'`);
 };
 
+/** #### Checks that a strokeUnit value is valid
+ * @param {'pixel'|'shape'|'world'} strokeUnit The stroke unit
+ * @param {string} [xpx='strokeUnit'] Exception prefix
+ */
+export const validateStrokeUnit = (strokeUnit, xpx = 'strokeUnit') => {
+    const validUnits = ['pixel', 'shape', 'world'];
+    if (typeof strokeUnit !== 'string') throw TypeError(
+        `${xpx} is type '${typeof strokeUnit}' not 'string'`);
+    if (!validUnits.includes(strokeUnit)) throw RangeError(
+        `${xpx} is not one of '${validUnits.join("'|'")}'`);
+};
+
 /** #### Checks that a strokeWidth value is valid
  * @param {number} strokeWidth The stroke width to check
  * @param {string} [xpx='strokeWidth'] Exception prefix

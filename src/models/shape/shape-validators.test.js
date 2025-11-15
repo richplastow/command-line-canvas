@@ -11,6 +11,7 @@ import {
     validateScale,
     validateShape,
     validateStrokePosition,
+    validateStrokeUnit,
     validateStrokeWidth,
     validateTranslate,
 } from './shape-validators.js';
@@ -192,6 +193,26 @@ validateStrokePosition('center');
 validateStrokePosition('outside');
 
 
+// `validateStrokeUnit()` invalid.
+
+// @ts-expect-error
+throws(() => validateStrokeUnit(), {
+    message: /^strokeUnit is type 'undefined' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateStrokeUnit(123), {
+    message: /^strokeUnit is type 'number' not 'string'$/ });
+// @ts-expect-error
+throws(() => validateStrokeUnit('invalid'), {
+    message: /^strokeUnit is not one of 'pixel'\|'shape'\|'world'$/ });
+
+
+// `validateStrokeUnit()` valid.
+
+validateStrokeUnit('pixel');
+validateStrokeUnit('shape');
+validateStrokeUnit('world');
+
+
 // `validateStrokeWidth()` invalid.
 
 // @ts-expect-error
@@ -267,6 +288,7 @@ validateShape(
     1, // scale
         c, // strokeColor
         'center', // strokePosition
+        'pixel', // strokeUnit
         0, // strokeWidth
         { x: 0, y: 0 }, // translate
     )

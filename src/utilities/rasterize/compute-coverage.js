@@ -15,8 +15,10 @@ export function computeFillCoverage(aaRegion, aaRegionHalf, distance) {
 /** #### Calculates anti-aliased stroke coverage from an SDF distance.
  * @param {number} aaRegionHalf Half the anti-alias region, in world units
  * @param {number} distance Signed distance sample
+ * @param {number} shapeScale The shape's uniform scale factor
  * @param {Color} strokeColor Stroke colour
  * @param {'inside'|'center'|'outside'} strokePosition Stroke position
+ * @param {'pixel'|'shape'|'world'} strokeUnit Stroke width unit
  * @param {number} strokeWidth Stroke weight in pixels
  * @param {number} worldUnitsPerPixel World units per pixel
  * @param {string} [xpx='computeStrokeCoverage():'] Exception prefix for errors
@@ -25,8 +27,10 @@ export function computeFillCoverage(aaRegion, aaRegionHalf, distance) {
 export function computeStrokeCoverage(
     aaRegionHalf,
     distance,
+    shapeScale,
     strokeColor,
     strokePosition,
+    strokeUnit,
     strokeWidth,
     worldUnitsPerPixel,
     xpx = 'computeStrokeCoverage():',
@@ -34,8 +38,25 @@ export function computeStrokeCoverage(
     // Short-circuit if there's no stroke to draw.
     if (strokeWidth === 0 || strokeColor.a === 0) return 0;
 
+    // Calculate stroke width in world units based on strokeUnit.
     // TODO move this out of the hot loop and maybe support world-width strokes, e.g. in the Shape itself
-    const strokeWidthWorld = strokeWidth * worldUnitsPerPixel;
+    let strokeWidthWorld;
+    switch (strokeUnit) {
+        case 'pixel':
+            // Default behavior: stroke width in pixels, unaffected by scale.
+            strokeWidthWorld = strokeWidth * worldUnitsPerPixel;
+            break;
+        case 'shape':
+            // Stroke scales with both shape scale and world scale.
+            strokeWidthWorld = strokeWidth * worldUnitsPerPixel * shapeScale;
+            break;
+        case 'world':
+            // Stroke in world units, scales with world but not shape scale.
+            strokeWidthWorld = strokeWidth;
+            break;
+        default:
+            throw Error(`${xpx} invalid strokeUnit '${strokeUnit}'`);
+    }
 
     // Get the minimum and maximum bounds of the 'stroke band'.
     // TODO move this out of the hot loop

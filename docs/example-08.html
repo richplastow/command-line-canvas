@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Example 1: Yellow Circles - command-line-canvas</title>
+    <title>Example 8: Stroke Units - command-line-canvas</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,18 +11,21 @@
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li><span>Previous</span></li>
-            <li><a href="example-02.html">Next</a></li>
+            <li><a href="example-07.html">Previous</a></li>
+            <li><span>Next</span></li>
         </ul>
     </nav>
-    <h1>Example 1: Yellow&nbsp;Circles</h1>
-    <p>Two unioned yellow circles with black outline on a navy background, rendered as ANSI art.</p>
+    <h1>Example 8: Stroke&nbsp;Units</h1>
+    <p>Three circles demonstrating different stroke unit behaviors with scale=2.</p>
 </header>
 <p>
-    This example converts the canvas to an ANSI string, and then converts that
-    to HTML. Later examples render directly to HTML, or use a &lt;canvas&gt;
-    element, which is way more efficient.
+    This example shows how <code>strokeUnit</code> affects stroke rendering:
 </p>
+<ul>
+    <li><strong>pixel</strong> (left): Stroke width stays constant in pixels</li>
+    <li><strong>shape</strong> (middle): Stroke scales with shape and world</li>
+    <li><strong>world</strong> (right): Stroke scales with world, and ignores shape scale</li>
+</ul>
 <pre id="output"></pre>
 
 <!-- If running on localhost or local network and path includes "/docs/", add
@@ -47,17 +50,19 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         )()
         : await import('./command-line-canvas.js'); // ...otherwise use build
 
-    // Create an 80x48 pixel canvas with navy background.
-    const navyBg = new Pixel(10, 10, 100);
-    const canvas = new Canvas(navyBg, 80, 48);
+    // Create an 80x48 pixel canvas with dark grey background.
+    const greyBg = new Pixel(40, 40, 40);
+    const canvas = new Canvas(greyBg, 80, 48);
 
     // Create colors.
+    const cyan = new Color(0, 255, 255, 1);
+    const magenta = new Color(255, 0, 255, 1);
     const yellow = new Color(255, 255, 0, 1);
-    const black = new Color(0, 0, 0, 1);
+    const white = new Color(255, 255, 255, 1);
     const transparent = new Color(0, 0, 0, 0);
 
     // Create a circle primitive at the center.
-    const circle1 = new Primitive(
+    const circlePrim = new Primitive(
         'no-flip',
         'union',         // joinMode
         'circle',        // kind
@@ -66,34 +71,64 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         { x: 0, y: 0 }   // translate (center of world-space)
     );
 
-    const circle2 = new Primitive(
+    // Create three shapes with different strokeUnit values.
+    // All have scale=2 and strokeWidth=2.
+    
+    // Left circle: strokeUnit='pixel' - stroke stays constant 2 pixels.
+    const pixelCircle = new Shape(
+        'normal',        // blendMode
         'no-flip',
-        'union',         // joinMode
-        'circle',        // kind
+        cyan,            // ink (fill color)
+        transparent,     // paper
+        'all-ink',       // pattern
+        [circlePrim],    // primitives
         0,               // rotate
-        0.5,             // scale
-        { x: 1, y: -1 }  // translate (center of world-space)
+        2,               // scale
+        white,           // strokeColor
+        'center',        // strokePosition
+        'pixel',         // strokeUnit (stays constant in pixels)
+        2,               // strokeWidth
+        { x: -3, y: 0 }  // translate (left)
     );
 
-    // Create a shape with the circle.
-    const circleShape = new Shape(
+    // Middle circle: strokeUnit='shape' - stroke scales with shape (2px * 2 scale = 4px effective).
+    const shapeCircle = new Shape(
+        'normal',        // blendMode
+        'no-flip',
+        magenta,         // ink (fill color)
+        transparent,     // paper
+        'all-ink',       // pattern
+        [circlePrim],    // primitives
+        0,               // rotate
+        2,               // scale
+        white,           // strokeColor
+        'center',        // strokePosition
+        'shape',         // strokeUnit (scales with shape and world)
+        2,               // strokeWidth
+        { x: 0, y: 0 }   // translate (center)
+    );
+
+    // Right circle: strokeUnit='world' - stroke in world units (2 world units).
+    const worldCircle = new Shape(
         'normal',        // blendMode
         'no-flip',
         yellow,          // ink (fill color)
-        transparent,     // paper (not used for solid fill)
+        transparent,     // paper
         'all-ink',       // pattern
-        [circle1, circle2], // primitives
+        [circlePrim],    // primitives
         0,               // rotate
         2,               // scale
-        black,           // strokeColor
-        'outside',       // strokePosition
-        'pixel',         // strokeUnit
+        white,           // strokeColor
+        'center',        // strokePosition
+        'world',         // strokeUnit (in world units, ignores shape scale)
         2,               // strokeWidth
-        { x: 0, y: 0 }   // translate
+        { x: 3, y: 0 }   // translate (right)
     );
 
-    // Add the shape to the canvas.
-    canvas.addShape(circleShape);
+    // Add the shapes to the canvas.
+    canvas.addShape(pixelCircle);
+    canvas.addShape(shapeCircle);
+    canvas.addShape(worldCircle);
 
     // Render to truecolor ANSI and display.
     const ansiOutput = canvas.render('truecolor', 'ansi');

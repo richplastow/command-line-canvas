@@ -49,6 +49,7 @@ const circleShape = (options) => {
     const scale = options.scale ?? 3;
     const strokeColor = options.strokeColor ?? new Color(0, 0, 0, 0);
     const strokePosition = options.strokePosition ?? 'center';
+    const strokeUnit = options.strokeUnit ?? 'pixel';
     const strokeWidth = options.strokeWidth ?? 0;
     const translate = options.translate ?? { x: 0, y: 0 };
 
@@ -63,6 +64,7 @@ const circleShape = (options) => {
         scale,
         strokeColor,
         strokePosition,
+        strokeUnit,
         strokeWidth,
         translate,
     );

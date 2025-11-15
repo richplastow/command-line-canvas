@@ -9,6 +9,7 @@ import {
     validateRotate,
     validateScale,
     validateStrokePosition,
+    validateStrokeUnit,
     validateStrokeWidth,
     validateTranslate,
 } from "./shape-validators.js";
@@ -59,6 +60,10 @@ export class Shape {
      * @type {'inside'|'center'|'outside'} */
     strokePosition = 'center';
 
+    /** #### Which unit `strokeWidth` is measured in
+     * @type {'pixel'|'shape'|'world'} */
+    strokeUnit = 'pixel';
+
     /** #### Width of the outline in pixels
      * @type {number} */
     strokeWidth = 0;
@@ -78,6 +83,7 @@ export class Shape {
      * @param {number} scale Uniform scale factor
      * @param {Color} strokeColor Stroke/outline color
      * @param {'inside'|'center'|'outside'} strokePosition Stroke position
+     * @param {'pixel'|'shape'|'world'} strokeUnit Stroke width unit
      * @param {number} strokeWidth Stroke width in pixels
      * @param {{ x: number, y: number }} translate Translation offset
      */
@@ -92,6 +98,7 @@ export class Shape {
         scale,
         strokeColor,
         strokePosition,
+        strokeUnit,
         strokeWidth,
         translate,
     ) {
@@ -105,6 +112,7 @@ export class Shape {
         validateScale(scale, 'Shape: scale');
         validateColor(strokeColor, 'Shape: strokeColor');
         validateStrokePosition(strokePosition, 'Shape: strokePosition');
+        validateStrokeUnit(strokeUnit, 'Shape: strokeUnit');
         validateStrokeWidth(strokeWidth, 'Shape: strokeWidth');
         validateTranslate(translate, 'Shape: translate');
 
@@ -118,6 +126,7 @@ export class Shape {
         this.scale = scale;
         this.strokeColor = strokeColor;
         this.strokePosition = strokePosition;
+        this.strokeUnit = strokeUnit;
         this.strokeWidth = strokeWidth;
         this.translate = translate;
     }

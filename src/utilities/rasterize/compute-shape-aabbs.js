@@ -22,17 +22,30 @@ export const computeShapeAABBs = (
         // pixels aren't culled.
         let expand = aaRegion;
 
+        // Calculate stroke width in world units based on strokeUnit.
+        let strokeWidthWorld = 0;
+        switch (shape.strokeUnit) {
+            case 'pixel':
+                strokeWidthWorld = shape.strokeWidth * worldUnitsPerPixel;
+                break;
+            case 'shape':
+                strokeWidthWorld = shape.strokeWidth * worldUnitsPerPixel * shape.scale;
+                break;
+            case 'world':
+                strokeWidthWorld = shape.strokeWidth;
+                break;
+        }
+
         // Expand outward for strokes that lie outside or are centred on the
         // shape boundary so we don't accidentally cull stroke pixels.
-        // Expansion is in world units, so convert stroke width from pixels.
         switch (shape.strokePosition) {
             case 'center':
-                expand += shape.strokeWidth * worldUnitsPerPixel / 2;
+                expand += strokeWidthWorld / 2;
                 break;
             case 'inside': // no further expansion needed
                 break;
             case 'outside':
-                expand += shape.strokeWidth * worldUnitsPerPixel;
+                expand += strokeWidthWorld;
                 break;
             default: // should be unreachable, if validateStrokePosition() was used
                 throw Error(`${xpx} invalid strokePosition`);

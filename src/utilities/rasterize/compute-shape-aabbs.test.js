@@ -19,6 +19,7 @@ const makeShape = (opts) => new Shape(
     opts.scale ?? 1,
     opts.strokeColor ?? stroke,
     opts.strokePosition ?? 'center',
+    opts.strokeUnit ?? 'pixel',
     opts.strokeWidth ?? 0,
     opts.translate ?? { x: 0, y: 0 },
 );
@@ -85,5 +86,29 @@ const shape6 = makeShape({ primitives: [] });
 aabbs = computeShapeAABBs(0, [{ id: 7, shape: shape6 }], 1);
 eq(aabbs[0].xMin, -1e6);
 eq(aabbs[0].xMax, 1e6);
+
+// strokeUnit='shape' scales stroke with shape.scale.
+const shape7 = makeShape({
+    primitives: [circle],
+    scale: 2,
+    strokeWidth: 1,
+    strokePosition: 'outside',
+    strokeUnit: 'shape',
+});
+aabbs = computeShapeAABBs(0, [{ id: 8, shape: shape7 }], 1);
+eq(aabbs[0].xMin, 0);
+eq(aabbs[0].xMax, 8);
+
+// strokeUnit='world' uses world units directly.
+const shape8 = makeShape({
+    primitives: [circle],
+    scale: 2,
+    strokeWidth: 1,
+    strokePosition: 'center',
+    strokeUnit: 'world',
+});
+aabbs = computeShapeAABBs(0, [{ id: 9, shape: shape8 }], 2);
+eq(aabbs[0].xMin, 1.5);
+eq(aabbs[0].xMax, 6.5);
 
 console.log('All computeShapeAABBs() tests passed.');

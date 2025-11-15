@@ -25,6 +25,7 @@ const makeShape = (flip, primitives) => new Shape(
     1,
     stroke,
     'outside',
+    'pixel',
     0,
     { x: 0, y: 0 },
 );

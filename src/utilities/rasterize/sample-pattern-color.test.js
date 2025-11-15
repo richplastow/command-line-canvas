@@ -8,8 +8,8 @@ const paper = new Color(200, 210, 220, 1);
 const stroke = new Color(0, 0, 0, 1);
 
 const makeShape = (pattern) => new Shape(
-    'normal', 'no-flip', ink, paper, pattern, [], 0, 1, stroke, 'center', 0,
-    { x: 0, y: 0 }
+    'normal', 'no-flip', ink, paper, pattern, [], 0, 1, stroke, 'center',
+    'pixel', 0, { x: 0, y: 0 }
 );
 
 // Returns paper for 'all-paper' pattern.
