@@ -1,18 +1,16 @@
+import { Shape } from '../../models/shape/shape.js';
 import { aabbCompound } from '../sdfs-and-aabbs/compound.js';
 
 /** #### Computes axis-aligned bounding boxes (AABBs) for shapes in world-space
- *
  * - These AABBs are 'conservative', meaning they err on the side of being too
  *   large rather than too small, to avoid incorrectly culling pixels that the
  *   shape could affect.
  * - Uses the AABB functions colocated with SDFs to compute the boxes.
- *
  * @param {number} aaRegion Anti-alias region in world units
- * @param {{id:number,shape:object}[]} shapes List of shapes to rasterize
+ * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
  * @param {number} worldUnitsPerPixel World units per pixel
  * @param {string} [xpx='computeShapeAABBs():'] Exception prefix
  */
-
 export const computeShapeAABBs = (
     aaRegion,
     shapes,
@@ -28,13 +26,13 @@ export const computeShapeAABBs = (
         // shape boundary so we don't accidentally cull stroke pixels.
         // Expansion is in world units, so convert stroke width from pixels.
         switch (shape.strokePosition) {
-            case 'outside':
-                expand += shape.strokeWidth * worldUnitsPerPixel;
+            case 'center':
+                expand += shape.strokeWidth * worldUnitsPerPixel / 2;
                 break;
             case 'inside': // no further expansion needed
                 break;
-            case 'center':
-                expand += shape.strokeWidth * worldUnitsPerPixel / 2;
+            case 'outside':
+                expand += shape.strokeWidth * worldUnitsPerPixel;
                 break;
             default: // should be unreachable, if validateStrokePosition() was used
                 throw Error(`${xpx} invalid strokePosition`);

@@ -1,6 +1,8 @@
 import { deepEqual as eq } from 'node:assert';
 import { Color } from '../../models/color/color.js';
 import { Pixel } from '../../models/pixel/pixel.js';
+import { Primitive } from '../../models/primitive/primitive.js';
+import { Shape } from '../../models/shape/shape.js';
 import { rasterize } from './rasterize.js';
 
 const makePixels = (width, height, r, g, b) => {
@@ -30,29 +32,41 @@ const pixelCenter = (x, y, width, height) => {
     };
 };
 
-const circleShape = (options) => ({
-    blendMode: options.blendMode ?? 'normal',
-    flip: 'no-flip',
-    ink: options.ink,
-    paper: options.paper ?? options.ink,
-    pattern: options.pattern ?? 'all-ink',
-    primitives: [
-        {
-            flip: 'no-flip',
-            joinMode: 'union',
-            kind: 'circle',
-            rotate: 0,
-            scale: 1,
-            translate: { x: 0, y: 0 },
-        },
-    ],
-    rotate: 0,
-    scale: options.scale ?? 3,
-    strokeColor: options.strokeColor ?? null,
-    strokePosition: options.strokePosition ?? 'center',
-    strokeWidth: options.strokeWidth ?? 0,
-    translate: options.translate,
-});
+const circleShape = (options) => {
+    const blendMode = options.blendMode ?? 'normal';
+    const flip = 'no-flip';
+    const ink = options.ink;
+    const paper = options.paper ?? options.ink;
+    const pattern = options.pattern ?? 'all-ink';
+    const prim = new Primitive(
+        'no-flip',
+        'union',
+        'circle',
+        0,
+        1,
+        { x: 0, y: 0 },
+    );
+    const scale = options.scale ?? 3;
+    const strokeColor = options.strokeColor ?? new Color(0, 0, 0, 0);
+    const strokePosition = options.strokePosition ?? 'center';
+    const strokeWidth = options.strokeWidth ?? 0;
+    const translate = options.translate ?? { x: 0, y: 0 };
+
+    return new Shape(
+        blendMode,
+        flip,
+        ink,
+        paper,
+        pattern,
+        [ prim ],
+        0,
+        scale,
+        strokeColor,
+        strokePosition,
+        strokeWidth,
+        translate,
+    );
+};
 
 
 // `rasterize()` background reset.

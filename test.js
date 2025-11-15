@@ -24,7 +24,14 @@ import './src/models/shape/shape-validators.test.js';
 import './src/models/shape/shape.test.js';
 
 // Rasterize.
+import './src/utilities/rasterize/compute-coverage.test.js';
+import './src/utilities/rasterize/compute-shape-aabbs.test.js';
+import './src/utilities/rasterize/rasterization-utilities.test.js';
+import './src/utilities/rasterize/compute-final-pixel-value.test.js';
+import './src/utilities/rasterize/sample-pattern-color.test.js';
+import './src/utilities/rasterize/compute-world-xs-and-ys.test.js';
 import './src/utilities/rasterize/rasterize.test.js';
+import './src/utilities/rasterize/reset-pixel-grid.test.js';
 
 // SDFs and AABBs.
 import './src/utilities/sdfs-and-aabbs/compound.test.js';

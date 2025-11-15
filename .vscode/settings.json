@@ -3,6 +3,7 @@
         "AABB",
         "aabbs",
         "denom",
+        "precalculating",
         "truecolor",
         "unioned",
         "unioning"
