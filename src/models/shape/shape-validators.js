@@ -62,6 +62,44 @@ export const validatePattern = (pattern, xpx = 'pattern') => {
         `${xpx} is not one of '${validPatterns.join("'|'")}'`);
 };
 
+/** #### Checks that a patternRatio value is valid
+ * @param {number} patternRatio The pattern ratio to check
+ * @param {string} [xpx='patternRatio'] Exception prefix
+ */
+export const validatePatternRatio = (patternRatio, xpx = 'patternRatio') => {
+    if (typeof patternRatio !== 'number') throw TypeError(
+        `${xpx} is type '${typeof patternRatio}' not 'number'`);
+    if (Number.isNaN(patternRatio)) throw RangeError(
+        `${xpx} ${patternRatio} is not a valid number`);
+    if (patternRatio < 0 || patternRatio > 1) throw RangeError(
+        `${xpx} ${patternRatio} is not between 0 and 1`);
+};
+
+/** #### Checks that a patternScale value is valid
+ * @param {number} patternScale The pattern scale to check
+ * @param {string} [xpx='patternScale'] Exception prefix
+ */
+export const validatePatternScale = (patternScale, xpx = 'patternScale') => {
+    if (typeof patternScale !== 'number') throw TypeError(
+        `${xpx} is type '${typeof patternScale}' not 'number'`);
+    if (Number.isNaN(patternScale)) throw RangeError(
+        `${xpx} ${patternScale} is not a valid number`);
+    if (patternScale <= 0) throw RangeError(
+        `${xpx} ${patternScale} is not greater than 0`);
+};
+
+/** #### Checks that a patternUnit value is valid
+ * @param {'pixel'|'shape'|'world'} patternUnit The pattern unit to check
+ * @param {string} [xpx='patternUnit'] Exception prefix
+ */
+export const validatePatternUnit = (patternUnit, xpx = 'patternUnit') => {
+    const validUnits = ['pixel', 'shape', 'world'];
+    if (typeof patternUnit !== 'string') throw TypeError(
+        `${xpx} is type '${typeof patternUnit}' not 'string'`);
+    if (!validUnits.includes(patternUnit)) throw RangeError(
+        `${xpx} is not one of '${validUnits.join("'|'")}'`);
+};
+
 /** #### Checks that an array of primitives is valid
  * @param {Primitive[]} primitives The array of primitives to check
  * @param {string} [xpx='primitives'] Exception prefix

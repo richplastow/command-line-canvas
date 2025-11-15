@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 9: Breton Patterns - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-08.html">Previous</a></li>
+            <li><a href="example-10.html">Next</a></li>
+        </ul>
+    </nav>
+    <h1>Example 9: Breton&nbsp;Patterns</h1>
+    <p>Three circles showcasing <code>patternRatio</code>, <code>patternScale</code>,
+        and <code>patternUnit</code> for Breton stripes.</p>
+</header>
+<p>
+    Each circle shares the same ink and paper colours but tweaks the Breton fill 
+    configuration. From left to right the stripes are anchored in pixel space,
+    shape space, and world space.
+</p>
+<ul>
+    <li><strong>Pixel unit</strong>: cycle length measured in screen pixels,
+        fixed regardless of shape scale.</li>
+    <li><strong>Shape unit</strong>: cycle scales with the shape&apos;s own
+        scale factor.</li>
+    <li><strong>World unit</strong>: cycle measured directly in world units,
+        stable across different shapes.</li>
+</ul>
+<pre id="output"></pre>
+
+<!-- If running on localhost or local network and path includes "/docs/", add
+     .w4-is-dev class to body, show #w4-dev-badge, and set W4.isDev to true. -->
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
+
+<script type="module">
+    const base = '../src/models/';
+    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape'];
+    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+        ? await (async () =>
+            (await Promise.all(Ms.map(M => M.toLowerCase())
+                .map(m => import(`${base}${m}/${m}.js`))))
+            .reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc; }, {})
+        )()
+        : await import('./command-line-canvas.js');
+
+    const background = new Pixel(18, 24, 32);
+    const canvas = new Canvas(background, 96, 48);
+
+    const ink = new Color(36, 40, 64, 1);
+    const paper = new Color(224, 230, 240, 1);
+    const transparent = new Color(0, 0, 0, 0);
+
+    const circle = new Primitive('no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });
+
+    const pixelBreton = new Shape(
+        'normal',
+        'no-flip',
+        ink,
+        paper,
+        'breton',
+        0.35,
+        4,
+        'pixel',
+        [circle],
+        0,
+        2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: -6, y: 0 },
+    );
+
+    const shapeBreton = new Shape(
+        'normal',
+        'no-flip',
+        ink,
+        paper,
+        'breton',
+        0.5,
+        1.5,
+        'shape',
+        [circle],
+        0,
+        2.5,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: 0, y: 0 },
+    );
+
+    const worldBreton = new Shape(
+        'normal',
+        'no-flip',
+        ink,
+        paper,
+        'breton',
+        0.7,
+        2.5,
+        'world',
+        [circle],
+        0,
+        2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: 6, y: 0 },
+    );
+
+    canvas.addShape(pixelBreton);
+    canvas.addShape(shapeBreton);
+    canvas.addShape(worldBreton);
+
+    const htmlOutput = canvas.render('truecolor', 'html');
+    document.getElementById('output').innerHTML = htmlOutput;
+</script>
+</body>
+</html>

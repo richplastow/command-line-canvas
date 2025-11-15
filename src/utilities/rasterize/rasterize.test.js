@@ -38,6 +38,9 @@ const circleShape = (options) => {
     const ink = options.ink;
     const paper = options.paper ?? options.ink;
     const pattern = options.pattern ?? 'all-ink';
+    const patternRatio = options.patternRatio ?? 0.5;
+    const patternScale = options.patternScale ?? 1;
+    const patternUnit = options.patternUnit ?? 'pixel';
     const prim = new Primitive(
         'no-flip',
         'union',
@@ -59,6 +62,9 @@ const circleShape = (options) => {
         ink,
         paper,
         pattern,
+        patternRatio,
+        patternScale,
+        patternUnit,
         [ prim ],
         0,
         scale,

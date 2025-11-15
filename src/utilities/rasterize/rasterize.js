@@ -85,7 +85,12 @@ export function rasterize(
                 const distance = sdfCompound(shape, worldX, worldY);
 
                 // Get the fill colour for this shape at this pixel.
-                const fillColor = samplePatternColor(shape);
+                const fillColor = samplePatternColor(
+                    shape,
+                    worldX,
+                    worldY,
+                    worldUnitsPerPixel,
+                );
 
                 // Compute fill and stroke coverage from the SDF distance.
                 const fillCoverage = computeFillCoverage(

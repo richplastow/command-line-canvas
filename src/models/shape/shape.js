@@ -5,6 +5,9 @@ import {
     validateColor,
     validateFlip,
     validatePattern,
+    validatePatternRatio,
+    validatePatternScale,
+    validatePatternUnit,
     validatePrimitives,
     validateRotate,
     validateScale,
@@ -39,6 +42,19 @@ export class Shape {
     /** #### The fill texture
      * @type {Pattern} */
     pattern = 'all-ink';
+
+    /** #### The visual balance between ink and paper in patterns
+     * - 0.0 = all paper, 1.0 = all ink, 0.5 = equal
+     * @type {number} */
+    patternRatio = 0.5;
+
+    /** #### The scale of the pattern
+     * @type {number} */
+    patternScale = 1;
+
+    /** #### Which unit to use when drawing patterns
+     * @type {'pixel'|'shape'|'world'} */
+    patternUnit = 'pixel';
 
     /** #### Array of primitives that compose this shape
      * @type {Primitive[]} */
@@ -78,6 +94,9 @@ export class Shape {
      * @param {Color} ink Foreground/fill color
      * @param {Color} paper Background color
      * @param {Pattern} pattern Fill pattern
+     * @param {number} patternRatio Fill ratio for pattern
+     * @param {number} patternScale Fill scale for pattern
+     * @param {'pixel'|'shape'|'world'} patternUnit Pattern width unit
      * @param {Primitive[]} primitives Array of primitives
      * @param {number} rotate Rotation in radians
      * @param {number} scale Uniform scale factor
@@ -93,6 +112,9 @@ export class Shape {
         ink,
         paper,
         pattern,
+        patternRatio,
+        patternScale,
+        patternUnit,
         primitives,
         rotate,
         scale,
@@ -107,6 +129,9 @@ export class Shape {
         validateColor(ink, 'Shape: ink');
         validateColor(paper, 'Shape: paper');
         validatePattern(pattern, 'Shape: pattern');
+        validatePatternRatio(patternRatio, 'Shape: patternRatio');
+        validatePatternScale(patternScale, 'Shape: patternScale');
+        validatePatternUnit(patternUnit, 'Shape: patternUnit');
         validatePrimitives(primitives, 'Shape: primitives');
         validateRotate(rotate, 'Shape: rotate');
         validateScale(scale, 'Shape: scale');
@@ -121,6 +146,9 @@ export class Shape {
         this.ink = ink;
         this.paper = paper;
         this.pattern = pattern;
+        this.patternRatio = patternRatio;
+        this.patternScale = patternScale;
+        this.patternUnit = patternUnit;
         this.primitives = primitives;
         this.rotate = rotate;
         this.scale = scale;

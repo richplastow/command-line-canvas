@@ -6,6 +6,9 @@ import {
     validateColor,
     validateFlip,
     validatePattern,
+    validatePatternRatio,
+    validatePatternScale,
+    validatePatternUnit,
     validatePrimitives,
     validateRotate,
     validateScale,
@@ -99,6 +102,70 @@ validatePattern('all-ink');
 validatePattern('all-paper');
 validatePattern('breton');
 validatePattern('pinstripe');
+
+
+// `validatePatternRatio()` invalid.
+
+// @ts-expect-error
+throws(() => validatePatternRatio(), {
+    message: /^patternRatio is type 'undefined' not 'number'$/ });
+// @ts-expect-error
+throws(() => validatePatternRatio('half'), {
+    message: /^patternRatio is type 'string' not 'number'$/ });
+throws(() => validatePatternRatio(NaN), {
+    message: /^patternRatio NaN is not a valid number$/ });
+throws(() => validatePatternRatio(-0.001), {
+    message: /^patternRatio -0\.001 is not between 0 and 1$/ });
+throws(() => validatePatternRatio(1.5), {
+    message: /^patternRatio 1\.5 is not between 0 and 1$/ });
+
+
+// `validatePatternRatio()` valid.
+
+validatePatternRatio(0);
+validatePatternRatio(0.25);
+validatePatternRatio(1);
+
+
+// `validatePatternScale()` invalid.
+
+// @ts-expect-error
+throws(() => validatePatternScale(), {
+    message: /^patternScale is type 'undefined' not 'number'$/ });
+// @ts-expect-error
+throws(() => validatePatternScale('big'), {
+    message: /^patternScale is type 'string' not 'number'$/ });
+throws(() => validatePatternScale(NaN), {
+    message: /^patternScale NaN is not a valid number$/ });
+throws(() => validatePatternScale(0), {
+    message: /^patternScale 0 is not greater than 0$/ });
+
+
+// `validatePatternScale()` valid.
+
+validatePatternScale(0.5);
+validatePatternScale(1);
+validatePatternScale(10);
+
+
+// `validatePatternUnit()` invalid.
+
+// @ts-expect-error
+throws(() => validatePatternUnit(), {
+    message: /^patternUnit is type 'undefined' not 'string'$/ });
+// @ts-expect-error
+throws(() => validatePatternUnit(123), {
+    message: /^patternUnit is type 'number' not 'string'$/ });
+// @ts-expect-error
+throws(() => validatePatternUnit('invalid'), {
+    message: /^patternUnit is not one of 'pixel'\|'shape'\|'world'$/ });
+
+
+// `validatePatternUnit()` valid.
+
+validatePatternUnit('pixel');
+validatePatternUnit('shape');
+validatePatternUnit('world');
 
 
 // `validatePrimitives()` invalid.
@@ -283,9 +350,12 @@ validateShape(
         c, // ink
         c, // paper
         'all-ink', // pattern
+        0.5, // patternRatio
+        1, // patternScale
+        'pixel', // patternUnit
         [p], // primitives
         0, // rotate
-    1, // scale
+        1, // scale
         c, // strokeColor
         'center', // strokePosition
         'pixel', // strokeUnit
