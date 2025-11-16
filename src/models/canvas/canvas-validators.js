@@ -71,11 +71,11 @@ export const validateCanvas = (canvas, xpx = 'canvas') => {
 }
 
 /** #### Checks that a color depth value is valid
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to check
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to check
  * @param {string} [xpx='colorDepth'] Exception prefix, e.g. 'canvas.render(): colorDepth'
  */
 export const validateColorDepth = (colorDepth, xpx = 'colorDepth') => {
-    const validDepths = ['monochrome', '256color', 'truecolor'];
+    const validDepths = ['256color', '8color', 'monochrome', 'truecolor'];
     if (typeof colorDepth !== 'string') throw TypeError(
         `${xpx} is type '${typeof colorDepth}' not 'string'`);
     if (!validDepths.includes(colorDepth)) throw RangeError(

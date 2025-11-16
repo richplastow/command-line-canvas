@@ -47,7 +47,7 @@ throws(() => encodeHtml(
     // @ts-expect-error
     'nope',
     good2x5Pixels,
-), { message: /^encodeHtml\(\): colorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/ });
+), { message: /^encodeHtml\(\): colorDepth is not one of '256color'\|'8color'\|'monochrome'\|'truecolor'$/ });
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
@@ -103,6 +103,15 @@ eq(encodeHtml(
 ), `
 <b style="background:rgb(0,0,0);color:rgb(255,255,0)">▄</b><b style="background:rgb(255,255,255);color:rgb(255,0,0)">▄</b>
 <b style="background:rgb(0,215,0);color:rgb(175,175,175)">▄</b><b style="background:rgb(0,215,0);color:rgb(175,175,175)">▄</b>
+`.trim());
+
+eq(encodeHtml(
+    { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    '8color',
+    good2x5Pixels,
+), `
+<b style="background:rgb(0,0,0);color:rgb(255,255,0)">▄</b><b style="background:rgb(255,255,255);color:rgb(255,0,0)">▄</b>
+<b style="background:rgb(0,255,0);color:rgb(255,255,255)">▄</b><b style="background:rgb(0,255,0);color:rgb(255,255,255)">▄</b>
 `.trim());
 
 eq(encodeHtml(

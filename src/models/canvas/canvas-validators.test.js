@@ -102,13 +102,14 @@ throws(() => validateColorDepth(24, 'depthCheck'),
     { message: /^depthCheck is type 'number' not 'string'$/});
 // @ts-expect-error
 throws(() => validateColorDepth('16color', 'myColorDepth'),
-    { message: /^myColorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/});
+    { message: /^myColorDepth is not one of '256color'\|'8color'\|'monochrome'\|'truecolor'$/});
 
 
 // validateColorDepth() valid.
 
+eq(validateColorDepth('256color'), void 0);
+eq(validateColorDepth('8color', 'canvas.render(): colorDepth'), void 0);
 eq(validateColorDepth('monochrome'), void 0);
-eq(validateColorDepth('256color', 'canvas.render(): colorDepth'), void 0);
 eq(validateColorDepth('truecolor'), void 0);
 
 

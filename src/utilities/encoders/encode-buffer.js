@@ -13,7 +13,7 @@ import {
  * - Each pixel becomes four consecutive bytes: R, G, B, A (0-255)
  * - The buffer contains rows within `bounds` in row-major order.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth (kept for API parity)
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth (kept for API parity)
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBuffer():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -48,8 +48,9 @@ export const encodeBuffer = (
     // encoders where callers may skip full validation but an invalid
     // colorDepth should still produce a clear error.
     switch (colorDepth) {
-        case 'monochrome':
         case '256color':
+        case '8color':
+        case 'monochrome':
         case 'truecolor':
             break;
         default:

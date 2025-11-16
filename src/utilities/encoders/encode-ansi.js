@@ -14,7 +14,7 @@ import {
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to encode at
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeAnsi():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -52,13 +52,17 @@ export const encodeAnsi = (
     let lineReset;
     let colorGetter;
     switch (colorDepth) {
-        case 'monochrome':
-            colorGetter = getMonochrome;
-            lineReset = '';
-            break;
         case '256color':
             lineReset = '\u001b[0m'; // reset ANSI color at end of each line
             colorGetter = getAnsi256Color;
+            break;
+        case '8color':
+            lineReset = '\u001b[0m';
+            colorGetter = getAnsi8Color;
+            break;
+        case 'monochrome':
+            colorGetter = getMonochrome;
+            lineReset = '';
             break;
         case 'truecolor':
             lineReset = '\u001b[0m';
@@ -109,14 +113,18 @@ function getAnsi256Color(upper, lower) {
         + '\u2584';
 }
 
-/** #### Gets the ANSI escape code for a pair of pixels in Truecolor
+/** #### Gets the ANSI escape codes for a pair of pixels in 8-colour mode
  * @param {Pixel} upper The upper half color
  * @param {Pixel} lower The lower half color
- * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
+ * @returns {string} The Unicode 'Lower Half Block' character with 8-colour ANSI
  */
-function getAnsiTruecolor(upper, lower) {
-    return `\u001b[48;2;${upper.r};${upper.g};${upper.b}m`
-        + `\u001b[38;2;${lower.r};${lower.g};${lower.b}m`
+function getAnsi8Color(upper, lower) {
+    const upperRgb = to8ColorRgb(upper);
+    const lowerRgb = to8ColorRgb(lower);
+    const upperIndex = toAnsi8Index(upperRgb);
+    const lowerIndex = toAnsi8Index(lowerRgb);
+    return `\u001b[4${upperIndex}m`
+        + `\u001b[3${lowerIndex}m`
         + '\u2584';
 }
 
@@ -139,4 +147,38 @@ function getMonochrome(upper, lower) {
             ? '\u2584' // Lower half block
             : ' ' // space - a refinement would be to use U+3000 (IDEOGRAPHIC SPACE), maybe even followed by U+2060 (WORD JOINER)
     ;
+}
+
+/** #### Gets the ANSI escape code for a pair of pixels in Truecolor
+ * @param {Pixel} upper The upper half color
+ * @param {Pixel} lower The lower half color
+ * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
+ */
+function getAnsiTruecolor(upper, lower) {
+    return `\u001b[48;2;${upper.r};${upper.g};${upper.b}m`
+        + `\u001b[38;2;${lower.r};${lower.g};${lower.b}m`
+        + '\u2584';
+}
+
+/** #### Quantises a pixel to 8-colour RGB values
+ * @param {Pixel} pixel Pixel to quantise
+ * @returns {{ b: number, g: number, r: number }} Quantised RGB components
+ */
+function to8ColorRgb(pixel) {
+    return {
+        r: pixel.r >= 128 ? 255 : 0,
+        g: pixel.g >= 128 ? 255 : 0,
+        b: pixel.b >= 128 ? 255 : 0,
+    };
+}
+
+/** #### Maps quantised RGB to an ANSI 8-colour index
+ * @param {{ b: number, g: number, r: number }} rgb Quantised RGB components
+ * @returns {number} ANSI 8-colour palette index (0-7)
+ */
+function toAnsi8Index(rgb) {
+    const rBit = rgb.r === 255 ? 1 : 0;
+    const gBit = rgb.g === 255 ? 1 : 0;
+    const bBit = rgb.b === 255 ? 1 : 0;
+    return rBit | (gBit << 1) | (bBit << 2);
 }

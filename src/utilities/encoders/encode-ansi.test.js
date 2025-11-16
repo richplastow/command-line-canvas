@@ -47,7 +47,7 @@ throws(() => encodeAnsi(
     // @ts-expect-error
     'nope',
     good2x5Pixels,
-), { message: /^encodeAnsi\(\): colorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/ });
+), { message: /^encodeAnsi\(\): colorDepth is not one of '256color'\|'8color'\|'monochrome'\|'truecolor'$/ });
 
 throws(() => encodeAnsi(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
@@ -103,6 +103,15 @@ eq(encodeAnsi(
 ), `
 \x1B[48;5;16m\x1B[38;5;226m▄\x1B[48;5;231m\x1B[38;5;196m▄\x1B[0m
 \x1B[48;5;40m\x1B[38;5;145m▄\x1B[48;5;40m\x1B[38;5;145m▄\x1B[0m
+`.trim());
+
+eq(encodeAnsi(
+    { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    '8color',
+    good2x5Pixels,
+), `
+\x1B[40m\x1B[33m▄\x1B[47m\x1B[31m▄\x1B[0m
+\x1B[42m\x1B[37m▄\x1B[42m\x1B[37m▄\x1B[0m
 `.trim());
 
 eq(encodeAnsi(

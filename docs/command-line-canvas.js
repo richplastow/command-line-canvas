@@ -144,11 +144,11 @@ const validateCanvasExtent = (extent, xpx = 'extent') => {
 };
 
 /** #### Checks that a color depth value is valid
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to check
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to check
  * @param {string} [xpx='colorDepth'] Exception prefix, e.g. 'canvas.render(): colorDepth'
  */
 const validateColorDepth = (colorDepth, xpx = 'colorDepth') => {
-    const validDepths = ['monochrome', '256color', 'truecolor'];
+    const validDepths = ['256color', '8color', 'monochrome', 'truecolor'];
     if (typeof colorDepth !== 'string') throw TypeError(
         `${xpx} is type '${typeof colorDepth}' not 'string'`);
     if (!validDepths.includes(colorDepth)) throw RangeError(
@@ -239,7 +239,7 @@ const validatePixels = (pixels, xpx = 'pixels') => {
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to encode at
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeAnsi():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -277,13 +277,17 @@ const encodeAnsi = (
     let lineReset;
     let colorGetter;
     switch (colorDepth) {
-        case 'monochrome':
-            colorGetter = getMonochrome$1;
-            lineReset = '';
-            break;
         case '256color':
             lineReset = '\u001b[0m'; // reset ANSI color at end of each line
             colorGetter = getAnsi256Color;
+            break;
+        case '8color':
+            lineReset = '\u001b[0m';
+            colorGetter = getAnsi8Color;
+            break;
+        case 'monochrome':
+            colorGetter = getMonochrome$1;
+            lineReset = '';
             break;
         case 'truecolor':
             lineReset = '\u001b[0m';
@@ -334,14 +338,18 @@ function getAnsi256Color(upper, lower) {
         + '\u2584';
 }
 
-/** #### Gets the ANSI escape code for a pair of pixels in Truecolor
+/** #### Gets the ANSI escape codes for a pair of pixels in 8-colour mode
  * @param {Pixel} upper The upper half color
  * @param {Pixel} lower The lower half color
- * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
+ * @returns {string} The Unicode 'Lower Half Block' character with 8-colour ANSI
  */
-function getAnsiTruecolor(upper, lower) {
-    return `\u001b[48;2;${upper.r};${upper.g};${upper.b}m`
-        + `\u001b[38;2;${lower.r};${lower.g};${lower.b}m`
+function getAnsi8Color(upper, lower) {
+    const upperRgb = to8ColorRgb$1(upper);
+    const lowerRgb = to8ColorRgb$1(lower);
+    const upperIndex = toAnsi8Index(upperRgb);
+    const lowerIndex = toAnsi8Index(lowerRgb);
+    return `\u001b[4${upperIndex}m`
+        + `\u001b[3${lowerIndex}m`
         + '\u2584';
 }
 
@@ -366,6 +374,40 @@ function getMonochrome$1(upper, lower) {
     ;
 }
 
+/** #### Gets the ANSI escape code for a pair of pixels in Truecolor
+ * @param {Pixel} upper The upper half color
+ * @param {Pixel} lower The lower half color
+ * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
+ */
+function getAnsiTruecolor(upper, lower) {
+    return `\u001b[48;2;${upper.r};${upper.g};${upper.b}m`
+        + `\u001b[38;2;${lower.r};${lower.g};${lower.b}m`
+        + '\u2584';
+}
+
+/** #### Quantises a pixel to 8-colour RGB values
+ * @param {Pixel} pixel Pixel to quantise
+ * @returns {{ b: number, g: number, r: number }} Quantised RGB components
+ */
+function to8ColorRgb$1(pixel) {
+    return {
+        r: pixel.r >= 128 ? 255 : 0,
+        g: pixel.g >= 128 ? 255 : 0,
+        b: pixel.b >= 128 ? 255 : 0,
+    };
+}
+
+/** #### Maps quantised RGB to an ANSI 8-colour index
+ * @param {{ b: number, g: number, r: number }} rgb Quantised RGB components
+ * @returns {number} ANSI 8-colour palette index (0-7)
+ */
+function toAnsi8Index(rgb) {
+    const rBit = rgb.r === 255 ? 1 : 0;
+    const gBit = rgb.g === 255 ? 1 : 0;
+    const bBit = rgb.b === 255 ? 1 : 0;
+    return rBit | (gBit << 1) | (bBit << 2);
+}
+
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
  * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
@@ -386,7 +428,7 @@ const DOT_UPPER_RED = 0x01;
 /** #### Encodes a 2D array of pixels into Unicode Braille characters
  * - Each character represents a vertical pair of pixels
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth Desired colour depth
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth Desired colour depth
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBraille():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -416,7 +458,7 @@ const encodeBraille = (
             `${xpx} bounds.yMax ${bounds.yMax} exceeds pixels extentY ${extentY}`);
     }
 
-    if (colorDepth !== 'monochrome') throw RangeError(
+    if (colorDepth !== '8color' && colorDepth !== 'monochrome') throw RangeError(
         `${xpx} colorDepth '${colorDepth}' not supported for Braille`);
 
     const lines = [];
@@ -486,7 +528,7 @@ function hasAlphaCoverage(pixel) {
  * - Each pixel becomes four consecutive bytes: R, G, B, A (0-255)
  * - The buffer contains rows within `bounds` in row-major order.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth (kept for API parity)
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth (kept for API parity)
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBuffer():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -521,8 +563,9 @@ const encodeBuffer = (
     // encoders where callers may skip full validation but an invalid
     // colorDepth should still produce a clear error.
     switch (colorDepth) {
-        case 'monochrome':
         case '256color':
+        case '8color':
+        case 'monochrome':
         case 'truecolor':
             break;
         default:
@@ -569,7 +612,7 @@ const encodeBuffer = (
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to encode at
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeHtml():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -607,13 +650,17 @@ const encodeHtml = (
     let lineReset;
     let colorGetter;
     switch (colorDepth) {
-        case 'monochrome':
-            colorGetter = getMonochrome;
-            lineReset = '';
-            break;
         case '256color':
             lineReset = '';
             colorGetter = getHtml256Color;
+            break;
+        case '8color':
+            lineReset = '';
+            colorGetter = getHtml8Color;
+            break;
+        case 'monochrome':
+            colorGetter = getMonochrome;
+            lineReset = '';
             break;
         case 'truecolor':
             lineReset = '';
@@ -668,14 +715,16 @@ function getHtml256Color(upper, lower) {
         + `color:rgb(${lowerRGB.r},${lowerRGB.g},${lowerRGB.b})">▄</b>`;
 }
 
-/** #### Gets the HTML markup for a pair of pixels in Truecolor
+/** #### Gets the HTML markup for a pair of pixels in 8-colour mode
  * @param {Pixel} upper The upper half color
  * @param {Pixel} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
-function getHtmlTruecolor(upper, lower) {
-    return `<b style="background:rgb(${upper.r},${upper.g},${upper.b});`
-        + `color:rgb(${lower.r},${lower.g},${lower.b})">▄</b>`;
+function getHtml8Color(upper, lower) {
+    const upperRgb = to8ColorRgb(upper);
+    const lowerRgb = to8ColorRgb(lower);
+    return `<b style="background:rgb(${upperRgb.r},${upperRgb.g},${upperRgb.b});`
+        + `color:rgb(${lowerRgb.r},${lowerRgb.g},${lowerRgb.b})">▄</b>`;
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
@@ -697,6 +746,28 @@ function getMonochrome(upper, lower) {
             ? '\u2584' // Lower half block
             : ' ' // space - a refinement would be to use U+3000 (IDEOGRAPHIC SPACE), maybe even followed by U+2060 (WORD JOINER)
     ;
+}
+
+/** #### Gets the HTML markup for a pair of pixels in Truecolor
+ * @param {Pixel} upper The upper half color
+ * @param {Pixel} lower The lower half color
+ * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
+ */
+function getHtmlTruecolor(upper, lower) {
+    return `<b style="background:rgb(${upper.r},${upper.g},${upper.b});`
+        + `color:rgb(${lower.r},${lower.g},${lower.b})">▄</b>`;
+}
+
+/** #### Quantises a pixel to 8-colour RGB values
+ * @param {Pixel} pixel Pixel to quantise
+ * @returns {{ b: number, g: number, r: number }} Quantised RGB components
+ */
+function to8ColorRgb(pixel) {
+    return {
+        r: pixel.r >= 128 ? 255 : 0,
+        g: pixel.g >= 128 ? 255 : 0,
+        b: pixel.b >= 128 ? 255 : 0,
+    };
 }
 
 /** #### Converts a 256-color palette index to RGB values
@@ -2535,7 +2606,7 @@ class Canvas {
     /** #### Rasterises the canvas, and then encodes the pixels ready for display
      * - For 'ansi', 'braille', and 'html' output formats, encoded output will be a string
      * - For 'buffer', the encoded output will be a Uint8Array
-     * @param {'monochrome'|'256color'|'truecolor'} colorDepth
+     * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth
      *     Determines colours per channel (ignored for 'buffer' output)
     * @param {'ansi'|'braille'|'buffer'|'html'} outputFormat
      *     The output format to use

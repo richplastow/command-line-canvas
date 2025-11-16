@@ -35,3 +35,7 @@ import './src/utilities/rasterize/reset-pixel-grid.test.js';
 
 // SDFs and AABBs.
 import './src/utilities/sdfs-and-aabbs/compound.test.js';
+
+// End-to-end tests.
+// TODO add thorough e2e tests once src/ is stable
+import './e2e/stroke/stroke-circle.test.js';

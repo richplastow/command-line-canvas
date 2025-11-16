@@ -23,7 +23,7 @@ const DOT_UPPER_RED = 0x01;
 /** #### Encodes a 2D array of pixels into Unicode Braille characters
  * - Each character represents a vertical pair of pixels
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth Desired colour depth
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth Desired colour depth
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBraille():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -53,7 +53,7 @@ export const encodeBraille = (
             `${xpx} bounds.yMax ${bounds.yMax} exceeds pixels extentY ${extentY}`);
     }
 
-    if (colorDepth !== 'monochrome') throw RangeError(
+    if (colorDepth !== '8color' && colorDepth !== 'monochrome') throw RangeError(
         `${xpx} colorDepth '${colorDepth}' not supported for Braille`);
 
     const lines = [];

@@ -101,7 +101,7 @@ export class Canvas {
     /** #### Rasterises the canvas, and then encodes the pixels ready for display
      * - For 'ansi', 'braille', and 'html' output formats, encoded output will be a string
      * - For 'buffer', the encoded output will be a Uint8Array
-     * @param {'monochrome'|'256color'|'truecolor'} colorDepth
+     * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth
      *     Determines colours per channel (ignored for 'buffer' output)
     * @param {'ansi'|'braille'|'buffer'|'html'} outputFormat
      *     The output format to use

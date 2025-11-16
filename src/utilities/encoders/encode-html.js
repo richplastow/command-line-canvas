@@ -14,7 +14,7 @@ import {
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
- * @param {'monochrome'|'256color'|'truecolor'} colorDepth The color depth to encode at
+ * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
  * @param {Pixel[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeHtml():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
@@ -52,13 +52,17 @@ export const encodeHtml = (
     let lineReset;
     let colorGetter;
     switch (colorDepth) {
-        case 'monochrome':
-            colorGetter = getMonochrome;
-            lineReset = '';
-            break;
         case '256color':
             lineReset = '';
             colorGetter = getHtml256Color;
+            break;
+        case '8color':
+            lineReset = '';
+            colorGetter = getHtml8Color;
+            break;
+        case 'monochrome':
+            colorGetter = getMonochrome;
+            lineReset = '';
             break;
         case 'truecolor':
             lineReset = '';
@@ -113,14 +117,16 @@ function getHtml256Color(upper, lower) {
         + `color:rgb(${lowerRGB.r},${lowerRGB.g},${lowerRGB.b})">▄</b>`;
 }
 
-/** #### Gets the HTML markup for a pair of pixels in Truecolor
+/** #### Gets the HTML markup for a pair of pixels in 8-colour mode
  * @param {Pixel} upper The upper half color
  * @param {Pixel} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
-function getHtmlTruecolor(upper, lower) {
-    return `<b style="background:rgb(${upper.r},${upper.g},${upper.b});`
-        + `color:rgb(${lower.r},${lower.g},${lower.b})">▄</b>`;
+function getHtml8Color(upper, lower) {
+    const upperRgb = to8ColorRgb(upper);
+    const lowerRgb = to8ColorRgb(lower);
+    return `<b style="background:rgb(${upperRgb.r},${upperRgb.g},${upperRgb.b});`
+        + `color:rgb(${lowerRgb.r},${lowerRgb.g},${lowerRgb.b})">▄</b>`;
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
@@ -142,6 +148,28 @@ function getMonochrome(upper, lower) {
             ? '\u2584' // Lower half block
             : ' ' // space - a refinement would be to use U+3000 (IDEOGRAPHIC SPACE), maybe even followed by U+2060 (WORD JOINER)
     ;
+}
+
+/** #### Gets the HTML markup for a pair of pixels in Truecolor
+ * @param {Pixel} upper The upper half color
+ * @param {Pixel} lower The lower half color
+ * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
+ */
+function getHtmlTruecolor(upper, lower) {
+    return `<b style="background:rgb(${upper.r},${upper.g},${upper.b});`
+        + `color:rgb(${lower.r},${lower.g},${lower.b})">▄</b>`;
+}
+
+/** #### Quantises a pixel to 8-colour RGB values
+ * @param {Pixel} pixel Pixel to quantise
+ * @returns {{ b: number, g: number, r: number }} Quantised RGB components
+ */
+function to8ColorRgb(pixel) {
+    return {
+        r: pixel.r >= 128 ? 255 : 0,
+        g: pixel.g >= 128 ? 255 : 0,
+        b: pixel.b >= 128 ? 255 : 0,
+    };
 }
 
 /** #### Converts a 256-color palette index to RGB values

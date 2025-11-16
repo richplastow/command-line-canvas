@@ -47,7 +47,7 @@ throws(() => encodeBuffer(
     // @ts-expect-error
     'nope',
     good2x5Pixels,
-), { message: /^encodeBuffer\(\): colorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/ });
+), { message: /^encodeBuffer\(\): colorDepth is not one of '256color'\|'8color'\|'monochrome'\|'truecolor'$/ });
 
 throws(() => encodeBuffer(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
@@ -93,9 +93,18 @@ const buf = encodeBuffer(
     good2x5Pixels,
 );
 
+const buf8 = encodeBuffer(
+    { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    '8color',
+    good2x5Pixels,
+);
+
 // Check that this is a buffer not an array, and the length.
 eq(buf instanceof Uint8Array, true);
 eq(buf.length, 2 * 4 * 4);
+eq(buf8 instanceof Uint8Array, true);
+eq(buf8.length, buf.length);
+eq(Array.from(buf8), Array.from(buf));
 
 // First row: black and white.
 eq(buf[0], 0); // first pixel R

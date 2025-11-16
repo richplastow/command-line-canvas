@@ -56,7 +56,7 @@ throws(() => canvas.render(24, 'ansi', 'myRender():'), {
     message: /^myRender\(\): colorDepth is type 'number' not 'string'$/ });
 // @ts-expect-error
 throws(() => canvas.render('16color', 'ansi', 'myRender():'), {
-    message: /^myRender\(\): colorDepth is not one of 'monochrome'\|'256color'\|'truecolor'$/ });
+    message: /^myRender\(\): colorDepth is not one of '256color'\|'8color'\|'monochrome'\|'truecolor'$/ });
 // @ts-expect-error
 throws(() => canvas.render('256color'), {
     message: /^Canvas render\(\): outputFormat is type 'undefined' not 'string'$/ });
@@ -80,6 +80,11 @@ eq(canvas.render('256color', 'ansi'), `
 \x1B[48;5;47m\x1B[38;5;47m▄\x1B[48;5;47m\x1B[38;5;47m▄\x1B[0m
 `.trim());
 
+eq(canvas.render('8color', 'ansi'), `
+\x1B[42m\x1B[32m▄\x1B[42m\x1B[32m▄\x1B[0m
+\x1B[42m\x1B[32m▄\x1B[42m\x1B[32m▄\x1B[0m
+`.trim());
+
 eq(canvas.render('truecolor', 'ansi'), `
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
@@ -90,7 +95,17 @@ eq(canvas.render('monochrome', 'braille'), `
 ⢸⢸
 `.trim());
 
+eq(canvas.render('8color', 'braille'), `
+⢸⢸
+⢸⢸
+`.trim());
+
 eq(canvas.render('monochrome', 'buffer'), new Uint8Array([
+     12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
+     12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
+]));
+
+eq(canvas.render('8color', 'buffer'), new Uint8Array([
      12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
      12, 255,  56, 255, 12, 255,  56, 255,      12, 255,  56, 255,  12, 255,  56, 255,
 ]));
@@ -103,6 +118,11 @@ eq(canvas.render('monochrome', 'html'), `
 eq(canvas.render('256color', 'html'), `
 <b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b><b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b>
 <b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b><b style="background:rgb(0,255,95);color:rgb(0,255,95)">▄</b>
+`.trim());
+
+eq(canvas.render('8color', 'html'), `
+<b style="background:rgb(0,255,0);color:rgb(0,255,0)">▄</b><b style="background:rgb(0,255,0);color:rgb(0,255,0)">▄</b>
+<b style="background:rgb(0,255,0);color:rgb(0,255,0)">▄</b><b style="background:rgb(0,255,0);color:rgb(0,255,0)">▄</b>
 `.trim());
 
 eq(canvas.render('truecolor', 'html'), `

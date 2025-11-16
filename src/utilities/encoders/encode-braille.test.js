@@ -53,6 +53,12 @@ const expected = [
 
 eq(encodeBraille(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    '8color',
+    good2x4Pixels,
+), expected);
+
+eq(encodeBraille(
+    { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
     'monochrome',
     good2x4Pixels,
 ), expected);
