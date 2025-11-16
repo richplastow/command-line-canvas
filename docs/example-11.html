@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Example 10: Pinstripe Patterns - command-line-canvas</title>
+    <title>Example 11: Braille Screen - command-line-canvas</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,17 +11,15 @@
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li><a href="example-09.html">Previous</a></li>
-            <li><a href="example-11.html">Next</a></li>
+            <li><a href="example-10.html">Previous</a></li>
+            <li><span>Next</span></li>
         </ul>
     </nav>
-    <h1>Example 10: Pinstripe&nbsp;Patterns</h1>
-    <p>Three pinstriped circles comparing different <code>patternRatio</code> and <code>patternScale</code> combinations.</p>
+    <h1>Example 11: Braille&nbsp;Screen</h1>
+    <p>Three overlapping circles in red, green, and blue, blended with
+        <code>screen</code> on a black canvas and rendered with the
+        Braille encoder.</p>
 </header>
-<p>
-    The vertical stripes intensify as the ink ratio increases and the stripe spacing widens as the scale grows.
-    All three shapes use <code>patternUnit="pixel"</code>, so scaling happens directly in screen space.
-</p>
 <pre id="output"></pre>
 
 <!-- If running on localhost or local network and path includes "/docs/", add
@@ -46,50 +44,52 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         )()
         : await import('./command-line-canvas.js');
 
-    const background = new Pixel(24, 22, 32);
-    const canvas = new Canvas(background, 96, 48);
+    const background = new Pixel(0, 0, 0);
+    const canvas = new Canvas(background, 60, 30);
 
-    const inks = [
-        new Color(180, 210, 255, 1),
-        new Color(140, 180, 255, 1),
-        new Color(100, 150, 255, 1),
-    ];
-    const paper = new Color(18, 18, 28, 1);
+    const circle = new Primitive(
+        'no-flip',
+        'union',
+        'circle',
+        0,
+        1.5,
+        { x: 0, y: 0 },
+    );
+
+    const paper = new Color(255, 255, 255, 1);
     const transparent = new Color(0, 0, 0, 0);
 
-    const circle = new Primitive('no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });
-
-    const thinPinstripe = new Shape(
-        'normal',
+    const red = new Shape(
+        'screen',
         'no-flip',
-        inks[0],
+        new Color(255, 64, 64, 1),
         paper,
-        'pinstripe',
-        0.25,
-        2,
+        'all-ink',
+        1,
+        1,
         'pixel',
         [circle],
         0,
-        2,
+        3.2,
         transparent,
         'center',
         'pixel',
         0,
-        { x: -6, y: 0 },
+        { x: -4, y: 0 },
     );
 
-    const mediumPinstripe = new Shape(
-        'normal',
+    const green = new Shape(
+        'screen',
         'no-flip',
-        inks[1],
+        new Color(64, 255, 64, 1),
         paper,
-        'pinstripe',
-        0.5,
-        4,
+        'all-ink',
+        1,
+        1,
         'pixel',
         [circle],
         0,
-        2,
+        3.2,
         transparent,
         'center',
         'pixel',
@@ -97,31 +97,31 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         { x: 0, y: 0 },
     );
 
-    const boldPinstripe = new Shape(
-        'normal',
+    const blue = new Shape(
+        'screen',
         'no-flip',
-        inks[2],
+        new Color(64, 64, 255, 1),
         paper,
-        'pinstripe',
-        0.75,
-        6,
+        'all-ink',
+        1,
+        1,
         'pixel',
         [circle],
         0,
-        2,
+        3.2,
         transparent,
         'center',
         'pixel',
         0,
-        { x: 6, y: 0 },
+        { x: 4, y: 0 },
     );
 
-    canvas.addShape(thinPinstripe);
-    canvas.addShape(mediumPinstripe);
-    canvas.addShape(boldPinstripe);
+    canvas.addShape(red);
+    canvas.addShape(green);
+    canvas.addShape(blue);
 
-    const htmlOutput = canvas.render('truecolor', 'html');
-    document.getElementById('output').innerHTML = htmlOutput;
+    const brailleOutput = canvas.render('monochrome', 'braille');
+    document.getElementById('output').textContent = brailleOutput;
 </script>
 </body>
 </html>

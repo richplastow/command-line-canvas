@@ -65,7 +65,7 @@ throws(() => canvas.render('256color', [], 'myRender():'), {
     message: /^myRender\(\): outputFormat is type 'object' not 'string'$/ });
 // @ts-expect-error
 throws(() => canvas.render('256color', 'invalid', 'myRender():'), {
-    message: /^myRender\(\): outputFormat is not one of 'ansi'\|'buffer'\|'html'$/ });
+    message: /^myRender\(\): outputFormat is not one of 'ansi'\|'braille'\|'buffer'\|'html'$/ });
 
 
 // `canvas.render()` valid.
@@ -83,6 +83,11 @@ eq(canvas.render('256color', 'ansi'), `
 eq(canvas.render('truecolor', 'ansi'), `
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
 \x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[48;2;12;255;56m\x1B[38;2;12;255;56m▄\x1B[0m
+`.trim());
+
+eq(canvas.render('monochrome', 'braille'), `
+⢸⢸
+⢸⢸
 `.trim());
 
 eq(canvas.render('monochrome', 'buffer'), new Uint8Array([

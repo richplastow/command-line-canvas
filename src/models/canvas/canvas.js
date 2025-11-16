@@ -1,5 +1,6 @@
 import { SIDE_IN_WORLD_UNITS } from '../../clc-constants.js';
 import { encodeAnsi } from '../../utilities/encoders/encode-ansi.js';
+import { encodeBraille } from '../../utilities/encoders/encode-braille.js';
 import { encodeBuffer } from '../../utilities/encoders/encode-buffer.js';
 import { encodeHtml } from '../../utilities/encoders/encode-html.js';
 import { rasterize } from '../../utilities/rasterize/rasterize.js';
@@ -98,11 +99,11 @@ export class Canvas {
     }
 
     /** #### Rasterises the canvas, and then encodes the pixels ready for display
-     * - For 'ansi' and 'html' output formats, encoded output will be a string
+     * - For 'ansi', 'braille', and 'html' output formats, encoded output will be a string
      * - For 'buffer', the encoded output will be a Uint8Array
      * @param {'monochrome'|'256color'|'truecolor'} colorDepth
      *     Determines colours per channel (ignored for 'buffer' output)
-     * @param {'ansi'|'buffer'|'html'} outputFormat
+    * @param {'ansi'|'braille'|'buffer'|'html'} outputFormat
      *     The output format to use
      * @param {string} [xpx='Canvas render():']
      *     Optional exception prefix, e.g. 'fn():'
@@ -134,6 +135,9 @@ export class Canvas {
         switch (outputFormat) {
             case 'ansi':
                 encoder = encodeAnsi;
+                break;
+            case 'braille':
+                encoder = encodeBraille;
                 break;
             case 'buffer':
                 encoder = encodeBuffer;

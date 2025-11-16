@@ -122,12 +122,13 @@ throws(() => validateOutputFormat(123, 'formatCheck'),
     { message: /^formatCheck is type 'number' not 'string'$/});
 // @ts-expect-error
 throws(() => validateOutputFormat('jpg', 'myOutputFormat'),
-    { message: /^myOutputFormat is not one of 'ansi'\|'buffer'\|'html'$/});
+    { message: /^myOutputFormat is not one of 'ansi'\|'braille'\|'buffer'\|'html'$/});
 
 
 // validateOutputFormat() valid.
 
 eq(validateOutputFormat('ansi'), void 0);
+eq(validateOutputFormat('braille'), void 0);
 eq(validateOutputFormat('buffer', 'canvas.render(): outputFormat'), void 0);
 eq(validateOutputFormat('html'), void 0);
 

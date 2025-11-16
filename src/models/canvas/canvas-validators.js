@@ -83,11 +83,11 @@ export const validateColorDepth = (colorDepth, xpx = 'colorDepth') => {
 }
 
 /** #### Checks that an output format is valid
- * @param {'ansi'|'buffer'|'html'} outputFormat The output format to check
+ * @param {'ansi'|'braille'|'buffer'|'html'} outputFormat The output format to check
  * @param {string} [xpx='outputFormat'] Exception prefix, e.g. 'canvas.render(): outputFormat'
  */
 export const validateOutputFormat = (outputFormat, xpx = 'outputFormat') => {
-    const validFormats = ['ansi', 'buffer', 'html'];
+    const validFormats = ['ansi', 'braille', 'buffer', 'html'];
     if (typeof outputFormat !== 'string') throw TypeError(
         `${xpx} is type '${typeof outputFormat}' not 'string'`);
     if (!validFormats.includes(outputFormat)) throw RangeError(
