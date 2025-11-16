@@ -966,6 +966,25 @@ const validateColor = (color, xpx = 'color') => {
     }
 };
 
+/** #### Checks that a debugShapeAabb value is valid
+ * @param {Color|null} debugShapeAabb The debug color or null
+ * @param {string} [xpx='debugShapeAabb'] Exception prefix
+ */
+const validateDebugShapeAabb = (debugShapeAabb,
+    xpx = 'debugShapeAabb') => {
+    if (debugShapeAabb === null) return; // null is valid
+    if (Array.isArray(debugShapeAabb)) throw TypeError(
+        `${xpx} is an array, not an object`);
+    if (typeof debugShapeAabb !== 'object') throw TypeError(
+        `${xpx} is type '${typeof debugShapeAabb}' not 'object'`);
+    if (!(debugShapeAabb instanceof Color)) {
+        /** @type {{}} **/ const notColor = debugShapeAabb;
+        const notColorName = notColor.constructor.name;
+        throw TypeError(
+            `${xpx} is an instance of '${notColorName}' not 'Color'`);
+    }
+};
+
 /** #### Checks that a flip value is valid
  * @TODO move all shared validators to a common location
  * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip reflect-mode to check
@@ -1151,6 +1170,11 @@ class Shape {
      * @type {'multiply'|'normal'|'overlay'|'screen'} */
     blendMode = 'normal';
 
+    /** #### The colour to use when debugging the shape's bounding box
+     * - If `null`, no debug bounding box will be drawn
+     * @type {Color|null} */
+    debugShapeAabb = null;
+
     /** #### How to reflect this shape, if at all
      * @type {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} */
     flip = 'no-flip';
@@ -1214,6 +1238,7 @@ class Shape {
 
     /**
      * @param {'multiply'|'normal'|'overlay'|'screen'} blendMode Blend mode
+     * @param {Color|null} debugShapeAabb Debug bounding box color
      * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip Reflection
      * @param {Color} ink Foreground/fill color
      * @param {Color} paper Background color
@@ -1232,6 +1257,7 @@ class Shape {
      */
     constructor(
         blendMode,
+        debugShapeAabb,
         flip,
         ink,
         paper,
@@ -1249,6 +1275,7 @@ class Shape {
         translate,
     ) {
         validateBlendMode(blendMode, 'Shape: blendMode');
+        validateDebugShapeAabb(debugShapeAabb, 'Shape: debugShapeAabb');
         validateFlip(flip, 'Shape: flip');
         validateColor(ink, 'Shape: ink');
         validateColor(paper, 'Shape: paper');
@@ -1266,6 +1293,7 @@ class Shape {
         validateTranslate(translate, 'Shape: translate');
 
         this.blendMode = blendMode;
+        this.debugShapeAabb = debugShapeAabb;
         this.flip = flip;
         this.ink = ink;
         this.paper = paper;
@@ -2219,6 +2247,16 @@ function rasterize(
                     const box = shapeBoxes[si];
                     if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
                         continue; // shape cannot affect this pixel
+                    }
+
+                    // If `debugShapeAabb` is not null, its colour should appear
+                    // as the bounding box background.
+                    if (shape.debugShapeAabb !== null) {
+                        const debugColor = shape.debugShapeAabb;
+                        const alpha = debugColor.a;
+                        dstR = dstR * (1 - alpha) + (debugColor.r / 255) * alpha;
+                        dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
+                        dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
                     }
                 }
 

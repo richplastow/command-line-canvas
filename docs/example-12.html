@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 12: debugShapeAabb - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-11.html">Previous</a></li>
+            <li><span>Next</span></li>
+        </ul>
+    </nav>
+    <h1>Example 12: debugShapeAabb</h1>
+    <p>Four shapes with different <code>debugShapeAabb</code> colour values 
+        (one of the shapes contains two primitives).</p>
+</header>
+<pre id="output"></pre>
+
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
+
+<script type="module">
+    const base = '../src/models/';
+    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape'];
+    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+        ? await (async () =>
+            (await Promise.all(Ms.map(M => M.toLowerCase())
+                .map(m => import(`${base}${m}/${m}.js`))))
+            .reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc; }, {})
+        )()
+        : await import('./command-line-canvas.js');
+
+    const background = new Pixel(0, 0, 0);
+    const canvas = new Canvas(background, 80, 24);
+
+    // Primitives for shapes.
+    const circleSmall = new Primitive(
+        'no-flip', 'union', 'circle', 0, 2, { x: 0, y: 0 },
+    );
+
+    const triangleTiny = new Primitive(
+        'no-flip', 'union', 'triangle-right', 0, 1, { x: 0, y: 0 },
+    );
+
+    const triangleMedium = new Primitive(
+        'no-flip', 'union', 'triangle-right', 0, 1.333, { x: 2, y: 0.5 },
+    );
+    const triangleLarge = new Primitive(
+        'flip-x-and-y', 'union', 'triangle-right', 0, 2.1, { x: -2, y: 0 },
+    );
+
+    const circleHuge = new Primitive(
+        'no-flip', 'union', 'circle', 0, 5, { x: 0, y: 4 },
+    );
+
+    const paper = new Color(255, 255, 255, 1);
+    const transparent = new Color(0, 0, 0, 0);
+
+    // Leftmost: small circle with red debug box.
+    const s1 = new Shape(
+        'normal', // blendMode
+        new Color(255, 80, 80, 0.8), // debugShapeAabb
+        'no-flip',
+        new Color(0, 0, 255, 1), // ink
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [circleSmall],
+        0,
+        1,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: -8, y: 0 },
+    );
+
+    // Second: tiny triangle with semi-transparent green debug box.
+    const s2 = new Shape(
+        'normal',
+        new Color(80, 255, 80, 0.6), // alpha should work
+        'no-flip',
+        new Color(255, 255, 255, 1),
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [triangleTiny],
+        0,
+        1.2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: -6, y: 2 },
+    );
+
+    // Third: huge circle with yellow debug box.
+    const s3 = new Shape(
+        'normal',
+        new Color(255, 220, 80, 0.8),
+        'no-flip',
+        new Color(80, 80, 80, 1),
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [circleHuge],
+        0,
+        2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: 10, y: 0 },
+    );
+
+    // Fourth: two triangles with blue debug box.
+    const s4 = new Shape(
+        'normal',
+        new Color(30, 0, 255, 0.8),
+        'flip-x',
+        new Color(255, 200, 220, 1),
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [triangleLarge, triangleMedium],
+        0,
+        1.6,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: 6, y: 0 },
+    );
+
+    canvas.addShape(s1);
+    canvas.addShape(s2);
+    canvas.addShape(s3);
+    canvas.addShape(s4);
+
+    const out = canvas.render('truecolor', 'html');
+    document.getElementById('output').innerHTML = out;
+</script>
+</body>
+</html>

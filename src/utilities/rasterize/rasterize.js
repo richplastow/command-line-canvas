@@ -77,6 +77,16 @@ export function rasterize(
                     if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
                         continue; // shape cannot affect this pixel
                     }
+
+                    // If `debugShapeAabb` is not null, its colour should appear
+                    // as the bounding box background.
+                    if (shape.debugShapeAabb !== null) {
+                        const debugColor = shape.debugShapeAabb;
+                        const alpha = debugColor.a;
+                        dstR = dstR * (1 - alpha) + (debugColor.r / 255) * alpha;
+                        dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
+                        dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
+                    }
                 }
 
                 // Evaluate the composite signed distance for this Shape. Note

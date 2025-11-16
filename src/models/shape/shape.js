@@ -3,6 +3,7 @@ import { Primitive } from '../primitive/primitive.js';
 import {
     validateBlendMode,
     validateColor,
+    validateDebugShapeAabb,
     validateFlip,
     validatePattern,
     validatePatternRatio,
@@ -26,6 +27,11 @@ export class Shape {
     /** #### How this shape blends with underlying shapes
      * @type {'multiply'|'normal'|'overlay'|'screen'} */
     blendMode = 'normal';
+
+    /** #### The colour to use when debugging the shape's bounding box
+     * - If `null`, no debug bounding box will be drawn
+     * @type {Color|null} */
+    debugShapeAabb = null;
 
     /** #### How to reflect this shape, if at all
      * @type {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} */
@@ -90,6 +96,7 @@ export class Shape {
 
     /**
      * @param {'multiply'|'normal'|'overlay'|'screen'} blendMode Blend mode
+     * @param {Color|null} debugShapeAabb Debug bounding box color
      * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip Reflection
      * @param {Color} ink Foreground/fill color
      * @param {Color} paper Background color
@@ -108,6 +115,7 @@ export class Shape {
      */
     constructor(
         blendMode,
+        debugShapeAabb,
         flip,
         ink,
         paper,
@@ -125,6 +133,7 @@ export class Shape {
         translate,
     ) {
         validateBlendMode(blendMode, 'Shape: blendMode');
+        validateDebugShapeAabb(debugShapeAabb, 'Shape: debugShapeAabb');
         validateFlip(flip, 'Shape: flip');
         validateColor(ink, 'Shape: ink');
         validateColor(paper, 'Shape: paper');
@@ -142,6 +151,7 @@ export class Shape {
         validateTranslate(translate, 'Shape: translate');
 
         this.blendMode = blendMode;
+        this.debugShapeAabb = debugShapeAabb;
         this.flip = flip;
         this.ink = ink;
         this.paper = paper;

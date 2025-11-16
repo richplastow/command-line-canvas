@@ -37,6 +37,25 @@ export const validateColor = (color, xpx = 'color') => {
     }
 };
 
+/** #### Checks that a debugShapeAabb value is valid
+ * @param {Color|null} debugShapeAabb The background color for the debug box, or null
+ * @param {string} [xpx='debugShapeAabb'] Exception prefix
+ */
+export const validateDebugShapeAabb = (debugShapeAabb,
+    xpx = 'debugShapeAabb') => {
+    if (debugShapeAabb === null) return; // null is valid
+    if (Array.isArray(debugShapeAabb)) throw TypeError(
+        `${xpx} is an array, not an object`);
+    if (typeof debugShapeAabb !== 'object') throw TypeError(
+        `${xpx} is type '${typeof debugShapeAabb}' not 'object'`);
+    if (!(debugShapeAabb instanceof Color)) {
+        /** @type {{}} **/ const notColor = debugShapeAabb;
+        const notColorName = notColor.constructor.name;
+        throw TypeError(
+            `${xpx} is an instance of '${notColorName}' not 'Color'`);
+    }
+};
+
 /** #### Checks that a flip value is valid
  * @TODO move all shared validators to a common location
  * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip reflect-mode to check

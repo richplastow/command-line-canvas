@@ -13,6 +13,7 @@ const primitive = new Primitive('no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0
 
 /** @type {{
     blendMode: 'multiply'|'normal'|'overlay'|'screen',
+    debugShapeAabb: Color|null,
     flip: 'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip',
     ink: Color,
     paper: Color,
@@ -31,6 +32,7 @@ const primitive = new Primitive('no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0
 }} */
 const defaults = {
     blendMode: 'normal',
+    debugShapeAabb: null,
     flip: 'no-flip',
     ink,
     paper,
@@ -52,6 +54,7 @@ const makeShape = (overrides = {}) => {
     const opts = { ...defaults, ...overrides };
     return new Shape(
         opts.blendMode,
+        opts.debugShapeAabb,
         opts.flip,
         opts.ink,
         opts.paper,
@@ -75,6 +78,8 @@ throws(() => new Shape(), {
     message: /^Shape: blendMode is type 'undefined' not 'string'$/ });
 throws(() => makeShape({ blendMode: 'invalid' }), {
     message: /^Shape: blendMode is not one of 'multiply'\|'normal'\|'overlay'\|'screen'$/ });
+throws(() => makeShape({ debugShapeAabb: 123 }), {
+    message: /^Shape: debugShapeAabb is type 'number' not 'object'$/ });
 throws(() => makeShape({ flip: 'nope' }), {
     message: /^Shape: flip is not one of 'flip-x'\|'flip-x-and-y'\|'flip-y'\|'no-flip'$/ });
 throws(() => makeShape({ ink: null }), {
@@ -135,6 +140,11 @@ eq(shape.strokePosition, defaults.strokePosition);
 eq(shape.strokeUnit, defaults.strokeUnit);
 eq(shape.strokeWidth, defaults.strokeWidth);
 eq(shape.translate, defaults.translate);
+
+// debugShapeAabb stored.
+const dbg = new Color(10, 20, 30, 0.75);
+const sDbg = makeShape({ debugShapeAabb: dbg });
+eq(sDbg.debugShapeAabb, dbg);
 
 
 console.log('All Shape tests passed.');

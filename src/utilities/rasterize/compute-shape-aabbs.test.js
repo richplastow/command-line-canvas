@@ -10,6 +10,7 @@ const stroke = new Color(0, 0, 0, 1);
 
 const makeShape = (opts) => new Shape(
     opts.blendMode ?? 'normal',
+    null,
     opts.flip ?? 'no-flip',
     opts.ink ?? ink,
     opts.paper ?? paper,

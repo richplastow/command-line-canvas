@@ -74,6 +74,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     for (let i = 0; i < 4; i++) {
         const s = new Shape(
             blendModes[i],     // blendMode
+            null,              // debugShapeAabb
             'no-flip',         // flip
             inks[i],           // ink
             new Color(0,0,0,0),// paper transparent

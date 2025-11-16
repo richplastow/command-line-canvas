@@ -16,6 +16,7 @@ const stroke = new Color(0, 0, 0, 1);
 const makeShape = (overrides = {}) => {
     return new Shape(
         overrides.blendMode ?? 'normal',
+        null,
         overrides.flip ?? 'no-flip',
         overrides.ink ?? ink,
         overrides.paper ?? paper,

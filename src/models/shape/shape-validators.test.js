@@ -4,6 +4,7 @@ import { Primitive } from '../primitive/primitive.js';
 import {
     validateBlendMode,
     validateColor,
+    validateDebugShapeAabb,
     validateFlip,
     validatePattern,
     validatePatternRatio,
@@ -61,6 +62,23 @@ throws(() => validateColor({}), {
 
 validateColor(new Color(0, 0, 0, 0));
 validateColor(new Color(255, 255, 255, 1));
+
+
+// `validateDebugShapeAabb()` invalid.
+
+// @ts-expect-error
+throws(() => validateDebugShapeAabb([]), {
+    message: /^debugShapeAabb is an array, not an object$/ });
+// @ts-expect-error
+throws(() => validateDebugShapeAabb({}), {
+    message: /^debugShapeAabb is an instance of 'Object' not 'Color'$/ });
+
+
+// `validateDebugShapeAabb()` valid.
+
+validateDebugShapeAabb(null);
+validateDebugShapeAabb(new Color(0, 0, 0, 0));
+validateDebugShapeAabb(new Color(255, 255, 255, 1));
 
 
 // `validateFlip()` invalid.
@@ -346,6 +364,7 @@ const c = new Color(0, 0, 0, 1);
 validateShape(
     new Shape(
         'normal', // blendMode
+        null, // debugShapeAabb
         'flip-x', // flip
         c, // ink
         c, // paper

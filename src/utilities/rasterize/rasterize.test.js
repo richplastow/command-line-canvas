@@ -34,6 +34,7 @@ const pixelCenter = (x, y, width, height) => {
 
 const circleShape = (options) => {
     const blendMode = options.blendMode ?? 'normal';
+    const debugShapeAabb = options.debugShapeAabb ?? null;
     const flip = 'no-flip';
     const ink = options.ink;
     const paper = options.paper ?? options.ink;
@@ -58,6 +59,7 @@ const circleShape = (options) => {
 
     return new Shape(
         blendMode,
+        debugShapeAabb,
         flip,
         ink,
         paper,
@@ -229,6 +231,32 @@ eq(toRgb(overlayPixels), [
         { r: 128, g: 128, b: 128 },
     ],
 ]);
+
+
+// `rasterize()` debugShapeAabb background blend.
+const dbgBg = new Pixel(50, 60, 70);
+const dbgPixels = makePixels(1, 1, 50, 60, 70);
+const dbgColor = new Color(200, 100, 50, 0.5); // semi-transparent debug box
+const dbgShape = circleShape({
+    ink: new Color(0, 0, 0, 0),
+    paper: new Color(0, 0, 0, 0),
+    debugShapeAabb: dbgColor,
+    translate: { x: 0, y: 0 },
+    scale: 1,
+});
+
+// Add shape but ensure its AABB covers the pixel. Use large scale to be safe.
+dbgShape.primitives = [ new Primitive('no-flip', 'union', 'circle', 0, 10, { x: 0, y: 0 }) ];
+
+rasterize(0.85, dbgBg, dbgPixels, [ { id: 99, shape: dbgShape } ], 10, 1, 1);
+
+// expected blended channel: dst = bg*(1-alpha) + debug*(alpha)
+const a = dbgColor.a;
+const expR = Math.round(((50/255) * (1 - a) + (dbgColor.r/255) * a) * 255);
+const expG = Math.round(((60/255) * (1 - a) + (dbgColor.g/255) * a) * 255);
+const expB = Math.round(((70/255) * (1 - a) + (dbgColor.b/255) * a) * 255);
+
+eq(toRgb(dbgPixels), [[{ r: expR, g: expG, b: expB }]]);
 
 
 console.log('All rasterize() tests passed.');

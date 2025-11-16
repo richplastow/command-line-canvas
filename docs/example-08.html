@@ -77,6 +77,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Left circle: strokeUnit='pixel' - stroke stays constant 2 pixels.
     const pixelCircle = new Shape(
         'normal',        // blendMode
+        null,            // debugShapeAabb
         'no-flip',
         cyan,            // ink (fill color)
         transparent,     // paper
@@ -97,6 +98,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Middle circle: strokeUnit='shape' - stroke scales with shape (2px * 2 scale = 4px effective).
     const shapeCircle = new Shape(
         'normal',        // blendMode
+        null,            // debugShapeAabb
         'no-flip',
         magenta,         // ink (fill color)
         transparent,     // paper
@@ -117,6 +119,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Right circle: strokeUnit='world' - stroke in world units (2 world units).
     const worldCircle = new Shape(
         'normal',        // blendMode
+        null,            // debugShapeAabb
         'no-flip',
         yellow,          // ink (fill color)
         transparent,     // paper

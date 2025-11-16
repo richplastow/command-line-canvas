@@ -16,6 +16,7 @@ const stroke = new Color(0, 0, 0, 1);
  */
 const makeShape = (flip, primitives) => new Shape(
     'normal',
+    null,
     flip,
     ink,
     paper,
