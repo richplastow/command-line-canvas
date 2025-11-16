@@ -34,6 +34,7 @@ const pixelCenter = (x, y, width, height) => {
 
 const circleShape = (options) => {
     const blendMode = options.blendMode ?? 'normal';
+    const debugPrimitiveAabb = options.debugPrimitiveAabb ?? null;
     const debugShapeAabb = options.debugShapeAabb ?? null;
     const flip = 'no-flip';
     const ink = options.ink;
@@ -43,6 +44,7 @@ const circleShape = (options) => {
     const patternScale = options.patternScale ?? 1;
     const patternUnit = options.patternUnit ?? 'pixel';
     const prim = new Primitive(
+        debugPrimitiveAabb,
         'no-flip',
         'union',
         'circle',
@@ -246,7 +248,7 @@ const dbgShape = circleShape({
 });
 
 // Add shape but ensure its AABB covers the pixel. Use large scale to be safe.
-dbgShape.primitives = [ new Primitive('no-flip', 'union', 'circle', 0, 10, { x: 0, y: 0 }) ];
+dbgShape.primitives = [ new Primitive(null, 'no-flip', 'union', 'circle', 0, 10, { x: 0, y: 0 }) ];
 
 rasterize(0.85, dbgBg, dbgPixels, [ { id: 99, shape: dbgShape } ], 10, 1, 1);
 
@@ -257,6 +259,42 @@ const expG = Math.round(((60/255) * (1 - a) + (dbgColor.g/255) * a) * 255);
 const expB = Math.round(((70/255) * (1 - a) + (dbgColor.b/255) * a) * 255);
 
 eq(toRgb(dbgPixels), [[{ r: expR, g: expG, b: expB }]]);
+
+
+// `rasterize()` debugPrimitiveAabb background blend.
+const dbgPrimBg = new Pixel(20, 30, 40);
+const dbgPrimPixels = makePixels(1, 1, 20, 30, 40);
+const dbgPrimColor = new Color(50, 200, 250, 0.4);
+const dbgPrimShape = circleShape({
+    ink: new Color(0, 0, 0, 0),
+    paper: new Color(0, 0, 0, 0),
+    debugPrimitiveAabb: dbgPrimColor,
+    translate: { x: 0, y: 0 },
+    scale: 1,
+});
+
+dbgPrimShape.primitives = [ new Primitive(
+    dbgPrimColor,
+    'no-flip',
+    'union',
+    'circle',
+    0,
+    10,
+    { x: 0, y: 0 },
+) ];
+
+rasterize(0.85, dbgPrimBg, dbgPrimPixels,
+    [ { id: 100, shape: dbgPrimShape } ], 10, 1, 1);
+
+const alphaPrim = dbgPrimColor.a;
+const expPrimR = Math.round(((20/255) * (1 - alphaPrim)
+    + (dbgPrimColor.r/255) * alphaPrim) * 255);
+const expPrimG = Math.round(((30/255) * (1 - alphaPrim)
+    + (dbgPrimColor.g/255) * alphaPrim) * 255);
+const expPrimB = Math.round(((40/255) * (1 - alphaPrim)
+    + (dbgPrimColor.b/255) * alphaPrim) * 255);
+
+eq(toRgb(dbgPrimPixels), [[{ r: expPrimR, g: expPrimG, b: expPrimB }]]);
 
 
 console.log('All rasterize() tests passed.');

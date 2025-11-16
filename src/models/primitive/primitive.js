@@ -1,4 +1,6 @@
+import { Color } from '../color/color.js';
 import {
+    validateDebugPrimitiveAabb,
     validateFlip,
     validateJoinMode,
     validateKind,
@@ -9,6 +11,11 @@ import {
 
 /** #### A primitive shape that can be combined to form complex shapes */
 export class Primitive {
+    /** #### The colour to use when debugging the primitive's bounding box
+     * - If `null`, no debug bounding box will be drawn
+     * @type {Color|null} */
+    debugPrimitiveAabb = null;
+
     /** #### How to reflect this primitive, if at all
      * @type {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} */
     flip = 'no-flip';
@@ -34,14 +41,24 @@ export class Primitive {
     translate = { x: 0, y: 0 };
 
     /**
+     * @param {Color|null} debugPrimitiveAabb Debug bounding box colour
      * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip Reflection
      * @param {'union'|'difference'} joinMode How to combine with previous
      * @param {'circle'|'square'|'triangle-right'} kind The primitive shape type
      * @param {number} rotate Rotation in radians
-    * @param {number} scale Uniform scale factor
+     * @param {number} scale Uniform scale factor
      * @param {{ x: number, y: number }} translate Translation offset
      */
-    constructor(flip, joinMode, kind, rotate, scale, translate) {
+    constructor(
+        debugPrimitiveAabb,
+        flip,
+        joinMode,
+        kind,
+        rotate,
+        scale,
+        translate,
+    ) {
+        validateDebugPrimitiveAabb(debugPrimitiveAabb, 'Primitive: debugPrimitiveAabb');
         validateFlip(flip, 'Primitive: flip');
         validateJoinMode(joinMode, 'Primitive: joinMode');
         validateKind(kind, 'Primitive: kind');
@@ -49,6 +66,7 @@ export class Primitive {
         validateScale(scale, 'Primitive: scale');
         validateTranslate(translate, 'Primitive: translate');
 
+        this.debugPrimitiveAabb = debugPrimitiveAabb;
         this.flip = flip;
         this.joinMode = joinMode;
         this.kind = kind;

@@ -71,6 +71,7 @@ const primFlips = [
 ];
 
 const primitives = primFlips.map(({ flip, translate }) => new Primitive(
+    null,
     flip,
     'union',
     'triangle-right',
@@ -96,7 +97,7 @@ for (const { flip, translate } of primFlips) {
 }
 
 const shapeFlipX = makeShape('flip-x', [
-    new Primitive('no-flip', 'union', 'triangle-right', 0, 1, { x: 3, y: 0 }),
+    new Primitive(null, 'no-flip', 'union', 'triangle-right', 0, 1, { x: 3, y: 0 }),
 ]);
 
 const insideFlipped = sampleInside(-3, 0, 'flip-x');

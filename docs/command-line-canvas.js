@@ -798,6 +798,25 @@ class Color {
     }
 }
 
+/** #### Checks that a debugPrimitiveAabb value is valid
+ * @param {Color|null} debugPrimitiveAabb The colour for the debug box, or null
+ * @param {string} [xpx='debugPrimitiveAabb'] Exception prefix
+ */
+const validateDebugPrimitiveAabb = (debugPrimitiveAabb,
+    xpx = 'debugPrimitiveAabb') => {
+    if (debugPrimitiveAabb === null) return; // null is valid
+    if (Array.isArray(debugPrimitiveAabb)) throw TypeError(
+        `${xpx} is an array, not an object`);
+    if (typeof debugPrimitiveAabb !== 'object') throw TypeError(
+        `${xpx} is type '${typeof debugPrimitiveAabb}' not 'object'`);
+    if (!(debugPrimitiveAabb instanceof Color)) {
+        /** @type {{}} **/ const notColor = debugPrimitiveAabb;
+        const notColorName = notColor.constructor.name;
+        throw TypeError(
+            `${xpx} is an instance of '${notColorName}' not 'Color'`);
+    }
+};
+
 /** #### Checks that a flip value is valid
  * @TODO move all shared validators to a common location
  * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip reflect-mode to check
@@ -882,6 +901,11 @@ const validateTranslate$1 = (translate, xpx = 'translate') => {
 
 /** #### A primitive shape that can be combined to form complex shapes */
 class Primitive {
+    /** #### The colour to use when debugging the primitive's bounding box
+     * - If `null`, no debug bounding box will be drawn
+     * @type {Color|null} */
+    debugPrimitiveAabb = null;
+
     /** #### How to reflect this primitive, if at all
      * @type {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} */
     flip = 'no-flip';
@@ -907,14 +931,24 @@ class Primitive {
     translate = { x: 0, y: 0 };
 
     /**
+     * @param {Color|null} debugPrimitiveAabb Debug bounding box colour
      * @param {'flip-x'|'flip-x-and-y'|'flip-y'|'no-flip'} flip Reflection
      * @param {'union'|'difference'} joinMode How to combine with previous
      * @param {'circle'|'square'|'triangle-right'} kind The primitive shape type
      * @param {number} rotate Rotation in radians
-    * @param {number} scale Uniform scale factor
+     * @param {number} scale Uniform scale factor
      * @param {{ x: number, y: number }} translate Translation offset
      */
-    constructor(flip, joinMode, kind, rotate, scale, translate) {
+    constructor(
+        debugPrimitiveAabb,
+        flip,
+        joinMode,
+        kind,
+        rotate,
+        scale,
+        translate,
+    ) {
+        validateDebugPrimitiveAabb(debugPrimitiveAabb, 'Primitive: debugPrimitiveAabb');
         validateFlip$1(flip, 'Primitive: flip');
         validateJoinMode(joinMode, 'Primitive: joinMode');
         validateKind(kind, 'Primitive: kind');
@@ -922,6 +956,7 @@ class Primitive {
         validateScale$1(scale, 'Primitive: scale');
         validateTranslate$1(translate, 'Primitive: translate');
 
+        this.debugPrimitiveAabb = debugPrimitiveAabb;
         this.flip = flip;
         this.joinMode = joinMode;
         this.kind = kind;
@@ -967,7 +1002,7 @@ const validateColor = (color, xpx = 'color') => {
 };
 
 /** #### Checks that a debugShapeAabb value is valid
- * @param {Color|null} debugShapeAabb The debug color or null
+ * @param {Color|null} debugShapeAabb The background color for the debug box, or null
  * @param {string} [xpx='debugShapeAabb'] Exception prefix
  */
 const validateDebugShapeAabb = (debugShapeAabb,
@@ -1451,6 +1486,7 @@ const FLIP_SIGNS$1 = Object.freeze({
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../models/primitive/primitive.js').Primitive} Primitive
  * @typedef {import('../../models/shape/shape.js').Shape} Shape
  */
 
@@ -1538,29 +1574,14 @@ const aabbCompound = (shape, expand) => {
 
     for (let i = 0; i < shape.primitives.length; i++) {
         const p = shape.primitives[i];
-        const primScale = p.scale || 1;
-        if (primScale === 0) continue;
-
-        const totalScale = shapeScale * primScale;
-        const primCenterX = shape.translate.x + (p.translate.x * shapeScale * shapeFlip.x);
-        const primCenterY = shape.translate.y + (p.translate.y * shapeScale * shapeFlip.y);
-
-        let box;
-        switch (p.kind) {
-            case 'circle': {
-                const scaledRadius = Math.abs(totalScale);
-                box = aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
-                break;
-            }
-            case 'triangle-right': {
-                const lx = totalScale * 1;
-                const ly = totalScale * 2;
-                box = aabbTriangleRight(primCenterX, primCenterY, lx, ly, expand);
-                break;
-            }
-            default:
-                box = { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
-        }
+        const box = computePrimitiveWorldAabb(
+            expand,
+            p,
+            shape,
+            shapeFlip,
+            shapeScale,
+        );
+        if (box === null) continue;
 
         out.xMin = Math.min(out.xMin, box.xMin);
         out.xMax = Math.max(out.xMax, box.xMax);
@@ -1572,6 +1593,69 @@ const aabbCompound = (shape, expand) => {
     if (out.xMin > out.xMax) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
 
     return out;
+};
+
+/** #### Axis-aligned bounding box for a primitive within a shape context
+ * - Returns `null` when the primitive's scale is zero.
+ * @param {number} expand Amount to expand the box (world units)
+ * @param {Primitive} primitive Primitive to measure
+ * @param {Shape} shape Shape that owns the primitive
+ * @returns {Bounds|null}
+ */
+const aabbPrimitiveInShape = (expand, primitive, shape) => {
+    const shapeScale = shape.scale || 1;
+    if (shapeScale === 0) return null;
+
+    const shapeFlip = FLIP_SIGNS$1[shape.flip] || FLIP_SIGNS$1['no-flip'];
+
+    return computePrimitiveWorldAabb(
+        expand,
+        primitive,
+        shape,
+        shapeFlip,
+        shapeScale,
+    );
+};
+
+/** #### Compute world-space AABB for a primitive within a shape context
+ * - Returns `null` when the primitive's scale is zero.
+ * @param {number} expand Amount to expand the box (world units)
+ * @param {Primitive} primitive Primitive to measure
+ * @param {Shape} shape Shape that owns the primitive
+ * @param {{x:number,y:number}} shapeFlip Flip signs of the shape
+ * @param {number} shapeScale Scale of the shape
+ * @returns {Bounds|null}
+ */
+const computePrimitiveWorldAabb = (
+    expand,
+    primitive,
+    shape,
+    shapeFlip,
+    shapeScale,
+) => {
+    const primScale = primitive.scale || 1;
+    if (primScale === 0) return null;
+
+    const totalScale = shapeScale * primScale;
+    const primCenterX = shape.translate.x
+        + (primitive.translate.x * shapeScale * shapeFlip.x);
+    const primCenterY = shape.translate.y
+        + (primitive.translate.y * shapeScale * shapeFlip.y);
+
+    switch (primitive.kind) {
+        case 'circle': {
+            const scaledRadius = Math.abs(totalScale);
+            return aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
+        }
+        case 'triangle-right': {
+            const lx = totalScale * 1;
+            const ly = totalScale * 2;
+            return aabbTriangleRight(primCenterX, primCenterY, lx, ly,
+                expand);
+        }
+        default:
+            return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
+    }
 };
 
 /**
@@ -1830,7 +1914,27 @@ const computeShapeAABBs = (
         }
 
         // Use an aggregate AABB which unions all primitive AABBs.
-        return aabbCompound(shape, expand);
+        const bounds = aabbCompound(shape, expand);
+
+        // Collect debug AABBs for primitives that request them.
+        const primitiveDebugAabbs = [];
+        for (let pi = 0; pi < shape.primitives.length; pi++) {
+            const primitive = shape.primitives[pi];
+            if (primitive.debugPrimitiveAabb === null) continue;
+
+            const primBox = aabbPrimitiveInShape(expand, primitive, shape);
+            if (primBox === null) continue;
+
+            primitiveDebugAabbs.push({
+                bounds: primBox,
+                color: primitive.debugPrimitiveAabb,
+            });
+        }
+
+        return {
+            bounds,
+            primitiveDebugAabbs,
+        };
     });
 
 /** #### Computes world-space X and Y coordinates for each pixel column and row
@@ -2240,14 +2344,15 @@ function rasterize(
             // and blend processing whenever the SDF says the pixel is hit.
             for (let si = 0; si < shapes.length; si++) {
                 const shape = shapes[si].shape;
+                const shapeBox = shapeBoxes[si];
                 // Quick axis-aligned bounding-box culling. If enabled and the
                 // pixel's world coordinate lies outside the (conservative)
                 // box for this shape, skip SDF evaluation entirely.
                 {
-                    const box = shapeBoxes[si];
-                    if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
-                        continue; // shape cannot affect this pixel
-                    }
+                    const box = shapeBox.bounds;
+                    if (worldX < box.xMin || worldX > box.xMax
+                        || worldY < box.yMin || worldY > box.yMax
+                    ) continue; // shape cannot affect this pixel
 
                     // If `debugShapeAabb` is not null, its colour should appear
                     // as the bounding box background.
@@ -2258,6 +2363,23 @@ function rasterize(
                         dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
                         dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
                     }
+                }
+
+                // If `primitiveDebugAabb` is not null for any primitives, their
+                // colours should appear as the bounding box background.
+                const primitiveDebugs = shapeBox.primitiveDebugAabbs;
+                for (let di = 0; di < primitiveDebugs.length; di++) {
+                    const entry = primitiveDebugs[di];
+                    const primBox = entry.bounds;
+                    if (worldX < primBox.xMin || worldX > primBox.xMax
+                        || worldY < primBox.yMin || worldY > primBox.yMax
+                    ) continue;
+
+                    const dbgColor = entry.color;
+                    const alpha = dbgColor.a;
+                    dstR = dstR * (1 - alpha) + (dbgColor.r / 255) * alpha;
+                    dstG = dstG * (1 - alpha) + (dbgColor.g / 255) * alpha;
+                    dstB = dstB * (1 - alpha) + (dbgColor.b / 255) * alpha;
                 }
 
                 // Evaluate the composite signed distance for this Shape. Note

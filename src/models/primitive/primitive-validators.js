@@ -1,4 +1,24 @@
+import { Color } from '../color/color.js';
 import { Primitive } from "./primitive.js";
+
+/** #### Checks that a debugPrimitiveAabb value is valid
+ * @param {Color|null} debugPrimitiveAabb The colour for the debug box, or null
+ * @param {string} [xpx='debugPrimitiveAabb'] Exception prefix
+ */
+export const validateDebugPrimitiveAabb = (debugPrimitiveAabb,
+    xpx = 'debugPrimitiveAabb') => {
+    if (debugPrimitiveAabb === null) return; // null is valid
+    if (Array.isArray(debugPrimitiveAabb)) throw TypeError(
+        `${xpx} is an array, not an object`);
+    if (typeof debugPrimitiveAabb !== 'object') throw TypeError(
+        `${xpx} is type '${typeof debugPrimitiveAabb}' not 'object'`);
+    if (!(debugPrimitiveAabb instanceof Color)) {
+        /** @type {{}} **/ const notColor = debugPrimitiveAabb;
+        const notColorName = notColor.constructor.name;
+        throw TypeError(
+            `${xpx} is an instance of '${notColorName}' not 'Color'`);
+    }
+};
 
 /** #### Checks that a flip value is valid
  * @TODO move all shared validators to a common location

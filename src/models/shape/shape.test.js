@@ -9,7 +9,7 @@ import { Shape } from './shape.js';
 const ink = new Color(0, 0, 0, 1);
 const paper = new Color(1, 1, 1, 1);
 const stroke = new Color(1, 0, 0, 1);
-const primitive = new Primitive('no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });
+const primitive = new Primitive(null, 'no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });
 
 /** @type {{
     blendMode: 'multiply'|'normal'|'overlay'|'screen',

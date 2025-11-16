@@ -1,5 +1,7 @@
 import { throws } from 'node:assert';
+import { Color } from '../color/color.js';
 import {
+    validateDebugPrimitiveAabb,
     validateFlip,
     validateJoinMode,
     validateKind,
@@ -9,6 +11,26 @@ import {
     validateTranslate,
 } from './primitive-validators.js';
 import { Primitive } from './primitive.js';
+
+
+// `validateDebugPrimitiveAabb()` invalid.
+
+// @ts-expect-error
+throws(() => validateDebugPrimitiveAabb(), {
+    message: /^debugPrimitiveAabb is type 'undefined' not 'object'$/ });
+// @ts-expect-error
+throws(() => validateDebugPrimitiveAabb([]), {
+    message: /^debugPrimitiveAabb is an array, not an object$/ });
+// @ts-expect-error
+throws(() => validateDebugPrimitiveAabb({}), {
+    message: /^debugPrimitiveAabb is an instance of 'Object' not 'Color'$/ });
+
+
+// `validateDebugPrimitiveAabb()` valid.
+
+validateDebugPrimitiveAabb(null);
+validateDebugPrimitiveAabb(new Color(0, 0, 0, 0));
+validateDebugPrimitiveAabb(new Color(255, 255, 255, 1));
 
 
 // `validateFlip()` invalid.
@@ -158,10 +180,8 @@ throws(() => validatePrimitive(new Map(), 'test:'), {
 
 // `validatePrimitive()` valid.
 
-validatePrimitive(new Primitive('flip-x', 'union', 'circle', 0, 1,
-    { x: 0, y: 0 }));
-validatePrimitive(new Primitive('no-flip', 'difference', 'triangle-right', -1.5, 0,
-    { x: -10, y: 10 }));
+validatePrimitive(new Primitive(null, 'flip-x', 'union', 'circle', 0, 1, { x: 0, y: 0 }));
+validatePrimitive(new Primitive(null, 'no-flip', 'difference', 'triangle-right', -1.5, 0, { x: -10, y: 10 }));
 
 
 console.log('All primitive-validators tests passed.');

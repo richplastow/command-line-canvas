@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 13: debugPrimitiveAabb - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-12.html">Previous</a></li>
+            <li><span>Next</span></li>
+        </ul>
+    </nav>
+    <h1>Example 13: debugPrimitiveAabb</h1>
+    <p>Primitives with <code>debugPrimitiveAabb</code> colours overlaid on the
+        canvas. The left shape has a single primitive; the middle shape combines
+        two mirrored triangles; the right shape is the same as the middle but
+        also shows the <code>debugShapeAabb</code> box.</p>
+</header>
+<pre id="output"></pre>
+
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
+
+<script type="module">
+    const base = '../src/models/';
+    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape'];
+    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+        ? await (async () =>
+            (await Promise.all(Ms.map(M => M.toLowerCase())
+                .map(m => import(`${base}${m}/${m}.js`))))
+            .reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc; }, {})
+        )()
+        : await import('./command-line-canvas.js');
+
+    const background = new Pixel(50, 40, 30);
+    const canvas = new Canvas(background, 96, 24);
+
+    const transparent = new Color(0, 0, 0, 0);
+    const inkSoft = new Color(240, 240, 255, 0.25);
+
+    const dbgRed = new Color(255, 80, 80, 0.6);
+    const dbgGreen = new Color(80, 255, 160, 0.6);
+    const dbgBlue = new Color(80, 150, 255, 0.6);
+
+    const circlePrim = new Primitive(
+        dbgRed,           // debugPrimitiveAabb
+        'no-flip',
+        'union',
+        'circle',
+        0,
+        2.2,
+        { x: 0, y: 0 },
+    );
+
+    const triangleLeft = new Primitive(
+        dbgGreen,
+        'no-flip',
+        'union',
+        'triangle-right',
+        0,
+        1.7,
+        { x: -1.3, y: -0.3 },
+    );
+
+    const triangleRight = new Primitive(
+        dbgBlue,
+        'flip-x',
+        'union',
+        'triangle-right',
+        0,
+        2,
+        { x: 1.3, y: 0.3 },
+    );
+
+    const circleShape = new Shape(
+        'normal',
+        null,            // debugShapeAabb
+        'no-flip',
+        inkSoft,
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [circlePrim],
+        0,
+        1,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: -12, y: 0 },
+    );
+
+    const triangleShape1 = new Shape(
+        'normal',
+        null,
+        'no-flip',
+        inkSoft,
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [triangleLeft, triangleRight],
+        0,
+        1.2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: -0.2, y: 0 },
+    );
+
+    const triangleShape2 = new Shape(
+        'normal',
+        dbgRed,          // debugShapeAabb
+        'no-flip',
+        inkSoft,
+        transparent,
+        'all-ink',
+        0.5,
+        1,
+        'pixel',
+        [triangleLeft, triangleRight],
+        0,
+        1.2,
+        transparent,
+        'center',
+        'pixel',
+        0,
+        { x: 12, y: 0 },
+    );
+
+    canvas.addShape(circleShape);
+    canvas.addShape(triangleShape1);
+    canvas.addShape(triangleShape2);
+
+    const out = canvas.render('truecolor', 'html');
+    document.getElementById('output').innerHTML = out;
+</script>
+</body>
+</html>

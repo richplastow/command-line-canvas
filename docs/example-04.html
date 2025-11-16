@@ -62,10 +62,10 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     // Four primitives (circles) positioned along the x axis, overlapping.
     const primitives = [
-        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: -4.5, y: 0 }),
-        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: -1.5, y: 0 }),
-        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: 1.5, y: 0 }),
-        new Primitive('no-flip', 'union', 'circle', 0, 2, { x: 4.5, y: 0 }),
+        new Primitive(null, 'no-flip', 'union', 'circle', 0, 2, { x: -4.5, y: 0 }),
+        new Primitive(null, 'no-flip', 'union', 'circle', 0, 2, { x: -1.5, y: 0 }),
+        new Primitive(null, 'no-flip', 'union', 'circle', 0, 2, { x: 1.5, y: 0 }),
+        new Primitive(null, 'no-flip', 'union', 'circle', 0, 2, { x: 4.5, y: 0 }),
     ];
 
     const blendModes = ['multiply', 'normal', 'overlay', 'screen'];

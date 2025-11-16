@@ -1,5 +1,5 @@
 import { Shape } from '../../models/shape/shape.js';
-import { aabbCompound } from '../sdfs-and-aabbs/compound.js';
+import { aabbCompound, aabbPrimitiveInShape } from '../sdfs-and-aabbs/compound.js';
 
 /** #### Computes axis-aligned bounding boxes (AABBs) for shapes in world-space
  * - These AABBs are 'conservative', meaning they err on the side of being too
@@ -52,5 +52,25 @@ export const computeShapeAABBs = (
         }
 
         // Use an aggregate AABB which unions all primitive AABBs.
-        return aabbCompound(shape, expand);
+        const bounds = aabbCompound(shape, expand);
+
+        // Collect debug AABBs for primitives that request them.
+        const primitiveDebugAabbs = [];
+        for (let pi = 0; pi < shape.primitives.length; pi++) {
+            const primitive = shape.primitives[pi];
+            if (primitive.debugPrimitiveAabb === null) continue;
+
+            const primBox = aabbPrimitiveInShape(expand, primitive, shape);
+            if (primBox === null) continue;
+
+            primitiveDebugAabbs.push({
+                bounds: primBox,
+                color: primitive.debugPrimitiveAabb,
+            });
+        }
+
+        return {
+            bounds,
+            primitiveDebugAabbs,
+        };
     });

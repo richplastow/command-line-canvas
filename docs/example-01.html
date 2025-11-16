@@ -58,6 +58,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     // Create a circle primitive at the center.
     const circle1 = new Primitive(
+        null,            // debugPrimitiveAabb
         'no-flip',
         'union',         // joinMode
         'circle',        // kind
@@ -67,6 +68,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const circle2 = new Primitive(
+        null,            // debugPrimitiveAabb
         'no-flip',
         'union',         // joinMode
         'circle',        // kind

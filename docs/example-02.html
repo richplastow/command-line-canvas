@@ -55,6 +55,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     // Four triangle-right primitives positioned in a 2x2 grid.
     const pTopLeft = new Primitive(
+        null,          // debugPrimitiveAabb
         'flip-x-and-y', // flip
         'union',        // joinMode
         'triangle-right',
@@ -64,6 +65,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const pTopRight = new Primitive(
+        null,
         'flip-x',
         'union',
         'triangle-right',
@@ -73,6 +75,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const pBottomLeft = new Primitive(
+        null,
         'flip-y',
         'union',
         'triangle-right',
@@ -82,6 +85,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const pBottomRight = new Primitive(
+        null,
         'no-flip',
         'union',
         'triangle-right',

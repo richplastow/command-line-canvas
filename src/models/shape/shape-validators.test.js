@@ -206,6 +206,7 @@ throws(() => validatePrimitives([{}]), {
 // `validatePrimitives()` valid.
 
 const p = new Primitive(
+    null, // debugPrimitiveAabb
     'flip-x', // flip
     'union', // joinMode
     'circle', // kind

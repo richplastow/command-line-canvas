@@ -15,6 +15,7 @@ const FLIP_SIGNS = Object.freeze({
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../models/primitive/primitive.js').Primitive} Primitive
  * @typedef {import('../../models/shape/shape.js').Shape} Shape
  */
 
@@ -102,29 +103,14 @@ export const aabbCompound = (shape, expand) => {
 
     for (let i = 0; i < shape.primitives.length; i++) {
         const p = shape.primitives[i];
-        const primScale = p.scale || 1;
-        if (primScale === 0) continue;
-
-        const totalScale = shapeScale * primScale;
-        const primCenterX = shape.translate.x + (p.translate.x * shapeScale * shapeFlip.x);
-        const primCenterY = shape.translate.y + (p.translate.y * shapeScale * shapeFlip.y);
-
-        let box;
-        switch (p.kind) {
-            case 'circle': {
-                const scaledRadius = Math.abs(totalScale);
-                box = aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
-                break;
-            }
-            case 'triangle-right': {
-                const lx = totalScale * 1;
-                const ly = totalScale * 2;
-                box = aabbTriangleRight(primCenterX, primCenterY, lx, ly, expand);
-                break;
-            }
-            default:
-                box = { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
-        }
+        const box = computePrimitiveWorldAabb(
+            expand,
+            p,
+            shape,
+            shapeFlip,
+            shapeScale,
+        );
+        if (box === null) continue;
 
         out.xMin = Math.min(out.xMin, box.xMin);
         out.xMax = Math.max(out.xMax, box.xMax);
@@ -136,4 +122,67 @@ export const aabbCompound = (shape, expand) => {
     if (out.xMin > out.xMax) return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
 
     return out;
+};
+
+/** #### Axis-aligned bounding box for a primitive within a shape context
+ * - Returns `null` when the primitive's scale is zero.
+ * @param {number} expand Amount to expand the box (world units)
+ * @param {Primitive} primitive Primitive to measure
+ * @param {Shape} shape Shape that owns the primitive
+ * @returns {Bounds|null}
+ */
+export const aabbPrimitiveInShape = (expand, primitive, shape) => {
+    const shapeScale = shape.scale || 1;
+    if (shapeScale === 0) return null;
+
+    const shapeFlip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
+
+    return computePrimitiveWorldAabb(
+        expand,
+        primitive,
+        shape,
+        shapeFlip,
+        shapeScale,
+    );
+};
+
+/** #### Compute world-space AABB for a primitive within a shape context
+ * - Returns `null` when the primitive's scale is zero.
+ * @param {number} expand Amount to expand the box (world units)
+ * @param {Primitive} primitive Primitive to measure
+ * @param {Shape} shape Shape that owns the primitive
+ * @param {{x:number,y:number}} shapeFlip Flip signs of the shape
+ * @param {number} shapeScale Scale of the shape
+ * @returns {Bounds|null}
+ */
+const computePrimitiveWorldAabb = (
+    expand,
+    primitive,
+    shape,
+    shapeFlip,
+    shapeScale,
+) => {
+    const primScale = primitive.scale || 1;
+    if (primScale === 0) return null;
+
+    const totalScale = shapeScale * primScale;
+    const primCenterX = shape.translate.x
+        + (primitive.translate.x * shapeScale * shapeFlip.x);
+    const primCenterY = shape.translate.y
+        + (primitive.translate.y * shapeScale * shapeFlip.y);
+
+    switch (primitive.kind) {
+        case 'circle': {
+            const scaledRadius = Math.abs(totalScale);
+            return aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
+        }
+        case 'triangle-right': {
+            const lx = totalScale * 1;
+            const ly = totalScale * 2;
+            return aabbTriangleRight(primCenterX, primCenterY, lx, ly,
+                expand);
+        }
+        default:
+            return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
+    }
 };

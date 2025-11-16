@@ -69,14 +69,15 @@ export function rasterize(
             // and blend processing whenever the SDF says the pixel is hit.
             for (let si = 0; si < shapes.length; si++) {
                 const shape = shapes[si].shape;
+                const shapeBox = shapeBoxes[si];
                 // Quick axis-aligned bounding-box culling. If enabled and the
                 // pixel's world coordinate lies outside the (conservative)
                 // box for this shape, skip SDF evaluation entirely.
                 if (ENABLE_BOX_CULLING) {
-                    const box = shapeBoxes[si];
-                    if (worldX < box.xMin || worldX > box.xMax || worldY < box.yMin || worldY > box.yMax) {
-                        continue; // shape cannot affect this pixel
-                    }
+                    const box = shapeBox.bounds;
+                    if (worldX < box.xMin || worldX > box.xMax
+                        || worldY < box.yMin || worldY > box.yMax
+                    ) continue; // shape cannot affect this pixel
 
                     // If `debugShapeAabb` is not null, its colour should appear
                     // as the bounding box background.
@@ -87,6 +88,23 @@ export function rasterize(
                         dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
                         dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
                     }
+                }
+
+                // If `primitiveDebugAabb` is not null for any primitives, their
+                // colours should appear as the bounding box background.
+                const primitiveDebugs = shapeBox.primitiveDebugAabbs;
+                for (let di = 0; di < primitiveDebugs.length; di++) {
+                    const entry = primitiveDebugs[di];
+                    const primBox = entry.bounds;
+                    if (worldX < primBox.xMin || worldX > primBox.xMax
+                        || worldY < primBox.yMin || worldY > primBox.yMax
+                    ) continue;
+
+                    const dbgColor = entry.color;
+                    const alpha = dbgColor.a;
+                    dstR = dstR * (1 - alpha) + (dbgColor.r / 255) * alpha;
+                    dstG = dstG * (1 - alpha) + (dbgColor.g / 255) * alpha;
+                    dstB = dstB * (1 - alpha) + (dbgColor.b / 255) * alpha;
                 }
 
                 // Evaluate the composite signed distance for this Shape. Note
