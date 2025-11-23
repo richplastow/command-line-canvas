@@ -98,6 +98,15 @@ export class Canvas {
         return id;
     }
 
+    /** #### Request that the canvas be re-rasterized on next render()
+     * - Useful when external code mutates Shapes directly.
+     * 
+     * @todo replace this with setters on Shape properties?
+     */
+    requestUpdate() {
+        this.#needsUpdate = true;
+    }
+
     /** #### Rasterises the canvas, and then encodes the pixels ready for display
      * - For 'ansi', 'braille', and 'html' output formats, encoded output will be a string
      * - For 'buffer', the encoded output will be a Uint8Array

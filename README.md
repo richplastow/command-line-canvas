@@ -4,7 +4,7 @@
 
 - Version: 0.0.1
 - Created: 5th November 2025 by Rich Plastow
-- Updated: 16th November 2025 by Rich Plastow
+- Updated: 23rd November 2025 by Rich Plastow
 - GitHub: <https://github.com/richplastow/command-line-canvas>
 - Live demo: <https://richplastow.com/command-line-canvas/>
 
@@ -16,7 +16,27 @@ graphics for text-based UIs.
 
 ## Contributing
 
-## Install and build
+### Develop
+
+```bash
+npm install --global static-server
+# added 1 package ...
+static-server --version
+# static-server 2.2.1
+static-server --no-cache .
+# ...
+# * Serving files at: http://localhost:9080
+# * Press Ctrl+C to shutdown.
+```
+
+Visit <http://localhost:9080/docs/> - there's no hot-reloading, so refresh the
+browser manually to see changes.
+
+> [!TIP]
+> `static-server`'s `--no-cache` makes sure you're always loading up-to-date
+> source files during development.
+
+### Install and build
 
 ```bash
 npm install --global rollup
@@ -43,7 +63,7 @@ npm run check-types
 # ✅ No type-errors found!
 ```
 
-### Unit tests
+### Unit tests and end-to-end tests
 
 ```bash
 npm test
@@ -59,3 +79,14 @@ npm run ok
 # ...
 # ✅ Build succeeded!
 ```
+
+### Preview
+
+```bash
+static-server --no-cache docs
+# ...
+# * Serving files at: http://localhost:9080
+# * Press Ctrl+C to shutdown.
+```
+
+Visit <http://localhost:9080/> (without 'docs/') to check the live demos work.

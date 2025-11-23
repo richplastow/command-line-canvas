@@ -5,7 +5,7 @@
 
 /**
  * #### Distance from a point to a line segment
- * - Returns the shortest Euclidean distance from point (px,py) to the
+ * - Returns the shortest Euclidean distance from point (px,py) to the line
  *   segment defined by (ax,ay)-(bx,by).
  * @param {number} px
  * @param {number} py

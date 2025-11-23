@@ -1,6 +1,6 @@
 /**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a circle.
+ * @fileoverview
+ * Signed distance function (SDF) and rough vertices for a circle.
  */
 
 /**
@@ -16,19 +16,20 @@
 export const sdfCircle = (tx, ty, r) =>
     Math.sqrt(tx * tx + ty * ty) - r;
 
-/** #### Axis-aligned bounding box for a circle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} r // radius, in world-space units
- * @param {number} expand World units to expand the box (e.g. for anti-aliasing)
- * @returns {Bounds}
+/** #### Rough vertices of a circle with 1-unit radius
+ * - Samples 8 points around perimeter for rotation-invariant coverage.
+ * - Useful for generating an AABB.
+ * TODO extend to support other radii.
+ * @returns {{x:number,y:number}[]}
  */
-export const aabbCircle = (tx, ty, r, expand) => {
-    const expandedR = Math.abs(r) + expand;
-    return {
-        xMin: tx - expandedR,
-        xMax: tx + expandedR,
-        yMin: ty - expandedR,
-        yMax: ty + expandedR,
-    };
+export const verticesCircle = () => {
+    const vertices = [];
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * 2 * Math.PI;
+        vertices.push({
+            x: Math.cos(angle),
+            y: Math.sin(angle),
+        });
+    }
+    return vertices;
 };

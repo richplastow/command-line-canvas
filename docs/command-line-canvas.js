@@ -1419,8 +1419,8 @@ class Shape {
 }
 
 /**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a circle.
+ * @fileoverview
+ * Signed distance function (SDF) and rough vertices for a circle.
  */
 
 /**
@@ -1436,21 +1436,22 @@ class Shape {
 const sdfCircle = (tx, ty, r) =>
     Math.sqrt(tx * tx + ty * ty) - r;
 
-/** #### Axis-aligned bounding box for a circle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} r // radius, in world-space units
- * @param {number} expand World units to expand the box (e.g. for anti-aliasing)
- * @returns {Bounds}
+/** #### Rough vertices of a circle with 1-unit radius
+ * - Samples 8 points around perimeter for rotation-invariant coverage.
+ * - Useful for generating an AABB.
+ * TODO extend to support other radii.
+ * @returns {{x:number,y:number}[]}
  */
-const aabbCircle = (tx, ty, r, expand) => {
-    const expandedR = Math.abs(r) + expand;
-    return {
-        xMin: tx - expandedR,
-        xMax: tx + expandedR,
-        yMin: ty - expandedR,
-        yMax: ty + expandedR,
-    };
+const verticesCircle = () => {
+    const vertices = [];
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * 2 * Math.PI;
+        vertices.push({
+            x: Math.cos(angle),
+            y: Math.sin(angle),
+        });
+    }
+    return vertices;
 };
 
 /**
@@ -1460,7 +1461,7 @@ const aabbCircle = (tx, ty, r, expand) => {
 
 /**
  * #### Distance from a point to a line segment
- * - Returns the shortest Euclidean distance from point (px,py) to the
+ * - Returns the shortest Euclidean distance from point (px,py) to the line
  *   segment defined by (ax,ay)-(bx,by).
  * @param {number} px
  * @param {number} py
@@ -1485,8 +1486,8 @@ const segmentDistance = (px, py, ax, ay, bx, by) => {
 };
 
 /**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a right triangle.
+ * @fileoverview
+ * Signed distance function (SDF) and vertices for a right triangle.
  */
 
 
@@ -1523,23 +1524,20 @@ const sdfTriangleRight = (tx, ty, lx, ly) => {
     return inside ? -dist : dist;
 };
 
-/** #### Axis-aligned bounding box for a right triangle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} lx // horizontal side length, in world-space units
- * @param {number} ly // vertical side length, in world-space units
- * @param {number} expand World units to expand the box (e.g. for AA)
- * @returns {Bounds}
+/** #### Vertices for a right triangle
+ * - Right triangle vertices (lx=1, ly=2): bottom-left, bottom-right, top-left.
+ * - Useful for generating an AABB.
+ * - TODO extend to support other sizes.
+ * @returns {{x:number,y:number}[]}
  */
-const aabbTriangleRight = (tx, ty, lx, ly, expand) => {
-    const halfLx = Math.abs(lx) / 2;
-    const halfLy = Math.abs(ly) / 2;
-    return {
-        xMin: tx - halfLx - expand,
-        xMax: tx + halfLx + expand,
-        yMin: ty - halfLy - expand,
-        yMax: ty + halfLy + expand,
-    };
+const verticesTriangleRight = () => {
+    const halfLx = 0.5;
+    const halfLy = 1;
+    return [
+        { x: -halfLx, y: -halfLy }, // bottom-left
+        { x: halfLx, y: -halfLy },  // bottom-right
+        { x: -halfLx, y: halfLy },  // top-left
+    ];
 };
 
 /**
@@ -1579,9 +1577,21 @@ const sdfCompound = (shape, worldX, worldY) => {
     const shapeTx = shape.translate.x;
     const shapeTy = shape.translate.y;
     const shapeFlip = FLIP_SIGNS$1[shape.flip] || FLIP_SIGNS$1['no-flip'];
+    const shapeRotate = shape.rotate || 0;
 
-    const shapeLocalX = (worldX - shapeTx) * shapeFlip.x / shapeScale;
-    const shapeLocalY = (worldY - shapeTy) * shapeFlip.y / shapeScale;
+    // Translate to shape origin.
+    let shapeLocalX = (worldX - shapeTx) * shapeFlip.x / shapeScale;
+    let shapeLocalY = (worldY - shapeTy) * shapeFlip.y / shapeScale;
+
+    // Apply shape rotation.
+    if (shapeRotate !== 0) {
+        const cos = Math.cos(-shapeRotate);
+        const sin = Math.sin(-shapeRotate);
+        const rotX = shapeLocalX * cos - shapeLocalY * sin;
+        const rotY = shapeLocalX * sin + shapeLocalY * cos;
+        shapeLocalX = rotX;
+        shapeLocalY = rotY;
+    }
 
     let acc = null;
 
@@ -1593,19 +1603,34 @@ const sdfCompound = (shape, worldX, worldY) => {
 
         const primFlip = FLIP_SIGNS$1[p.flip] || FLIP_SIGNS$1['no-flip'];
         const totalScale = shapeScale * primScale;
+        const primRotate = p.rotate || 0;
 
-        const localX = (shapeLocalX - p.translate.x) * primFlip.x / primScale;
-        const localY = (shapeLocalY - p.translate.y) * primFlip.y / primScale;
+        // Translate to primitive origin.
+        let localX = (shapeLocalX - p.translate.x) * primFlip.x / primScale;
+        let localY = (shapeLocalY - p.translate.y) * primFlip.y / primScale;
+
+        // Apply primitive rotation.
+        if (primRotate !== 0) {
+            const cos = Math.cos(-primRotate);
+            const sin = Math.sin(-primRotate);
+            const rotX = localX * cos - localY * sin;
+            const rotY = localX * sin + localY * cos;
+            localX = rotX;
+            localY = rotY;
+        }
 
         let dWorld = 1e6;
         switch (p.kind) {
             case 'circle': {
+                // User hard-coded local radius r=1.
+                // TODO extend to support other radii.
                 const dLocal = sdfCircle(localX, localY, 1);
                 dWorld = dLocal * totalScale;
                 break;
             }
             case 'triangle-right': {
                 // Use hard-coded local side lengths lx=1, ly=2.
+                // TODO extend to support other sizes.
                 const dLocal = sdfTriangleRight(localX, localY, 1, 2);
                 dWorld = dLocal * totalScale;
                 break;
@@ -1689,6 +1714,8 @@ const aabbPrimitiveInShape = (expand, primitive, shape) => {
 };
 
 /** #### Compute world-space AABB for a primitive within a shape context
+ * Transforms actual vertices (not bounding box corners) through the full
+ * transformation pipeline, then computes the AABB of the result.
  * - Returns `null` when the primitive's scale is zero.
  * @param {number} expand Amount to expand the box (world units)
  * @param {Primitive} primitive Primitive to measure
@@ -1707,26 +1734,113 @@ const computePrimitiveWorldAabb = (
     const primScale = primitive.scale || 1;
     if (primScale === 0) return null;
 
-    const totalScale = shapeScale * primScale;
-    const primCenterX = shape.translate.x
-        + (primitive.translate.x * shapeScale * shapeFlip.x);
-    const primCenterY = shape.translate.y
-        + (primitive.translate.y * shapeScale * shapeFlip.y);
+    const primFlip = FLIP_SIGNS$1[primitive.flip] || FLIP_SIGNS$1['no-flip'];
+    const shapeRotate = shape.rotate || 0;
+    const primRotate = primitive.rotate || 0;
 
+    // Get local vertices (actual shape vertices, not bounding box corners).
+    // Using actual vertices is critical: for non-rectangular shapes like triangles,
+    // transforming bounding box corners produces incorrect AABBs after rotation.
+    let vertices;
     switch (primitive.kind) {
         case 'circle': {
-            const scaledRadius = Math.abs(totalScale);
-            return aabbCircle(primCenterX, primCenterY, scaledRadius, expand);
+            // TODO extend to support other radii.
+            vertices = verticesCircle();
+            break;
         }
         case 'triangle-right': {
-            const lx = totalScale * 1;
-            const ly = totalScale * 2;
-            return aabbTriangleRight(primCenterX, primCenterY, lx, ly,
-                expand);
+            // TODO extend to support other sizes.
+            vertices = verticesTriangleRight();
+            break;
         }
         default:
             return { xMin: -1e6, xMax: 1e6, yMin: -1e6, yMax: 1e6 };
     }
+
+    // Transform vertices through:
+    // primitive scale → primitive rotate → primitive flip → primitive translate
+    //   → shape scale →     shape rotate →     shape flip →     shape translate.
+    // TODO caching, and use only one loop, if performance is an issue...
+    // TODO ...or maybe optimize by combining transforms into matrices
+
+    // 1. Apply primitive scale.
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x *= primScale;
+        vertices[i].y *= primScale;
+    }
+
+    // 2. Apply primitive rotation.
+    if (primRotate !== 0) {
+        const cos = Math.cos(primRotate);
+        const sin = Math.sin(primRotate);
+        for (let i = 0; i < vertices.length; i++) {
+            const x = vertices[i].x;
+            const y = vertices[i].y;
+            vertices[i].x = x * cos - y * sin;
+            vertices[i].y = x * sin + y * cos;
+        }
+    }
+
+    // 3. Apply primitive flip.
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x *= primFlip.x;
+        vertices[i].y *= primFlip.y;
+    }
+
+    // 4. Translate by primitive offset (in shape-local space).
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x += primitive.translate.x;
+        vertices[i].y += primitive.translate.y;
+    }
+
+    // 5. Apply shape scale.
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x *= shapeScale;
+        vertices[i].y *= shapeScale;
+    }
+
+    // 6. Apply shape rotation.
+    if (shapeRotate !== 0) {
+        const cos = Math.cos(shapeRotate);
+        const sin = Math.sin(shapeRotate);
+        for (let i = 0; i < vertices.length; i++) {
+            const x = vertices[i].x;
+            const y = vertices[i].y;
+            vertices[i].x = x * cos - y * sin;
+            vertices[i].y = x * sin + y * cos;
+        }
+    }
+
+    // 7. Apply shape flip.
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x *= shapeFlip.x;
+        vertices[i].y *= shapeFlip.y;
+    }
+
+    // 8. Translate by shape position (to world space).
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i].x += shape.translate.x;
+        vertices[i].y += shape.translate.y;
+    }
+
+    // Compute AABB from transformed vertices.
+    let xMin = vertices[0].x;
+    let xMax = vertices[0].x;
+    let yMin = vertices[0].y;
+    let yMax = vertices[0].y;
+    for (let i = 1; i < vertices.length; i++) {
+        if (vertices[i].x < xMin) xMin = vertices[i].x;
+        if (vertices[i].x > xMax) xMax = vertices[i].x;
+        if (vertices[i].y < yMin) yMin = vertices[i].y;
+        if (vertices[i].y > yMax) yMax = vertices[i].y;
+    }
+
+    return {
+        xMin: xMin - expand,
+        xMax: xMax + expand,
+        yMin: yMin - expand,
+        yMax: yMax + expand,
+    };
 };
 
 /**
@@ -1989,8 +2103,8 @@ const computeShapeAABBs = (
 
         // Collect debug AABBs for primitives that request them.
         const primitiveDebugAabbs = [];
-        for (let pi = 0; pi < shape.primitives.length; pi++) {
-            const primitive = shape.primitives[pi];
+        for (let i = 0; i < shape.primitives.length; i++) {
+            const primitive = shape.primitives[i];
             if (primitive.debugPrimitiveAabb === null) continue;
 
             const primBox = aabbPrimitiveInShape(expand, primitive, shape);
@@ -2601,6 +2715,15 @@ class Canvas {
         this.#needsUpdate = true; // TODO optimise by only setting this if shape can affect pixels
         this.#lastShapeId = id + 1; // ready for the next shape
         return id;
+    }
+
+    /** #### Request that the canvas be re-rasterized on next render()
+     * - Useful when external code mutates Shapes directly.
+     * 
+     * @todo replace this with setters on Shape properties?
+     */
+    requestUpdate() {
+        this.#needsUpdate = true;
     }
 
     /** #### Rasterises the canvas, and then encodes the pixels ready for display

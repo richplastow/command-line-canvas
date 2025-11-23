@@ -17,7 +17,9 @@
     </nav>
     <h1>Example 2: Right Triangles</h1>
     <p>Four right triangles with light-magenta fill and navy outline on a
-        light-blue background, each using a different `flip` value.</p>
+        light-aqua background, each using a different `flip` and `rotate` value.
+        AABBs for Primitives and the Shape are shown with red and blue
+        translucent boxes.</p>
 </header>
 <p>Copies 'buffer' data into a canvas element.</p>
 <canvas id="output"></canvas>
@@ -55,37 +57,37 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     // Four triangle-right primitives positioned in a 2x2 grid.
     const pTopLeft = new Primitive(
-        null,          // debugPrimitiveAabb
-        'flip-x-and-y', // flip
-        'union',        // joinMode
+        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
+        'flip-x-and-y',  // flip
+        'union',         // joinMode
         'triangle-right',
-        0,              // rotate
-        1,              // scale
+        0.785398163,     // rotate 45 degrees
+        1,             // scale
         { x: -3, y: -2 } // translate
     );
 
     const pTopRight = new Primitive(
-        null,
+        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
         'flip-x',
         'union',
         'triangle-right',
-        0,
-        1,
+        -0.1,
+        1.1,
         { x: 3, y: -2 }
     );
 
     const pBottomLeft = new Primitive(
-        null,
+        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
         'flip-y',
         'union',
         'triangle-right',
-        0,
+        0.3,
         1,
         { x: -3, y: 2 }
     );
 
     const pBottomRight = new Primitive(
-        null,
+        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
         'no-flip',
         'union',
         'triangle-right',
@@ -96,7 +98,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     const shape = new Shape(
         'normal',            // blendMode
-        null,                // debugShapeAabb
+        new Color(0, 0, 255, 0.3), // debugPrimitiveAabb
         'no-flip',
         lightMagenta,        // ink
         transparent,         // paper
@@ -123,9 +125,30 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     const ctx = canvasElement.getContext('2d');
     const imageData = ctx.createImageData(canvas.xExtent, canvas.yExtent);
     const data = imageData.data;
-    const pixelData = canvas.render('truecolor', 'buffer');
-    data.set(pixelData); // fast, native bulk copy
-    ctx.putImageData(imageData, 0, 0);
+
+    // Animate the shape rotation and rerender each frame.
+    let lastTs = null;
+    const rotateSpeed = 0.6; // radians per second.
+    const loop = (ts) => {
+        if (lastTs === null) lastTs = ts;
+        const dt = (ts - lastTs) / 1000;
+        lastTs = ts;
+
+        // Update rotation and keep within 0..2pi to avoid large numbers.
+        shape.rotate = (shape.rotate + rotateSpeed * dt) % (Math.PI * 2);
+
+        // Mark the canvas as dirty, then rerender it to the buffer and copy
+        // into canvas image data.
+        canvas.requestUpdate();
+        const pixelData = canvas.render('truecolor', 'buffer');
+            data.set(pixelData);
+            ctx.putImageData(imageData, 0, 0);
+
+        // Uncomment to run the animation:
+        // requestAnimationFrame(loop);
+    };
+
+    requestAnimationFrame(loop);
 </script>
 </body>
 </html>

@@ -56,8 +56,8 @@ export const computeShapeAABBs = (
 
         // Collect debug AABBs for primitives that request them.
         const primitiveDebugAabbs = [];
-        for (let pi = 0; pi < shape.primitives.length; pi++) {
-            const primitive = shape.primitives[pi];
+        for (let i = 0; i < shape.primitives.length; i++) {
+            const primitive = shape.primitives[i];
             if (primitive.debugPrimitiveAabb === null) continue;
 
             const primBox = aabbPrimitiveInShape(expand, primitive, shape);

@@ -1,6 +1,6 @@
 /**
- * Signed distance function (SDF) and axis-aligned bounding box (AABB) for
- * a right triangle.
+ * @fileoverview
+ * Signed distance function (SDF) and vertices for a right triangle.
  */
 
 /**
@@ -41,23 +41,18 @@ export const sdfTriangleRight = (tx, ty, lx, ly) => {
     return inside ? -dist : dist;
 };
 
-/** #### Axis-aligned bounding box for a right triangle
- * @param {number} tx // center position (translate) x, in world-space units
- * @param {number} ty // center position (translate) y, in world-space units
- * @param {number} lx // horizontal side length, in world-space units
- * @param {number} ly // vertical side length, in world-space units
- * @param {number} expand World units to expand the box (e.g. for AA)
- * @returns {Bounds}
+/** #### Vertices for a right triangle
+ * - Right triangle vertices (lx=1, ly=2): bottom-left, bottom-right, top-left.
+ * - Useful for generating an AABB.
+ * - TODO extend to support other sizes.
+ * @returns {{x:number,y:number}[]}
  */
-export const aabbTriangleRight = (tx, ty, lx, ly, expand) => {
-    const halfLx = Math.abs(lx) / 2;
-    const halfLy = Math.abs(ly) / 2;
-    return {
-        xMin: tx - halfLx - expand,
-        xMax: tx + halfLx + expand,
-        yMin: ty - halfLy - expand,
-        yMax: ty + halfLy + expand,
-    };
+export const verticesTriangleRight = () => {
+    const halfLx = 0.5;
+    const halfLy = 1;
+    return [
+        { x: -halfLx, y: -halfLy }, // bottom-left
+        { x: halfLx, y: -halfLy },  // bottom-right
+        { x: -halfLx, y: halfLy },  // top-left
+    ];
 };
-
-
