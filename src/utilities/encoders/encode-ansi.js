@@ -1,6 +1,6 @@
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 import {
@@ -9,13 +9,13 @@ import {
     validatePixels,
 } from '../../models/canvas/canvas-validators.js';
 
-/** #### Renders a 2D array of pixels to an ANSI string
+/** #### Encodes a 2D array of pixels to an ANSI string
  * - Note that only the `min` bounds are inclusive, so `xMax` and `yMax` are
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeAnsi():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
@@ -95,8 +95,8 @@ export const encodeAnsi = (
 };
 
 /** #### Gets the ANSI escape code for a pair of pixels in 256-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
  */
 function getAnsi256Color(upper, lower) {
@@ -114,8 +114,8 @@ function getAnsi256Color(upper, lower) {
 }
 
 /** #### Gets the ANSI escape codes for a pair of pixels in 8-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character with 8-colour ANSI
  */
 function getAnsi8Color(upper, lower) {
@@ -129,8 +129,8 @@ function getAnsi8Color(upper, lower) {
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Block Elements' character, or space
  */
 function getMonochrome(upper, lower) {
@@ -150,8 +150,8 @@ function getMonochrome(upper, lower) {
 }
 
 /** #### Gets the ANSI escape code for a pair of pixels in Truecolor
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
  */
 function getAnsiTruecolor(upper, lower) {
@@ -161,7 +161,7 @@ function getAnsiTruecolor(upper, lower) {
 }
 
 /** #### Quantises a pixel to 8-colour RGB values
- * @param {Pixel} pixel Pixel to quantise
+ * @param {Color} pixel Color to quantise
  * @returns {{ b: number, g: number, r: number }} Quantised RGB components
  */
 function to8ColorRgb(pixel) {

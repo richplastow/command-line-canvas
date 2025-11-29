@@ -1,5 +1,5 @@
 import { throws, deepStrictEqual as eq } from 'node:assert/strict';
-import { Pixel } from '../pixel/pixel.js';
+import { Color } from '../color/color.js';
 import {
     validateBounds,
     validateCanvas,
@@ -88,7 +88,7 @@ throws(() => validateCanvas(new Date(), 'nope'),
 
 // validateCanvas() valid.
 
-const bg = new Pixel(12, 34, 56);
+const bg = new Color(12, 34, 56, 255);
 eq(validateCanvas(new Canvas(bg, 12, 34), 'validCanvas'), void 0);
 
 
@@ -152,7 +152,7 @@ throws(() => validatePixels(['abc']),
 // @ts-expect-error
 throws(() => validatePixels([new Date()]),
     { message: /^pixels\[0\] is not an array$/});
-const p = new Pixel(1, 2, 3);
+const p = new Color(1, 2, 3, 255);
 throws(() => validatePixels([[p, null, p]], 'myPixels'),
     { message: /^myPixels\[0\]\[1\] is null, not an object$/});
 // @ts-expect-error
@@ -163,18 +163,18 @@ throws(() => validatePixels([[p, p, 'abc']], 'canvas.render(): pixels'),
     { message: /^canvas\.render\(\): pixels\[0\]\[2\] is type 'string' not 'object'$/});
 // @ts-expect-error
 throws(() => validatePixels([[{}]]),
-    { message: /^pixels\[0\]\[0\] is an instance of 'Object' not 'Pixel'$/});
+    { message: /^pixels\[0\]\[0\] is an instance of 'Object' not 'Color'$/});
 throws(() => validatePixels([[]]),
     { message: /^pixels extentX is zero$/});
-const over3840X = Array(3841).fill(null).map(() => new Pixel(0, 0, 0));
+const over3840X = Array(3841).fill(null).map(() => new Color(0, 0, 0, 255));
 throws(() => validatePixels([over3840X]),
     { message: /^pixels extentX 3841 is greater than 3840$/});
 throws(() => validatePixels([]),
     { message: /^pixels extentY is zero$/});
-const over3840Y = Array(3841).fill(null).map(() => [new Pixel(0, 0, 0)]);
+const over3840Y = Array(3841).fill(null).map(() => [new Color(0, 0, 0, 255)]);
 throws(() => validatePixels(over3840Y),
     { message: /^pixels extentY 3841 is greater than 3840$/});
-const px = new Pixel(0, 0, 0);
+const px = new Color(0, 0, 0, 255);
 throws(() => validatePixels([[px, px], [px], [px, px]], 'myPixels'),
     { message: /^myPixels\[1\] extentX 1 !== first row 2$/});
 
@@ -182,9 +182,9 @@ throws(() => validatePixels([[px, px], [px], [px, px]], 'myPixels'),
 // validatePixels() valid.
 
 const validPixels = [
-    [new Pixel(0, 0, 0), new Pixel(10, 10, 10)],
-    [new Pixel(20, 20, 20), new Pixel(30, 30, 30)],
-    [new Pixel(40, 40, 40), new Pixel(50, 50, 50)],
+    [new Color(0, 0, 0, 255), new Color(10, 10, 10, 255)],
+    [new Color(20, 20, 20, 255), new Color(30, 30, 30, 255)],
+    [new Color(40, 40, 40, 255), new Color(50, 50, 50, 255)],
 ];
 eq(validatePixels(validPixels, 'testPixels'), void 0);
 

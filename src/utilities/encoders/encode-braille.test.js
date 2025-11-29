@@ -1,13 +1,13 @@
 import { throws, deepEqual as eq } from 'node:assert';
-import { Pixel } from '../../models/pixel/pixel.js';
+import { Color } from '../../models/color/color.js';
 import { encodeBraille } from './encode-braille.js';
 
 
 const good2x4Pixels = [
-    [ new Pixel(  0,   0,   0), new Pixel(255, 255, 255)],
-    [ new Pixel(255,   0,   0), new Pixel(  0, 255,   0)],
-    [ new Pixel(  0,   0, 255), new Pixel(255, 255,   0)],
-    [ new Pixel(255, 255, 255), new Pixel(  0,   0,   0)],
+    [ new Color(  0,   0,   0, 255), new Color(255, 255, 255, 255)],
+    [ new Color(255,   0,   0, 255), new Color(  0, 255,   0, 255)],
+    [ new Color(  0,   0, 255, 255), new Color(255, 255,   0, 255)],
+    [ new Color(255, 255, 255, 255), new Color(  0,   0,   0, 255)],
 ];
 
 
@@ -32,7 +32,7 @@ throws(() => encodeBraille(
     'monochrome',
     // @ts-expect-error
     [[new Date()], [{}]],
-), { message: /^encodeBraille\(\): pixels\[0\]\[0\] is an instance of 'Date' not 'Pixel'$/ });
+), { message: /^encodeBraille\(\): pixels\[0\]\[0\] is an instance of 'Date' not 'Color'$/ });
 
 throws(() => encodeBraille(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
@@ -63,8 +63,8 @@ eq(encodeBraille(
     good2x4Pixels,
 ), expected);
 
-const exampleUpper = new Pixel(129, 120, 255);
-const exampleLower = new Pixel(255, 200, 255);
+const exampleUpper = new Color(129, 120, 255, 255);
+const exampleLower = new Color(255, 200, 255, 255);
 
 eq(encodeBraille(
     { xMin: 0, xMax: 1, yMin: 0, yMax: 2 },

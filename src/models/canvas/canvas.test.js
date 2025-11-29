@@ -1,18 +1,18 @@
 import { throws, deepEqual as eq } from 'node:assert';
-import { Pixel } from '../pixel/pixel.js';
+import { Color } from '../color/color.js';
 import { Canvas } from './canvas.js';
 
 
 // `new Canvas` invalid.
 
-const px = new Pixel(12, 255, 56);
+const px = new Color(12, 255, 56, 255);
 
 // @ts-expect-error
 throws(() => new Canvas(), {
     message: /^Canvas: background is type 'undefined' not 'object'$/ });
 // @ts-expect-error
 throws(() => new Canvas(new Set([])), {
-    message: /^Canvas: background is an instance of 'Set' not 'Pixel'$/ });
+    message: /^Canvas: background is an instance of 'Set' not 'Color'$/ });
 // @ts-expect-error
 throws(() => new Canvas(px), {
     message: /^Canvas: xExtent type is 'undefined' not 'number'$/ });
@@ -34,14 +34,15 @@ eq(canvas, {
         r: 12,
         g: 255,
         b: 56,
+        a: 255,
     },
     xExtent: 2,
     yExtent: 4,
     // #pixels: [
-    //     [ { r: 12, g: 34, b: 56 }, { r: 12, g: 34, b: 56 } ],
-    //     [ { r: 12, g: 34, b: 56 }, { r: 12, g: 34, b: 56 } ],
-    //     [ { r: 12, g: 34, b: 56 }, { r: 12, g: 34, b: 56 } ],
-    //     [ { r: 12, g: 34, b: 56 }, { r: 12, g: 34, b: 56 } ],
+    //     [ { r: 12, g: 34, b: 56, a: 255 }, { r: 12, g: 34, b: 56, a: 255 } ],
+    //     [ { r: 12, g: 34, b: 56, a: 255 }, { r: 12, g: 34, b: 56, a: 255 } ],
+    //     [ { r: 12, g: 34, b: 56, a: 255 }, { r: 12, g: 34, b: 56, a: 255 } ],
+    //     [ { r: 12, g: 34, b: 56, a: 255 }, { r: 12, g: 34, b: 56, a: 255 } ],
     // ],
 });
 

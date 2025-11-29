@@ -1,6 +1,6 @@
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 import {
@@ -15,7 +15,7 @@ import {
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeHtml():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
@@ -95,8 +95,8 @@ export const encodeHtml = (
 };
 
 /** #### Gets the HTML markup for a pair of pixels in 256-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtml256Color(upper, lower) {
@@ -118,8 +118,8 @@ function getHtml256Color(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in 8-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtml8Color(upper, lower) {
@@ -130,8 +130,8 @@ function getHtml8Color(upper, lower) {
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Block Elements' character, or space
  */
 function getMonochrome(upper, lower) {
@@ -151,8 +151,8 @@ function getMonochrome(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in Truecolor
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtmlTruecolor(upper, lower) {
@@ -161,7 +161,7 @@ function getHtmlTruecolor(upper, lower) {
 }
 
 /** #### Quantises a pixel to 8-colour RGB values
- * @param {Pixel} pixel Pixel to quantise
+ * @param {Color} pixel Color to quantise
  * @returns {{ b: number, g: number, r: number }} Quantised RGB components
  */
 function to8ColorRgb(pixel) {

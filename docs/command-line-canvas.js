@@ -28,43 +28,43 @@
  */
 const SIDE_IN_WORLD_UNITS = 10.0;
 
-/** #### Checks that a pixel channel is a number between 0 and 255 inclusive
- * - Note that channel values do not have to be integers
- * @param {number} channel The channel value to check
- * @param {string} [xpx='channel'] Exception prefix, e.g. 'Pixel: r (red)'
+/** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
+ * - Note that RGBA values do not have to be integers
+ * @param {number} rgba The RGBA value to check
+ * @param {string} [xpx='rgba'] Exception prefix, e.g. 'Color: r (red)'
  */
-const validateChannel = (channel, xpx = 'channel') => {
-    if (typeof channel !== 'number') throw TypeError(
-        `${xpx} type is '${typeof channel}' not 'number'`);
-    if (Number.isNaN(channel)) throw RangeError(
-        `${xpx} ${channel} is not a valid number`);
-    if (channel < 0) throw RangeError(
-        `${xpx} ${channel} is less than 0`);
-    if (channel > 255) throw RangeError(
-        `${xpx} ${channel} is greater than 255`);
+const validateRgba = (rgba, xpx = 'rgba') => {
+    if (typeof rgba !== 'number') throw TypeError(
+        `${xpx} type is '${typeof rgba}' not 'number'`);
+    if (Number.isNaN(rgba)) throw RangeError(
+        `${xpx} ${rgba} is not a valid number`);
+    if (rgba < 0) throw RangeError(
+        `${xpx} ${rgba} is less than 0`);
+    if (rgba > 255) throw RangeError(
+        `${xpx} ${rgba} is greater than 255`);
 };
 
-/** #### Checks that a Pixel instance is valid
- * @param {Pixel} pixel The Pixel instance to check
- * @param {string} [xpx='pixel'] Exception prefix, e.g. 'Canvas: background'
+/** #### Checks that a Color instance is valid
+ * @param {Color} color The Color instance to check
+ * @param {string} [xpx='color'] Exception prefix, e.g. 'Shape: ink'
  */
-const validatePixel = (pixel, xpx = 'pixel') => {
-    if (pixel === null) throw TypeError(
+const validateColor$1 = (color, xpx = 'color') => {
+    if (color === null) throw TypeError(
         `${xpx} is null, not an object`);
-    if (Array.isArray(pixel)) throw TypeError(
+    if (Array.isArray(color)) throw TypeError(
         `${xpx} is an array, not an object`);
-    if (typeof pixel !== 'object') throw TypeError(
-        `${xpx} is type '${typeof pixel}' not 'object'`);
-    if (!(pixel instanceof Pixel)) {
-        /** @type {{}} **/ const notPixel = pixel;
-        const notPixelName = notPixel.constructor.name;
+    if (typeof color !== 'object') throw TypeError(
+        `${xpx} is type '${typeof color}' not 'object'`);
+    if (!(color instanceof Color)) {
+        /** @type {{}} **/ const notColor = color;
+        const notColorName = notColor.constructor.name;
         throw TypeError(
-            `${xpx} is an instance of '${notPixelName}' not 'Pixel'`);
+            `${xpx} is an instance of '${notColorName}' not 'Color'`);
     }
 };
 
-/** #### A pixel in an ANSI canvas */
-class Pixel {
+/** #### A color with RGBA values */
+class Color {
     /** #### Red value (0-255)
      * @type {number} */
     r = 0;
@@ -77,19 +77,26 @@ class Pixel {
      * @type {number} */
     b = 0;
 
+    /** #### Alpha value (0-255)
+     * @type {number} */
+    a = 255;
+
     /**
      * @param {number} r The red value (0-255)
      * @param {number} g The green value (0-255)
      * @param {number} b The blue value (0-255)
+     * @param {number} a The alpha value (0-255)
      */
-    constructor(r, g, b) {
-        validateChannel(r, 'Pixel: r (red)');
-        validateChannel(g, 'Pixel: g (green)');
-        validateChannel(b, 'Pixel: b (blue)');
+    constructor(r, g, b, a) {
+        validateRgba(r, 'Color: r (red)');
+        validateRgba(g, 'Color: g (green)');
+        validateRgba(b, 'Color: b (blue)');
+        validateRgba(a, 'Color: a (alpha)');
 
         this.r = r;
         this.g = g;
         this.b = b;
+        this.a = a;
     }
 }
 
@@ -168,7 +175,7 @@ const validateOutputFormat = (outputFormat, xpx = 'outputFormat') => {
 };
 
 /** #### Checks that a 2D array of pixels is valid
- * @param {Pixel[][]} pixels The 2D array of pixels to check
+ * @param {Color[][]} pixels The 2D array of pixels to check
  * @param {string} [xpx='pixels'] Exception prefix, e.g. 'canvas.render(): pixels'
  */
 const validatePixels = (pixels, xpx = 'pixels') => {
@@ -201,7 +208,7 @@ const validatePixels = (pixels, xpx = 'pixels') => {
 
             // Validate each pixel.
             const pixel = row[x];
-            if (!(pixel instanceof Pixel)) {
+            if (!(pixel instanceof Color)) {
                 if (pixel === null) throw TypeError(
                     `${xpx}[${y}][${x}] is null, not an object`);
                 if (Array.isArray(pixel)) throw TypeError(
@@ -211,7 +218,7 @@ const validatePixels = (pixels, xpx = 'pixels') => {
                 /** @type {{}} **/ const notPixel = pixel;
                 const notPixelName = notPixel.constructor.name;
                 throw TypeError(
-                    `${xpx}[${y}][${x}] is an instance of '${notPixelName}' not 'Pixel'`);
+                    `${xpx}[${y}][${x}] is an instance of '${notPixelName}' not 'Color'`);
             }
         }
     }
@@ -230,17 +237,17 @@ const validatePixels = (pixels, xpx = 'pixels') => {
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 
-/** #### Renders a 2D array of pixels to an ANSI string
+/** #### Encodes a 2D array of pixels to an ANSI string
  * - Note that only the `min` bounds are inclusive, so `xMax` and `yMax` are
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeAnsi():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
@@ -320,8 +327,8 @@ const encodeAnsi = (
 };
 
 /** #### Gets the ANSI escape code for a pair of pixels in 256-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
  */
 function getAnsi256Color(upper, lower) {
@@ -339,8 +346,8 @@ function getAnsi256Color(upper, lower) {
 }
 
 /** #### Gets the ANSI escape codes for a pair of pixels in 8-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character with 8-colour ANSI
  */
 function getAnsi8Color(upper, lower) {
@@ -354,8 +361,8 @@ function getAnsi8Color(upper, lower) {
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Block Elements' character, or space
  */
 function getMonochrome$1(upper, lower) {
@@ -375,8 +382,8 @@ function getMonochrome$1(upper, lower) {
 }
 
 /** #### Gets the ANSI escape code for a pair of pixels in Truecolor
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, preceded by ANSI escape codes
  */
 function getAnsiTruecolor(upper, lower) {
@@ -386,7 +393,7 @@ function getAnsiTruecolor(upper, lower) {
 }
 
 /** #### Quantises a pixel to 8-colour RGB values
- * @param {Pixel} pixel Pixel to quantise
+ * @param {Color} pixel Color to quantise
  * @returns {{ b: number, g: number, r: number }} Quantised RGB components
  */
 function to8ColorRgb$1(pixel) {
@@ -410,7 +417,7 @@ function toAnsi8Index(rgb) {
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 
@@ -429,7 +436,7 @@ const DOT_UPPER_RED = 0x01;
  * - Each character represents a vertical pair of pixels
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth Desired colour depth
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBraille():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation when inputs already verified
@@ -480,8 +487,8 @@ const encodeBraille = (
 };
 
 /** #### Converts a pair of pixels into a Braille character code point
- * @param {Pixel} upperPixel The pixel rendered in the upper half
- * @param {Pixel} lowerPixel The pixel rendered in the lower half
+ * @param {Color} upperPixel The pixel rendered in the upper half
+ * @param {Color} lowerPixel The pixel rendered in the lower half
  * @returns {string} Single Braille character covering both pixels
  */
 function toBrailleChar(upperPixel, lowerPixel) {
@@ -499,7 +506,7 @@ function toBrailleChar(upperPixel, lowerPixel) {
 
 /** #### Retrieves a pixel alpha channel as 0-255
  * - Accepts 0-1 or 0-255 alpha if present
- * @param {Pixel} pixel The pixel to inspect
+ * @param {Color} pixel The pixel to inspect
  * @returns {number} Alpha expressed 0-255
  */
 function getAlphaByte(pixel) {
@@ -511,7 +518,7 @@ function getAlphaByte(pixel) {
 }
 
 /** #### Determines whether a pixel should set its alpha dot
- * @param {Pixel} pixel The pixel to inspect
+ * @param {Color} pixel The pixel to inspect
  * @returns {boolean} True if alpha exceeds the threshold
  */
 function hasAlphaCoverage(pixel) {
@@ -520,7 +527,7 @@ function hasAlphaCoverage(pixel) {
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 
@@ -529,7 +536,7 @@ function hasAlphaCoverage(pixel) {
  * - The buffer contains rows within `bounds` in row-major order.
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth (kept for API parity)
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBuffer():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
@@ -603,7 +610,7 @@ const encodeBuffer = (
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 
@@ -613,7 +620,7 @@ const encodeBuffer = (
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeHtml():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
@@ -693,8 +700,8 @@ const encodeHtml = (
 };
 
 /** #### Gets the HTML markup for a pair of pixels in 256-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtml256Color(upper, lower) {
@@ -716,8 +723,8 @@ function getHtml256Color(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in 8-colour mode
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtml8Color(upper, lower) {
@@ -728,8 +735,8 @@ function getHtml8Color(upper, lower) {
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Block Elements' character, or space
  */
 function getMonochrome(upper, lower) {
@@ -749,8 +756,8 @@ function getMonochrome(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in Truecolor
- * @param {Pixel} upper The upper half color
- * @param {Pixel} lower The lower half color
+ * @param {Color} upper The upper half color
+ * @param {Color} lower The lower half color
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
 function getHtmlTruecolor(upper, lower) {
@@ -759,7 +766,7 @@ function getHtmlTruecolor(upper, lower) {
 }
 
 /** #### Quantises a pixel to 8-colour RGB values
- * @param {Pixel} pixel Pixel to quantise
+ * @param {Color} pixel Color to quantise
  * @returns {{ b: number, g: number, r: number }} Quantised RGB components
  */
 function to8ColorRgb(pixel) {
@@ -798,59 +805,6 @@ function index256ToRGB(index) {
     // 232-255: grayscale ramp.
     const gray = 8 + (index - 232) * 10;
     return { r: gray, g: gray, b: gray };
-}
-
-/** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
- * - Note that RGBA values do not have to be integers
- * @param {number} rgba The RGBA value to check
- * @param {string} [xpx='rgba'] Exception prefix, e.g. 'Color: r (red)'
- */
-const validateRgba = (rgba, xpx = 'rgba') => {
-    if (typeof rgba !== 'number') throw TypeError(
-        `${xpx} type is '${typeof rgba}' not 'number'`);
-    if (Number.isNaN(rgba)) throw RangeError(
-        `${xpx} ${rgba} is not a valid number`);
-    if (rgba < 0) throw RangeError(
-        `${xpx} ${rgba} is less than 0`);
-    if (rgba > 255) throw RangeError(
-        `${xpx} ${rgba} is greater than 255`);
-};
-
-/** #### A color with RGBA values */
-class Color {
-    /** #### Red value (0-255)
-     * @type {number} */
-    r = 0;
-
-    /** #### Green value (0-255)
-     * @type {number} */
-    g = 0;
-
-    /** #### Blue value (0-255)
-     * @type {number} */
-    b = 0;
-
-    /** #### Alpha value (0-255)
-     * @type {number} */
-    a = 255;
-
-    /**
-     * @param {number} r The red value (0-255)
-     * @param {number} g The green value (0-255)
-     * @param {number} b The blue value (0-255)
-     * @param {number} a The alpha value (0-255)
-     */
-    constructor(r, g, b, a) {
-        validateRgba(r, 'Color: r (red)');
-        validateRgba(g, 'Color: g (green)');
-        validateRgba(b, 'Color: b (blue)');
-        validateRgba(a, 'Color: a (alpha)');
-
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
-    }
 }
 
 /** #### Checks that a debugPrimitiveAabb value is valid
@@ -2147,13 +2101,14 @@ function computeWorldXsAndYs(xExtent, yExtent) {
  * @param {number} yExtent The height of the pixel grid
  */
 const resetPixelGrid = (background, pixels, xExtent, yExtent) => {
-    const { r, g, b } = background;
+    const { r, g, b, a } = background;
     for (let y = 0; y < yExtent; y++) {
         for (let x = 0; x < xExtent; x++) {
             const pixel = pixels[y][x];
             pixel.r = r;
             pixel.g = g;
             pixel.b = b;
+            pixel.a = a;
         }
     }
 };
@@ -2460,8 +2415,8 @@ const samplePatternColor = (
 /** #### Draws an array of shapes into the pixel grid
  * - Mutates the provided pixels-array in-place.
  * @param {number} aaRegionPixels Anti-alias region width in pixels
- * @param {Pixel} background Background color pixel
- * @param {Pixel[][]} pixels Pixel grid to rasterize into
+ * @param {Color} background Background color pixel
+ * @param {Color[][]} pixels Pixel grid to rasterize into
  * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
  * @param {number} worldUnitsPerPixel World units per pixel
  * @param {number} xExtent Width of the pixel grid
@@ -2621,8 +2576,8 @@ function rasterize(
 
 /** #### An ANSI canvas */
 class Canvas {
-    /** A pixel to clone across the canvas's background
-     * @type {Pixel} */
+    /** A color to clone across the canvas's background
+     * @type {Color} */
     background = null;
 
     /** #### The canvas's width
@@ -2648,7 +2603,7 @@ class Canvas {
     #needsUpdate = false;
 
     /** #### Private 2D array containing the canvas's pixels
-     * @type {Pixel[][]} */
+     * @type {Color[][]} */
     #pixels = [];
 
     /** #### Private list of Shapes
@@ -2661,12 +2616,12 @@ class Canvas {
     #worldUnitsPerPixel = 0;
 
     /**
-     * @param {Pixel} background A pixel to clone across the canvas's background
+     * @param {Color} background A color to clone across the canvas's background
      * @param {number} xExtent The canvas's width
      * @param {number} yExtent The canvas's height
      */
     constructor(background, xExtent, yExtent) {
-        validatePixel(background, 'Canvas: background');
+        validateColor$1(background, 'Canvas: background');
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
 
@@ -2680,10 +2635,11 @@ class Canvas {
         // it with the background colour.
         this.#pixels = Array.from({ length: yExtent }, () =>
             Array.from({ length: xExtent }, () =>
-                new Pixel(
+                new Color(
                     background.r,
                     background.g,
                     background.b,
+                    background.a,
                 )
             )
         );
@@ -2776,4 +2732,4 @@ class Canvas {
     }
 }
 
-export { Canvas, Color, Pixel, Primitive, Shape };
+export { Canvas, Color, Primitive, Shape };

@@ -1,5 +1,5 @@
 import { Canvas } from "./canvas.js";
-import { Pixel } from "../pixel/pixel.js";
+import { Color } from "../color/color.js";
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
@@ -95,7 +95,7 @@ export const validateOutputFormat = (outputFormat, xpx = 'outputFormat') => {
 };
 
 /** #### Checks that a 2D array of pixels is valid
- * @param {Pixel[][]} pixels The 2D array of pixels to check
+ * @param {Color[][]} pixels The 2D array of pixels to check
  * @param {string} [xpx='pixels'] Exception prefix, e.g. 'canvas.render(): pixels'
  */
 export const validatePixels = (pixels, xpx = 'pixels') => {
@@ -128,7 +128,7 @@ export const validatePixels = (pixels, xpx = 'pixels') => {
 
             // Validate each pixel.
             const pixel = row[x];
-            if (!(pixel instanceof Pixel)) {
+            if (!(pixel instanceof Color)) {
                 if (pixel === null) throw TypeError(
                     `${xpx}[${y}][${x}] is null, not an object`);
                 if (Array.isArray(pixel)) throw TypeError(
@@ -138,7 +138,7 @@ export const validatePixels = (pixels, xpx = 'pixels') => {
                 /** @type {{}} **/ const notPixel = pixel;
                 const notPixelName = notPixel.constructor.name;
                 throw TypeError(
-                    `${xpx}[${y}][${x}] is an instance of '${notPixelName}' not 'Pixel'`);
+                    `${xpx}[${y}][${x}] is an instance of '${notPixelName}' not 'Color'`);
             }
         }
     }

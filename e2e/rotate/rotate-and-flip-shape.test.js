@@ -1,7 +1,6 @@
 import { deepEqual as eq } from 'node:assert';
 import { Canvas } from '../../src/models/canvas/canvas.js';
 import { Color } from '../../src/models/color/color.js';
-import { Pixel } from '../../src/models/pixel/pixel.js';
 import { Primitive } from '../../src/models/primitive/primitive.js';
 import { Shape } from '../../src/models/shape/shape.js';
 
@@ -41,7 +40,7 @@ const makeRotatedFlippedShape = (shapeFlip, withStroke) => {
 
 /** #### Renders a rotated and flipped shape on a fresh canvas */
 const renderShape = (shape, useBraille) => {
-    const canvas = new Canvas(new Pixel(10, 10, 10), 40, 40);
+    const canvas = new Canvas(new Color(10, 10, 10, 255), 40, 40);
     canvas.addShape(shape);
     return useBraille
         ? canvas.render('8color', 'braille')

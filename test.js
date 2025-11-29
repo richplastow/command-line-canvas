@@ -11,10 +11,6 @@ import './src/utilities/encoders/encode-buffer.test.js';
 import './src/models/color/color-validators.test.js';
 import './src/models/color/color.test.js';
 
-// Pixel.
-import './src/models/pixel/pixel-validators.test.js';
-import './src/models/pixel/pixel.test.js';
-
 // Primitive.
 import './src/models/primitive/primitive-validators.test.js';
 import './src/models/primitive/primitive.test.js';

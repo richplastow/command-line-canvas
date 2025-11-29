@@ -1,5 +1,5 @@
 import { ENABLE_BOX_CULLING } from '../../clc-constants.js';
-import { Pixel } from '../../models/pixel/pixel.js';
+import { Color } from '../../models/color/color.js';
 import { Shape } from '../../models/shape/shape.js';
 import { sdfCompound } from '../sdfs-and-aabbs/compound.js';
 import {
@@ -16,8 +16,8 @@ import { samplePatternColor } from './sample-pattern-color.js';
 /** #### Draws an array of shapes into the pixel grid
  * - Mutates the provided pixels-array in-place.
  * @param {number} aaRegionPixels Anti-alias region width in pixels
- * @param {Pixel} background Background color pixel
- * @param {Pixel[][]} pixels Pixel grid to rasterize into
+ * @param {Color} background Background color pixel
+ * @param {Color[][]} pixels Pixel grid to rasterize into
  * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
  * @param {number} worldUnitsPerPixel World units per pixel
  * @param {number} xExtent Width of the pixel grid

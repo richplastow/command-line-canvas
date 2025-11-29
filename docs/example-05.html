@@ -33,8 +33,8 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
 <script type="module">
     const base = '../src/models/'; // shared path to source code models
-    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape']; // model names
-    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+    const Ms = ['Canvas', 'Color', 'Primitive', 'Shape']; // model names
+    const { Canvas, Color, Primitive, Shape } = window.W4?.isDev
         ? await (async () => // if dev mode, import each model...
             (await Promise.all(Ms.map(M => M.toLowerCase()) // ...in parallel...
                 .map(m => import(`${base}${m}/${m}.js`))) // ...from source...
@@ -43,7 +43,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         : await import('./command-line-canvas.js'); // ...otherwise use build
 
     // Create an 80x24 pixel canvas with mid-grey background.
-    const greyBg = new Pixel(128, 128, 128);
+    const greyBg = new Color(128, 128, 128, 255);
     const canvas = new Canvas(greyBg, 80, 48);
 
     // Colors for inks and outlines.

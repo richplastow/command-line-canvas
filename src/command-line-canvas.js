@@ -11,6 +11,5 @@
 // Models.
 export { Canvas } from './models/canvas/canvas.js';
 export { Color } from './models/color/color.js';
-export { Pixel } from './models/pixel/pixel.js';
 export { Primitive } from './models/primitive/primitive.js';
 export { Shape } from './models/shape/shape.js';

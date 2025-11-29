@@ -1,6 +1,5 @@
 import { deepEqual as eq } from 'node:assert';
 import { Color } from '../../models/color/color.js';
-import { Pixel } from '../../models/pixel/pixel.js';
 import { Primitive } from '../../models/primitive/primitive.js';
 import { Shape } from '../../models/shape/shape.js';
 import { rasterize } from './rasterize.js';
@@ -10,7 +9,7 @@ const makePixels = (width, height, r, g, b) => {
     for (let y = 0; y < height; y++) {
         const row = [];
         for (let x = 0; x < width; x++) {
-            row.push(new Pixel(r, g, b));
+            row.push(new Color(r, g, b, 255));
         }
         out.push(row);
     }
@@ -83,7 +82,7 @@ const circleShape = (options) => {
 
 // `rasterize()` background reset.
 
-const resetBg = new Pixel(12, 34, 56);
+const resetBg = new Color(12, 34, 56, 255);
 const resetPixels = makePixels(2, 2, 99, 88, 77);
 
 rasterize(0.85, resetBg, resetPixels, [], 5, 2, 2);
@@ -102,7 +101,7 @@ eq(toRgb(resetPixels), [
 
 // `rasterize()` fills with ink.
 
-const inkBg = new Pixel(0, 0, 0);
+const inkBg = new Color(0, 0, 0, 255);
 const inkPixels = makePixels(1, 1, 0, 0, 0);
 const inkColor = new Color(255, 0, 0, 255);
 const inkPaper = new Color(0, 0, 0, 0);
@@ -125,7 +124,7 @@ eq(toRgb(inkPixels), [
 
 // `rasterize()` honours paper pattern.
 
-const paperBg = new Pixel(0, 0, 0);
+const paperBg = new Color(0, 0, 0, 255);
 const paperPixels = makePixels(1, 1, 0, 0, 0);
 const paperInk = new Color(200, 10, 10, 255);
 const paperColor = new Color(0, 255, 0, 255);
@@ -149,7 +148,7 @@ eq(toRgb(paperPixels), [
 
 // `rasterize()` applies outside stroke.
 
-const strokeBg = new Pixel(10, 20, 30);
+const strokeBg = new Color(10, 20, 30, 255);
 const strokePixels = makePixels(1, 1, 5, 5, 5);
 const strokeShape = circleShape({
     ink: new Color(0, 0, 0, 0),
@@ -172,7 +171,7 @@ eq(toRgb(strokePixels), [
 
 // `rasterize()` multiply blend.
 
-const mulBg = new Pixel(128, 128, 128);
+const mulBg = new Color(128, 128, 128, 255);
 const mulPixels = makePixels(1, 1, 128, 128, 128);
 const mulShape = circleShape({
     blendMode: 'multiply',
@@ -193,7 +192,7 @@ eq(toRgb(mulPixels), [
 
 // `rasterize()` screen blend.
 
-const screenBg = new Pixel(128, 128, 128);
+const screenBg = new Color(128, 128, 128, 255);
 const screenPixels = makePixels(1, 1, 128, 128, 128);
 const screenShape = circleShape({
     blendMode: 'screen',
@@ -215,7 +214,7 @@ eq(toRgb(screenPixels), [
 
 // `rasterize()` overlay blend.
 
-const overlayBg = new Pixel(128, 128, 128);
+const overlayBg = new Color(128, 128, 128, 255);
 const overlayPixels = makePixels(1, 1, 128, 128, 128);
 const overlayShape = circleShape({
     blendMode: 'overlay',
@@ -236,7 +235,7 @@ eq(toRgb(overlayPixels), [
 
 
 // `rasterize()` debugShapeAabb background blend.
-const dbgBg = new Pixel(50, 60, 70);
+const dbgBg = new Color(50, 60, 70, 255);
 const dbgPixels = makePixels(1, 1, 50, 60, 70);
 const dbgColor = new Color(200, 100, 50, 128); // semi-transparent debug box
 const dbgShape = circleShape({
@@ -262,7 +261,7 @@ eq(toRgb(dbgPixels), [[{ r: expR, g: expG, b: expB }]]);
 
 
 // `rasterize()` debugPrimitiveAabb background blend.
-const dbgPrimBg = new Pixel(20, 30, 40);
+const dbgPrimBg = new Color(20, 30, 40, 255);
 const dbgPrimPixels = makePixels(1, 1, 20, 30, 40);
 const dbgPrimColor = new Color(50, 200, 250, 102);
 const dbgPrimShape = circleShape({

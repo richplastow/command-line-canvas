@@ -6,13 +6,14 @@
  * @param {number} yExtent The height of the pixel grid
  */
 export const resetPixelGrid = (background, pixels, xExtent, yExtent) => {
-    const { r, g, b } = background;
+    const { r, g, b, a } = background;
     for (let y = 0; y < yExtent; y++) {
         for (let x = 0; x < xExtent; x++) {
             const pixel = pixels[y][x];
             pixel.r = r;
             pixel.g = g;
             pixel.b = b;
+            pixel.a = a;
         }
     }
 }

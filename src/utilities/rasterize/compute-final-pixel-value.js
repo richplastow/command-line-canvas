@@ -1,4 +1,4 @@
-import { Color } from "../../command-line-canvas.js";
+import { Color } from "../../models/color/color.js";
 import { blendChannel, clamp01 } from "./rasterization-utilities.js";
 
 /** #### Computes the blended pixel colour from stroke and fill inputs

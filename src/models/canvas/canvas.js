@@ -4,8 +4,8 @@ import { encodeBraille } from '../../utilities/encoders/encode-braille.js';
 import { encodeBuffer } from '../../utilities/encoders/encode-buffer.js';
 import { encodeHtml } from '../../utilities/encoders/encode-html.js';
 import { rasterize } from '../../utilities/rasterize/rasterize.js';
-import { validatePixel } from '../pixel/pixel-validators.js';
-import { Pixel } from '../pixel/pixel.js';
+import { validateColor } from '../color/color-validators.js';
+import { Color } from '../color/color.js';
 import {
     validateCanvasExtent,
     validateColorDepth,
@@ -18,8 +18,8 @@ import {
 
 /** #### An ANSI canvas */
 export class Canvas {
-    /** A pixel to clone across the canvas's background
-     * @type {Pixel} */
+    /** A color to clone across the canvas's background
+     * @type {Color} */
     background = null;
 
     /** #### The canvas's width
@@ -45,7 +45,7 @@ export class Canvas {
     #needsUpdate = false;
 
     /** #### Private 2D array containing the canvas's pixels
-     * @type {Pixel[][]} */
+     * @type {Color[][]} */
     #pixels = [];
 
     /** #### Private list of Shapes
@@ -58,12 +58,12 @@ export class Canvas {
     #worldUnitsPerPixel = 0;
 
     /**
-     * @param {Pixel} background A pixel to clone across the canvas's background
+     * @param {Color} background A color to clone across the canvas's background
      * @param {number} xExtent The canvas's width
      * @param {number} yExtent The canvas's height
      */
     constructor(background, xExtent, yExtent) {
-        validatePixel(background, 'Canvas: background');
+        validateColor(background, 'Canvas: background');
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
 
@@ -77,10 +77,11 @@ export class Canvas {
         // it with the background colour.
         this.#pixels = Array.from({ length: yExtent }, () =>
             Array.from({ length: xExtent }, () =>
-                new Pixel(
+                new Color(
                     background.r,
                     background.g,
                     background.b,
+                    background.a,
                 )
             )
         );

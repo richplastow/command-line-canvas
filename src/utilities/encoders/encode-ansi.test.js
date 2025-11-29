@@ -1,19 +1,19 @@
 import { throws, deepEqual as eq } from 'node:assert';
-import { Pixel } from '../../models/pixel/pixel.js';
+import { Color } from '../../models/color/color.js';
 import { encodeAnsi } from './encode-ansi.js';
 
 
 const good2x5Pixels = [
     // Black and white.
-    [ new Pixel(  0,   0,   0), new Pixel(255, 255, 255)],
+    [ new Color(  0,   0,   0, 255), new Color(255, 255, 255, 255)],
     // Yellow and red.
-    [ new Pixel(255, 255,   0), new Pixel(255,   0,   0)],
+    [ new Color(255, 255,   0, 255), new Color(255,   0,   0, 255)],
     // Both green, left just above, right just below monochrome-threshold.
-    [ new Pixel(  0, 181,   0), new Pixel(  0, 179,   0)],
+    [ new Color(  0, 181,   0, 255), new Color(  0, 179,   0, 255)],
     // Both grey, just above and just below monochrome-threshold.
-    [ new Pixel(128, 128, 128), new Pixel(129, 129, 129)],
+    [ new Color(128, 128, 128, 255), new Color(129, 129, 129, 255)],
     // And an extra row, out of bounds, to ensure it's ignored.
-    [ new Pixel(255,   0, 255), new Pixel(  0, 255, 255)],
+    [ new Color(255,   0, 255, 255), new Color(  0, 255, 255, 255)],
 ];
 
 
@@ -54,7 +54,7 @@ throws(() => encodeAnsi(
     '256color',
     // @ts-expect-error
     [[new Date(), {}], [{}, {}]],
-), { message: /^encodeAnsi\(\): pixels\[0\]\[0\] is an instance of 'Date' not 'Pixel'$/ });
+), { message: /^encodeAnsi\(\): pixels\[0\]\[0\] is an instance of 'Date' not 'Color'$/ });
 
 throws(() => encodeAnsi(
     { xMin: 2, xMax: 4, yMin: 0, yMax: 2 },

@@ -1,6 +1,6 @@
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/pixel/pixel.js').Pixel} Pixel
+ * @typedef {import('../../models/color/color.js').Color} Color
  */
 
 import {
@@ -24,7 +24,7 @@ const DOT_UPPER_RED = 0x01;
  * - Each character represents a vertical pair of pixels
  * @param {Bounds} bounds The pixel bounds to encode within
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth Desired colour depth
- * @param {Pixel[][]} pixels 2D array of pixels to encode
+ * @param {Color[][]} pixels 2D array of pixels to encode
  * @param {string} [xpx='encodeBraille():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation when inputs already verified
@@ -75,8 +75,8 @@ export const encodeBraille = (
 };
 
 /** #### Converts a pair of pixels into a Braille character code point
- * @param {Pixel} upperPixel The pixel rendered in the upper half
- * @param {Pixel} lowerPixel The pixel rendered in the lower half
+ * @param {Color} upperPixel The pixel rendered in the upper half
+ * @param {Color} lowerPixel The pixel rendered in the lower half
  * @returns {string} Single Braille character covering both pixels
  */
 function toBrailleChar(upperPixel, lowerPixel) {
@@ -94,7 +94,7 @@ function toBrailleChar(upperPixel, lowerPixel) {
 
 /** #### Retrieves a pixel alpha channel as 0-255
  * - Accepts 0-1 or 0-255 alpha if present
- * @param {Pixel} pixel The pixel to inspect
+ * @param {Color} pixel The pixel to inspect
  * @returns {number} Alpha expressed 0-255
  */
 function getAlphaByte(pixel) {
@@ -106,7 +106,7 @@ function getAlphaByte(pixel) {
 }
 
 /** #### Determines whether a pixel should set its alpha dot
- * @param {Pixel} pixel The pixel to inspect
+ * @param {Color} pixel The pixel to inspect
  * @returns {boolean} True if alpha exceeds the threshold
  */
 function hasAlphaCoverage(pixel) {

@@ -32,8 +32,8 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
 <script type="module">
     const base = '../src/models/';
-    const Ms = ['Canvas', 'Color', 'Pixel', 'Primitive', 'Shape'];
-    const { Canvas, Color, Pixel, Primitive, Shape } = window.W4?.isDev
+    const Ms = ['Canvas', 'Color', 'Primitive', 'Shape'];
+    const { Canvas, Color, Primitive, Shape } = window.W4?.isDev
         ? await (async () =>
             (await Promise.all(Ms.map(M => M.toLowerCase())
                 .map(m => import(`${base}${m}/${m}.js`))))
@@ -41,7 +41,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         )()
         : await import('./command-line-canvas.js');
 
-    const background = new Pixel(0, 0, 0);
+    const background = new Color(0, 0, 0, 255);
     const canvas = new Canvas(background, 80, 24);
 
     // Primitives for shapes.
