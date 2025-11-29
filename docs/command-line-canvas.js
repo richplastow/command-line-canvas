@@ -32,6 +32,19 @@ const SIDE_IN_WORLD_UNITS = 10.0;
  * @typedef {import('../../clc-types.js').Bounds} Bounds
  */
 
+/** #### Checks that an anti-alias region value is a non-negative number
+ * @param {number} antiAliasRegion The anti-alias region width in pixels
+ * @param {string} [xpx='antiAliasRegion'] Exception prefix, e.g. 'Canvas: antiAliasRegion'
+ */
+const validateAntiAliasRegion = (antiAliasRegion, xpx = 'antiAliasRegion') => {
+    if (typeof antiAliasRegion !== 'number') throw TypeError(
+        `${xpx} type is '${typeof antiAliasRegion}' not 'number'`);
+    if (Number.isNaN(antiAliasRegion)) throw RangeError(
+        `${xpx} is NaN`);
+    if (antiAliasRegion < 0) throw RangeError(
+        `${xpx} ${antiAliasRegion} is less than 0`);
+};
+
 /** #### Checks that a 'bounds' object is valid
  * @param {Bounds} bounds The bounds object to check
  * @param {string} [xpx='bounds'] Exception prefix, e.g. 'canvas.render(): bounds'
@@ -2365,7 +2378,7 @@ const samplePatternColor = (
 
 /** #### Draws an array of shapes into the pixel grid
  * - Mutates the provided pixels-array in-place.
- * @param {number} aaRegionPixels Anti-alias region width in pixels
+ * @param {number} antiAliasRegion Anti-aliasing region width in pixels
  * @param {Color} background Background color pixel
  * @param {Uint8ClampedArray} pixels Pixel grid to rasterize into
  * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
@@ -2375,7 +2388,7 @@ const samplePatternColor = (
  * @param {string} [xpx='rasterize():'] Exception prefix
  */
 function rasterize(
-    aaRegionPixels,
+    antiAliasRegion,
     background,
     pixels,
     shapes,
@@ -2390,9 +2403,9 @@ function rasterize(
     // Convert an anti-aliasing width specified in pixels to world-space units.
     // The renderer maps the smaller canvas dimension to SIDE_IN_WORLD_UNITS.
     // If that's 10, then one world unit per pixel is `10/min(xExtent,yExtent)`.
-    // aaRegionPixels controls how many screen pixels the AA band covers.
+    // antiAliasRegion controls how many screen pixels the AA band covers.
     // Avoid repeated division, by computing half-region once.
-    const aaRegion = aaRegionPixels * worldUnitsPerPixel;
+    const aaRegion = antiAliasRegion * worldUnitsPerPixel;
     const aaRegionHalf = aaRegion / 2;
 
     // Precompute conservative axis-aligned bounding boxes (AABB) for each shape,
@@ -2532,6 +2545,10 @@ function rasterize(
 
 /** #### An ANSI canvas */
 class Canvas {
+    /** #### Anti-aliasing region width in pixels
+     * @type {number} */
+    antiAliasRegion = 0;
+
     /** A color to clone across the canvas's background
      * @type {Color} */
     background = null;
@@ -2543,10 +2560,6 @@ class Canvas {
     /** #### The canvas's height
      * @type {number} */
     yExtent = 0;
-
-    /** Anti-aliasing region width in pixels
-     * @type {number} */
-    #aaRegionPixels = 0;
 
     /** #### ID of the most recently added shape
      * @type {number} */
@@ -2576,12 +2589,14 @@ class Canvas {
     #worldUnitsPerPixel = 0;
 
     /**
+     * @param {number} antiAliasRegion Anti-aliasing region width in pixels
      * @param {Color} background A color to clone across the canvas's background
      * @param {number} xExtent The canvas's width
      * @param {number} yExtent The canvas's height
      * @param {Uint8ClampedArray} [pixels] Optional existing pixel buffer
      */
-    constructor(background, xExtent, yExtent, pixels) {
+    constructor(antiAliasRegion, background, xExtent, yExtent, pixels) {
+        validateAntiAliasRegion(antiAliasRegion, 'Canvas: antiAliasRegion');
         validateColor$1(background, 'Canvas: background');
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
@@ -2591,7 +2606,7 @@ class Canvas {
                 `Canvas: pixels length ${pixels.length} does not match ` +
                 `dimensions ${xExtent}x${yExtent}x4`)}
 
-        this.#aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
+        this.antiAliasRegion = antiAliasRegion;
         this.background = background;
         this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
         this.xExtent = xExtent;
@@ -2652,7 +2667,7 @@ class Canvas {
         // have occurred since the last time render() was called.
         if (this.#needsUpdate) {
             rasterize(
-                this.#aaRegionPixels,
+                this.antiAliasRegion,
                 this.background,
                 this.#pixels,
                 this.#shapes,

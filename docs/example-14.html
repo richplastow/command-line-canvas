@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example 14: antiAliasRegion - command-line-canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="example-13.html">Previous</a></li>
+            <li><span>Next</span></li>
+        </ul>
+    </nav>
+    <h1>Example 14: antiAliasRegion</h1>
+    <p>Three canvases showing the same circle with thick outline, rendered with
+        different <code>antiAliasRegion</code> values.</p>
+</header>
+<div id="output"></div>
+
+<script>!function($body, hostname){
+var W4 = window.W4 = window.W4 || {};
+var is = W4.isDev = (/^(?:192\.168|10\.)|\.local$/.test(hostname)
+    || (['::1', '', '127.0.0.1', 'localhost'].indexOf(hostname) > -1))
+    && location.pathname.indexOf('/docs/') > -1;
+$body.classList[is ? 'add' : 'remove']('w4-is-dev');
+if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
+}(document.body, location.hostname)</script>
+
+<script type="module">
+    const base = '../src/models/';
+    const Ms = ['Canvas', 'Color', 'Primitive', 'Shape'];
+    const { Canvas, Color, Primitive, Shape } = window.W4?.isDev
+        ? await (async () =>
+            (await Promise.all(Ms.map(M => M.toLowerCase())
+                .map(m => import(`${base}${m}/${m}.js`))))
+            .reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc; }, {})
+        )()
+        : await import('./command-line-canvas.js');
+
+    const background = new Color(20, 30, 50, 255);
+    const ink = new Color(255, 200, 100, 255);
+    const strokeColor = new Color(80, 40, 20, 255);
+    const transparent = new Color(0, 0, 0, 0);
+
+    // Circle primitive at the center.
+    const circle = new Primitive(
+        null,           // debugPrimitiveAabb
+        'no-flip',      // flip
+        'union',        // joinMode
+        'circle',       // kind
+        0,              // rotate
+        1,              // scale
+        { x: 0, y: 0 }, // translate
+    );
+
+    // Shape with thick outside stroke.
+    const circleShape = new Shape(
+        'normal',       // blendMode
+        null,           // debugShapeAabb
+        'no-flip',      // flip
+        ink,            // ink
+        transparent,    // paper
+        'all-ink',      // pattern
+        0.5,            // patternRatio
+        1,              // patternScale
+        'pixel',        // patternUnit
+        [circle],       // primitives
+        0,              // rotate
+        3,              // scale
+        strokeColor,    // strokeColor
+        'outside',      // strokePosition
+        'pixel',        // strokeUnit
+        4,              // strokeWidth
+        { x: 0, y: 0 }, // translate
+    );
+
+    // antiAliasRegion values to compare.
+    const aaValues = [0, 0.85, 3, 20];
+    const labels = ['0 (none)', '0.85 (default)', '3 (soft)', '20 (extremely soft)'];
+
+    const outputDiv = document.getElementById('output');
+
+    for (let i = 0; i < aaValues.length; i++) {
+        const aa = aaValues[i];
+        const canvas = new Canvas(aa, background, 32, 32);
+        canvas.addShape(circleShape);
+        const html = canvas.render('truecolor', 'html');
+
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'inline-block';
+        wrapper.style.margin = '0 1em';
+        wrapper.style.textAlign = 'center';
+
+        const pre = document.createElement('pre');
+        pre.innerHTML = html;
+        wrapper.appendChild(pre);
+
+        const label = document.createElement('p');
+        label.textContent = labels[i];
+        label.style.marginTop = '0.5em';
+        wrapper.appendChild(label);
+
+        outputDiv.appendChild(wrapper);
+    }
+</script>
+</body>
+</html>

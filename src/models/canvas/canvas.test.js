@@ -12,34 +12,40 @@ externalPixels.fill(255); // White
 
 // @ts-expect-error
 throws(() => new Canvas(), {
+    message: /^Canvas: antiAliasRegion type is 'undefined' not 'number'$/ });
+throws(() => new Canvas(-1, px, 12, 34), {
+    message: /^Canvas: antiAliasRegion -1 is less than 0$/ });
+// @ts-expect-error
+throws(() => new Canvas(0.85), {
     message: /^Canvas: background is type 'undefined' not 'object'$/ });
 // @ts-expect-error
-throws(() => new Canvas(new Set([])), {
+throws(() => new Canvas(0.85, new Set([])), {
     message: /^Canvas: background is an instance of 'Set' not 'Color'$/ });
 // @ts-expect-error
-throws(() => new Canvas(px), {
+throws(() => new Canvas(0.85, px), {
     message: /^Canvas: xExtent type is 'undefined' not 'number'$/ });
-throws(() => new Canvas(px, 3841, 0), {
+throws(() => new Canvas(0.85, px, 3841, 0), {
     message: /^Canvas: xExtent 3841 is greater than 3840$/ });
 // @ts-expect-error
-throws(() => new Canvas(px, 12, '34'), {
+throws(() => new Canvas(0.85, px, 12, '34'), {
     message: /^Canvas: yExtent type is 'string' not 'number'$/ });
-throws(() => new Canvas(px, 12, -1), {
+throws(() => new Canvas(0.85, px, 12, -1), {
     message: /^Canvas: yExtent -1 is less than 1$/ });
 // @ts-expect-error
-throws(() => new Canvas(px, 12, 34, []), {
+throws(() => new Canvas(0.85, px, 12, 34, []), {
     message: /^Canvas: pixels is an array, not a Uint8ClampedArray$/ });
-throws(() => new Canvas(px, 2, 4, new Uint8ClampedArray(10)), {
+throws(() => new Canvas(0.85, px, 2, 4, new Uint8ClampedArray(10)), {
     message: /^Canvas: pixels length 10 is not a multiple of 4$/ });
-throws(() => new Canvas(px, 2, 4, new Uint8ClampedArray(12)), {
+throws(() => new Canvas(0.85, px, 2, 4, new Uint8ClampedArray(12)), {
     message: /^Canvas: pixels length 12 does not match dimensions 2x4x4$/ });
 
 
 // `new Canvas` with own pixels, valid.
 
-const canvasWithOwnPixels = new Canvas(px, 2, 4);
+const canvasWithOwnPixels = new Canvas(0.85, px, 2, 4);
 
 eq(canvasWithOwnPixels, {
+    antiAliasRegion: 0.85,
     background: {
         r: 12,
         g: 255,
@@ -55,7 +61,7 @@ eq(canvasWithOwnPixels, {
 
 eq(externalPixels[0], 255);
 
-const canvasWithExternalPixels = new Canvas(px, 2, 4, externalPixels);
+const canvasWithExternalPixels = new Canvas(0.85, px, 2, 4, externalPixels);
 
 eq(externalPixels[0], 12); // `new Canvas` has filled it with background color
 

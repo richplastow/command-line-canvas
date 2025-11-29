@@ -7,6 +7,7 @@ import { rasterize } from '../../utilities/rasterize/rasterize.js';
 import { validateColor } from '../color/color-validators.js';
 import { Color } from '../color/color.js';
 import {
+    validateAntiAliasRegion,
     validateCanvasExtent,
     validateColorDepth,
     validateOutputFormat,
@@ -19,6 +20,10 @@ import {
 
 /** #### An ANSI canvas */
 export class Canvas {
+    /** #### Anti-aliasing region width in pixels
+     * @type {number} */
+    antiAliasRegion = 0;
+
     /** A color to clone across the canvas's background
      * @type {Color} */
     background = null;
@@ -30,10 +35,6 @@ export class Canvas {
     /** #### The canvas's height
      * @type {number} */
     yExtent = 0;
-
-    /** Anti-aliasing region width in pixels
-     * @type {number} */
-    #aaRegionPixels = 0;
 
     /** #### ID of the most recently added shape
      * @type {number} */
@@ -63,12 +64,14 @@ export class Canvas {
     #worldUnitsPerPixel = 0;
 
     /**
+     * @param {number} antiAliasRegion Anti-aliasing region width in pixels
      * @param {Color} background A color to clone across the canvas's background
      * @param {number} xExtent The canvas's width
      * @param {number} yExtent The canvas's height
      * @param {Uint8ClampedArray} [pixels] Optional existing pixel buffer
      */
-    constructor(background, xExtent, yExtent, pixels) {
+    constructor(antiAliasRegion, background, xExtent, yExtent, pixels) {
+        validateAntiAliasRegion(antiAliasRegion, 'Canvas: antiAliasRegion');
         validateColor(background, 'Canvas: background');
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
@@ -78,7 +81,7 @@ export class Canvas {
                 `Canvas: pixels length ${pixels.length} does not match ` +
                 `dimensions ${xExtent}x${yExtent}x4`)}
 
-        this.#aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
+        this.antiAliasRegion = antiAliasRegion;
         this.background = background;
         this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
         this.xExtent = xExtent;
@@ -139,7 +142,7 @@ export class Canvas {
         // have occurred since the last time render() was called.
         if (this.#needsUpdate) {
             rasterize(
-                this.#aaRegionPixels,
+                this.antiAliasRegion,
                 this.background,
                 this.#pixels,
                 this.#shapes,

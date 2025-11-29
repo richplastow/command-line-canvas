@@ -42,7 +42,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         : await import('./command-line-canvas.js');
 
     const background = new Color(0, 0, 0, 255);
-    const canvas = new Canvas(background, 80, 24);
+    const canvas = new Canvas(0.85, background, 80, 24);
 
     // Primitives for shapes.
     const circleSmall = new Primitive(

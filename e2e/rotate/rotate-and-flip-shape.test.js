@@ -40,7 +40,7 @@ const makeRotatedFlippedShape = (shapeFlip, withStroke) => {
 
 /** #### Renders a rotated and flipped shape on a fresh canvas */
 const renderShape = (shape, useBraille) => {
-    const canvas = new Canvas(new Color(10, 10, 10, 255), 40, 40);
+    const canvas = new Canvas(0.85, new Color(10, 10, 10, 255), 40, 40);
     canvas.addShape(shape);
     return useBraille
         ? canvas.render('8color', 'braille')

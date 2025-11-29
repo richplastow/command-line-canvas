@@ -4,6 +4,19 @@ import { Canvas } from "./canvas.js";
  * @typedef {import('../../clc-types.js').Bounds} Bounds
  */
 
+/** #### Checks that an anti-alias region value is a non-negative number
+ * @param {number} antiAliasRegion The anti-alias region width in pixels
+ * @param {string} [xpx='antiAliasRegion'] Exception prefix, e.g. 'Canvas: antiAliasRegion'
+ */
+export const validateAntiAliasRegion = (antiAliasRegion, xpx = 'antiAliasRegion') => {
+    if (typeof antiAliasRegion !== 'number') throw TypeError(
+        `${xpx} type is '${typeof antiAliasRegion}' not 'number'`);
+    if (Number.isNaN(antiAliasRegion)) throw RangeError(
+        `${xpx} is NaN`);
+    if (antiAliasRegion < 0) throw RangeError(
+        `${xpx} ${antiAliasRegion} is less than 0`);
+};
+
 /** #### Checks that a 'bounds' object is valid
  * @param {Bounds} bounds The bounds object to check
  * @param {string} [xpx='bounds'] Exception prefix, e.g. 'canvas.render(): bounds'

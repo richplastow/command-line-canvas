@@ -38,7 +38,7 @@ const makeStrokeCircle = (strokePosition) => {
 
 /** #### Renders a stroke circle on a fresh canvas */
 const renderCircle = (strokePosition) => {
-    const canvas = new Canvas(new Color(10, 10, 10, 255), 40, 40);
+    const canvas = new Canvas(0.85, new Color(10, 10, 10, 255), 40, 40);
     const shape = makeStrokeCircle(strokePosition);
     canvas.addShape(shape);
     return canvas.render('8color', 'braille');

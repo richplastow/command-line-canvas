@@ -15,7 +15,7 @@ import { samplePatternColor } from './sample-pattern-color.js';
 
 /** #### Draws an array of shapes into the pixel grid
  * - Mutates the provided pixels-array in-place.
- * @param {number} aaRegionPixels Anti-alias region width in pixels
+ * @param {number} antiAliasRegion Anti-aliasing region width in pixels
  * @param {Color} background Background color pixel
  * @param {Uint8ClampedArray} pixels Pixel grid to rasterize into
  * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
@@ -25,7 +25,7 @@ import { samplePatternColor } from './sample-pattern-color.js';
  * @param {string} [xpx='rasterize():'] Exception prefix
  */
 export function rasterize(
-    aaRegionPixels,
+    antiAliasRegion,
     background,
     pixels,
     shapes,
@@ -40,9 +40,9 @@ export function rasterize(
     // Convert an anti-aliasing width specified in pixels to world-space units.
     // The renderer maps the smaller canvas dimension to SIDE_IN_WORLD_UNITS.
     // If that's 10, then one world unit per pixel is `10/min(xExtent,yExtent)`.
-    // aaRegionPixels controls how many screen pixels the AA band covers.
+    // antiAliasRegion controls how many screen pixels the AA band covers.
     // Avoid repeated division, by computing half-region once.
-    const aaRegion = aaRegionPixels * worldUnitsPerPixel;
+    const aaRegion = antiAliasRegion * worldUnitsPerPixel;
     const aaRegionHalf = aaRegion / 2;
 
     // Precompute conservative axis-aligned bounding boxes (AABB) for each shape,

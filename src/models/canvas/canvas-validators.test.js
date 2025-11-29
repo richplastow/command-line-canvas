@@ -1,6 +1,7 @@
 import { throws, deepStrictEqual as eq } from 'node:assert/strict';
 import { Color } from '../color/color.js';
 import {
+    validateAntiAliasRegion,
     validateBounds,
     validateCanvas,
     validateCanvasExtent,
@@ -9,6 +10,27 @@ import {
     validatePixels,
 } from './canvas-validators.js';
 import { Canvas } from './canvas.js';
+
+
+// validateAntiAliasRegion() invalid.
+
+// @ts-expect-error
+throws(() => validateAntiAliasRegion(),
+    { message: /^antiAliasRegion type is 'undefined' not 'number'$/});
+// @ts-expect-error
+throws(() => validateAntiAliasRegion('0.85', 'Canvas: antiAliasRegion'),
+    { message: /^Canvas: antiAliasRegion type is 'string' not 'number'$/});
+throws(() => validateAntiAliasRegion(NaN, 'input'),
+    { message: /^input is NaN$/});
+throws(() => validateAntiAliasRegion(-0.5, 'aar:'),
+    { message: /^aar: -0\.5 is less than 0$/});
+
+
+// validateAntiAliasRegion() valid.
+
+eq(validateAntiAliasRegion(0, 'zero:'), void 0);
+eq(validateAntiAliasRegion(0.85), void 0);
+eq(validateAntiAliasRegion(2.5, 'big'), void 0);
 
 
 // validateBounds() invalid.
@@ -89,7 +111,7 @@ throws(() => validateCanvas(new Date(), 'nope'),
 // validateCanvas() valid.
 
 const bg = new Color(12, 34, 56, 255);
-eq(validateCanvas(new Canvas(bg, 12, 34), 'validCanvas'), void 0);
+eq(validateCanvas(new Canvas(0.85, bg, 12, 34), 'validCanvas'), void 0);
 
 
 // validateColorDepth() invalid.

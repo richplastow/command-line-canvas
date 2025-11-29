@@ -40,7 +40,7 @@ const makeShapeWithRotatedTriangle = (primitiveRotate) => {
 
 /** #### Renders a rotated primitive on a fresh canvas */
 const renderShape = (primitiveRotate) => {
-    const canvas = new Canvas(new Color(10, 10, 10, 255), 40, 40);
+    const canvas = new Canvas(0.85, new Color(10, 10, 10, 255), 40, 40);
     const shape = makeShapeWithRotatedTriangle(primitiveRotate);
     canvas.addShape(shape);
     return canvas.render('8color', 'braille');
