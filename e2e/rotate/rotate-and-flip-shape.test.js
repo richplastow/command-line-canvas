@@ -10,28 +10,28 @@ import { Shape } from '../../src/models/shape/shape.js';
  */
 const makeRotatedFlippedShape = (shapeFlip, withStroke) => {
     const primitive = new Primitive(
-        null,                        // debugPrimitiveAabb
-        'no-flip',                   // flip
-        'union',                     // joinMode
-        'triangle-right',            // kind
-        0,                           // rotate
-        1,                           // scale
-        { x: 0, y: 0 },              // translate
+        null,                          // debugPrimitiveAabb
+        'no-flip',                     // flip
+        'union',                       // joinMode
+        'triangle-right',              // kind
+        0,                             // rotate
+        1,                             // scale
+        { x: 0, y: 0 },                // translate
     );
     return new Shape(
-        'normal',                    // blendMode
-        new Color(255, 255, 255, 1), // debugShapeAabb white
-        shapeFlip,                   // flip
-        new Color(0, 0, 255, 1),     // ink blue
-        new Color(255, 0, 0, 1),     // paper red
-        'breton',                    // pattern
-        0.5,                         // patternRatio
-        2,                           // patternScale
-        'pixel',                     // patternUnit
-        [ primitive ],               // primitives
-        Math.PI + 0.25,              // rotate
-        3.333,                       // scale
-        new Color(0, 255, 0, 1),     // strokeColor green
+        'normal',                      // blendMode
+        new Color(255, 255, 255, 255), // debugShapeAabb white
+        shapeFlip,                     // flip
+        new Color(0, 0, 255, 255),     // ink blue
+        new Color(255, 0, 0, 255),     // paper red
+        'breton',                      // pattern
+        0.5,                           // patternRatio
+        2,                             // patternScale
+        'pixel',                       // patternUnit
+        [ primitive ],                 // primitives
+        Math.PI + 0.25,                // rotate
+        3.333,                         // scale
+        new Color(0, 255, 0, 255),     // strokeColor green
         'center',                    // strokePosition
         'pixel',                     // strokeUnit
         withStroke ? 4.125 : 0,      // strokeWidth

@@ -10,32 +10,32 @@ import { Shape } from '../../src/models/shape/shape.js';
  */
 const makeShapeWithRotatedTriangle = (primitiveRotate) => {
     const primitive = new Primitive(
-        null,                        // debugPrimitiveAabb
-        'no-flip',                   // flip
-        'union',                     // joinMode
-        'triangle-right',            // kind
-        primitiveRotate,             // rotate
-        1,                           // scale
-        { x: 0, y: 0 },              // translate
+        null,                          // debugPrimitiveAabb
+        'no-flip',                     // flip
+        'union',                       // joinMode
+        'triangle-right',              // kind
+        primitiveRotate,               // rotate
+        1,                             // scale
+        { x: 0, y: 0 },                // translate
     );
     return new Shape(
-        'normal',                    // blendMode
-        new Color(255, 255, 255, 1), // debugShapeAabb white
-        'no-flip',                   // flip
-        new Color(0, 0, 255, 1),     // ink blue
-        new Color(255, 0, 0, 1),     // paper red
-        'breton',                    // pattern
-        0.5,                         // patternRatio
-        2,                           // patternScale
-        'pixel',                     // patternUnit
-        [ primitive ],               // primitives
-        0,                           // rotate
-        3.333,                       // scale
-        new Color(0, 255, 0, 0),     // strokeColor transparent (no stroke)
-        'center',                    // strokePosition
-        'pixel',                     // strokeUnit
-        0,                           // strokeWidth (disabled)
-        { x: 0, y: 0 },              // translate
+        'normal',                      // blendMode
+        new Color(255, 255, 255, 255), // debugShapeAabb white
+        'no-flip',                     // flip
+        new Color(0, 0, 255, 255),     // ink blue
+        new Color(255, 0, 0, 255),     // paper red
+        'breton',                      // pattern
+        0.5,                           // patternRatio
+        2,                             // patternScale
+        'pixel',                       // patternUnit
+        [ primitive ],                 // primitives
+        0,                             // rotate
+        3.333,                         // scale
+        new Color(0, 255, 0, 0),       // strokeColor transparent (no stroke)
+        'center',                      // strokePosition
+        'pixel',                       // strokeUnit
+        0,                             // strokeWidth (disabled)
+        { x: 0, y: 0 },                // translate
     );
 };
 

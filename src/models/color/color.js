@@ -1,4 +1,4 @@
-import { validateAlpha, validateRgb } from "./color-validators.js";
+import { validateRgba } from "./color-validators.js";
 
 /** #### A color with RGBA values */
 export class Color {
@@ -14,21 +14,21 @@ export class Color {
      * @type {number} */
     b = 0;
 
-    /** #### Alpha value (0-1)
+    /** #### Alpha value (0-255)
      * @type {number} */
-    a = 1;
+    a = 255;
 
     /**
      * @param {number} r The red value (0-255)
      * @param {number} g The green value (0-255)
      * @param {number} b The blue value (0-255)
-     * @param {number} a The alpha value (0-1)
+     * @param {number} a The alpha value (0-255)
      */
     constructor(r, g, b, a) {
-        validateRgb(r, 'Color: r (red)');
-        validateRgb(g, 'Color: g (green)');
-        validateRgb(b, 'Color: b (blue)');
-        validateAlpha(a, 'Color: a (alpha)');
+        validateRgba(r, 'Color: r (red)');
+        validateRgba(g, 'Color: g (green)');
+        validateRgba(b, 'Color: b (blue)');
+        validateRgba(a, 'Color: a (alpha)');
 
         this.r = r;
         this.g = g;

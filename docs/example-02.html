@@ -51,23 +51,23 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     const canvas = new Canvas(lightBlue, 800, 480);
 
     // Create colors.
-    const lightMagenta = new Color(255, 128, 255, 1);
-    const navy = new Color(0, 0, 128, 1);
+    const lightMagenta = new Color(255, 128, 255, 255);
+    const navy = new Color(0, 0, 128, 255);
     const transparent = new Color(0, 0, 0, 0);
 
     // Four triangle-right primitives positioned in a 2x2 grid.
     const pTopLeft = new Primitive(
-        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
-        'flip-x-and-y',  // flip
-        'union',         // joinMode
-        'triangle-right',
-        0.785398163,     // rotate 45 degrees
-        1,             // scale
-        { x: -3, y: -2 } // translate
+        new Color(255, 0, 0, 77), // debugPrimitiveAabb
+        'flip-x-and-y',           // flip
+        'union',                  // joinMode
+        'triangle-right',         // kind
+        0.785398163,              // rotate 45 degrees
+        1,                        // scale
+        { x: -3, y: -2 }          // translate
     );
 
     const pTopRight = new Primitive(
-        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
+        new Color(255, 0, 0, 77),
         'flip-x',
         'union',
         'triangle-right',
@@ -77,7 +77,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const pBottomLeft = new Primitive(
-        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
+        new Color(255, 0, 0, 77),
         'flip-y',
         'union',
         'triangle-right',
@@ -87,7 +87,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const pBottomRight = new Primitive(
-        new Color(255, 0, 0, 0.3), // debugPrimitiveAabb
+        new Color(255, 0, 0, 77),
         'no-flip',
         'union',
         'triangle-right',
@@ -97,23 +97,23 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     );
 
     const shape = new Shape(
-        'normal',            // blendMode
-        new Color(0, 0, 255, 0.3), // debugPrimitiveAabb
-        'no-flip',
-        lightMagenta,        // ink
-        transparent,         // paper
-        'all-ink',           // pattern
-        0.5,                 // patternRatio
-        1,                   // patternScale
-        'pixel',             // patternUnit
+        'normal',                 // blendMode
+        new Color(0, 0, 255, 77), // debugPrimitiveAabb
+        'no-flip',                // flip
+        lightMagenta,             // ink
+        transparent,              // paper
+        'all-ink',                // pattern
+        0.5,                      // patternRatio
+        1,                        // patternScale
+        'pixel',                  // patternUnit
         [pTopLeft, pTopRight, pBottomLeft, pBottomRight], // primitives
-        0,                   // rotate
-        1,                   // scale
-        navy,                // strokeColor
-        'outside',           // strokePosition
-        'world',             // strokeUnit
-        0.1,                 // strokeWidth (world units)
-        { x: 0, y: 0 }       // translate
+        0,                        // rotate
+        1,                        // scale
+        navy,                     // strokeColor
+        'outside',                // strokePosition
+        'world',                  // strokeUnit
+        0.1,                      // strokeWidth (world units)
+        { x: 0, y: 0 }            // translate
     );
 
     canvas.addShape(shape);
@@ -141,8 +141,8 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         // into canvas image data.
         canvas.requestUpdate();
         const pixelData = canvas.render('truecolor', 'buffer');
-            data.set(pixelData);
-            ctx.putImageData(imageData, 0, 0);
+        data.set(pixelData);
+        ctx.putImageData(imageData, 0, 0);
 
         // Uncomment to run the animation:
         // requestAnimationFrame(loop);

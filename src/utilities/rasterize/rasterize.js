@@ -83,7 +83,7 @@ export function rasterize(
                     // as the bounding box background.
                     if (shape.debugShapeAabb !== null) {
                         const debugColor = shape.debugShapeAabb;
-                        const alpha = debugColor.a;
+                        const alpha = debugColor.a / 255;
                         dstR = dstR * (1 - alpha) + (debugColor.r / 255) * alpha;
                         dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
                         dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
@@ -101,7 +101,7 @@ export function rasterize(
                     ) continue;
 
                     const dbgColor = entry.color;
-                    const alpha = dbgColor.a;
+                    const alpha = dbgColor.a / 255;
                     dstR = dstR * (1 - alpha) + (dbgColor.r / 255) * alpha;
                     dstG = dstG * (1 - alpha) + (dbgColor.g / 255) * alpha;
                     dstB = dstB * (1 - alpha) + (dbgColor.b / 255) * alpha;
@@ -140,8 +140,8 @@ export function rasterize(
 
                 // Translate coverage into opacity by multiplying by the
                 // source alpha channel.
-                const fillOpacity = fillCoverage * (fillColor?.a ?? 0);
-                const strokeOpacity = strokeCoverage * (shape.strokeColor?.a ?? 0);
+                const fillOpacity = fillCoverage * ((fillColor?.a ?? 0) / 255);
+                const strokeOpacity = strokeCoverage * ((shape.strokeColor?.a ?? 0) / 255);
 
                 // Skip the (expensive) blend, if they're both zero opacity.
                 if (fillOpacity <= 0 && strokeOpacity <= 0) continue;

@@ -19,17 +19,17 @@ throws(() => new Color(0, 0, NaN, 1), {
 // @ts-expect-error
 throws(() => new Color(0, 0, 0), {
     message: /^Color: a \(alpha\) type is 'undefined' not 'number'$/ });
-throws(() => new Color(0, 0, 0, 1.001), {
-    message: /^Color: a \(alpha\) 1\.001 is greater than 1$/ });
+throws(() => new Color(0, 0, 0, 255.001), {
+    message: /^Color: a \(alpha\) 255\.001 is greater than 255$/ });
 throws(() => new Color(0, 0, 0, -0.1), {
     message: /^Color: a \(alpha\) -0\.1 is less than 0$/ });
 
 
 // `new Color` valid.
 
-eq(new Color(0, 12.34, 255, 0.5), { r: 0, g: 12.34, b: 255, a: 0.5 });
+eq(new Color(0, 12.34, 255, 128), { r: 0, g: 12.34, b: 255, a: 128 });
 eq(new Color(100, 150, 200, 0), { r: 100, g: 150, b: 200, a: 0 });
-eq(new Color(255, 255, 255, 1), { r: 255, g: 255, b: 255, a: 1 });
+eq(new Color(255, 255, 255, 255), { r: 255, g: 255, b: 255, a: 255 });
 
 
 console.log('All Color tests passed.');

@@ -69,15 +69,15 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         'no-flip', 'union', 'circle', 0, 5, { x: 0, y: 4 },
     );
 
-    const paper = new Color(255, 255, 255, 1);
+    const paper = new Color(255, 255, 255, 255);
     const transparent = new Color(0, 0, 0, 0);
 
     // Leftmost: small circle with red debug box.
     const s1 = new Shape(
         'normal', // blendMode
-        new Color(255, 80, 80, 0.8), // debugShapeAabb
+        new Color(255, 80, 80, 204), // debugShapeAabb
         'no-flip',
-        new Color(0, 0, 255, 1), // ink
+        new Color(0, 0, 255, 255), // ink
         transparent,
         'all-ink',
         0.5,
@@ -96,9 +96,9 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Second: tiny triangle with semi-transparent green debug box.
     const s2 = new Shape(
         'normal',
-        new Color(80, 255, 80, 0.6), // alpha should work
+        new Color(80, 255, 80, 153), // alpha should work
         'no-flip',
-        new Color(255, 255, 255, 1),
+        new Color(255, 255, 255, 255),
         transparent,
         'all-ink',
         0.5,
@@ -117,9 +117,9 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Third: huge circle with yellow debug box.
     const s3 = new Shape(
         'normal',
-        new Color(255, 220, 80, 0.8),
+        new Color(255, 220, 80, 204),
         'no-flip',
-        new Color(80, 80, 80, 1),
+        new Color(80, 80, 80, 255),
         transparent,
         'all-ink',
         0.5,
@@ -138,9 +138,9 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     // Fourth: two triangles with blue debug box.
     const s4 = new Shape(
         'normal',
-        new Color(30, 0, 255, 0.8),
+        new Color(30, 0, 255, 204),
         'flip-x',
-        new Color(255, 200, 220, 1),
+        new Color(255, 200, 220, 255),
         transparent,
         'all-ink',
         0.5,

@@ -1,35 +1,19 @@
 import { Color } from "./color.js";
 
-/** #### Checks that an alpha channel is a number between 0 and 1 inclusive
- * - Note that alpha values do not have to be integers
- * @param {number} alpha The alpha value to check
- * @param {string} [xpx='alpha'] Exception prefix, e.g. 'Color: a (alpha)'
+/** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
+ * - Note that RGBA values do not have to be integers
+ * @param {number} rgba The RGBA value to check
+ * @param {string} [xpx='rgba'] Exception prefix, e.g. 'Color: r (red)'
  */
-export const validateAlpha = (alpha, xpx = 'alpha') => {
-    if (typeof alpha !== 'number') throw TypeError(
-        `${xpx} type is '${typeof alpha}' not 'number'`);
-    if (Number.isNaN(alpha)) throw RangeError(
-        `${xpx} ${alpha} is not a valid number`);
-    if (alpha < 0) throw RangeError(
-        `${xpx} ${alpha} is less than 0`);
-    if (alpha > 1) throw RangeError(
-        `${xpx} ${alpha} is greater than 1`);
-};
-
-/** #### Checks that an RGB channel is a number between 0 and 255 inclusive
- * - Note that RGB values do not have to be integers
- * @param {number} rgb The RGB value to check
- * @param {string} [xpx='rgb'] Exception prefix, e.g. 'Color: r (red)'
- */
-export const validateRgb = (rgb, xpx = 'rgb') => {
-    if (typeof rgb !== 'number') throw TypeError(
-        `${xpx} type is '${typeof rgb}' not 'number'`);
-    if (Number.isNaN(rgb)) throw RangeError(
-        `${xpx} ${rgb} is not a valid number`);
-    if (rgb < 0) throw RangeError(
-        `${xpx} ${rgb} is less than 0`);
-    if (rgb > 255) throw RangeError(
-        `${xpx} ${rgb} is greater than 255`);
+export const validateRgba = (rgba, xpx = 'rgba') => {
+    if (typeof rgba !== 'number') throw TypeError(
+        `${xpx} type is '${typeof rgba}' not 'number'`);
+    if (Number.isNaN(rgba)) throw RangeError(
+        `${xpx} ${rgba} is not a valid number`);
+    if (rgba < 0) throw RangeError(
+        `${xpx} ${rgba} is less than 0`);
+    if (rgba > 255) throw RangeError(
+        `${xpx} ${rgba} is greater than 255`);
 };
 
 /** #### Checks that a Color instance is valid

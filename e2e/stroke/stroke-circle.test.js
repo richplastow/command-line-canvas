@@ -8,32 +8,32 @@ import { Shape } from '../../src/models/shape/shape.js';
 /** #### Creates a circle */
 const makeStrokeCircle = (strokePosition) => {
     const primitive = new Primitive(
-        null,           // debugShapeAabb
-        'no-flip',      // flip
-        'union',        // operation
-        'circle',       // type
-        0,              // rotation
-        1,              // scale
-        { x: 0, y: 0 }, // position
+        null,                          // debugShapeAabb
+        'no-flip',                     // flip
+        'union',                       // operation
+        'circle',                      // type
+        0,                             // rotation
+        1,                             // scale
+        { x: 0, y: 0 },                // position
     );
     return new Shape(
-        'normal',                    // blendMode
-        new Color(255, 255, 255, 1), // debugShapeAabb white
-        'no-flip',                   // flip
-        new Color(0, 0, 255, 1),     // ink blue
-        new Color(255, 0, 0, 1),     // paper red
-        'breton',                    // pattern
-        0.5,                         // patternRatio
-        2,                           // patternScale
-        'pixel',                     // patternUnit
-        [ primitive ],               // primitives
-        0,                           // rotate
-        3.333,                       // scale
-        new Color(0, 255, 0, 1),     // strokeColor green
-        strokePosition,              // strokePosition
-        'pixel',                     // strokeUnit
-        4.125,                       // strokeWidth
-        { x: 0, y: 0 },              // translate
+        'normal',                      // blendMode
+        new Color(255, 255, 255, 255), // debugShapeAabb white
+        'no-flip',                     // flip
+        new Color(0, 0, 255, 255),     // ink blue
+        new Color(255, 0, 0, 255),     // paper red
+        'breton',                      // pattern
+        0.5,                           // patternRatio
+        2,                             // patternScale
+        'pixel',                       // patternUnit
+        [ primitive ],                 // primitives
+        0,                             // rotate
+        3.333,                         // scale
+        new Color(0, 255, 0, 255),     // strokeColor green
+        strokePosition,                // strokePosition
+        'pixel',                       // strokeUnit
+        4.125,                         // strokeWidth
+        { x: 0, y: 0 },                // translate
     );
 };
 

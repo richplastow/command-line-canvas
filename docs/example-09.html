@@ -59,8 +59,8 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     const background = new Pixel(18, 24, 32);
     const canvas = new Canvas(background, 96, 48);
 
-    const ink = new Color(36, 40, 64, 1);
-    const paper = new Color(224, 230, 240, 1);
+    const ink = new Color(36, 40, 64, 255);
+    const paper = new Color(224, 230, 240, 255);
     const transparent = new Color(0, 0, 0, 0);
 
     const circle = new Primitive(null, 'no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });

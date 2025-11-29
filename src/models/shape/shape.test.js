@@ -6,9 +6,9 @@ import { Shape } from './shape.js';
 
 // `new Shape` invalid.
 
-const ink = new Color(0, 0, 0, 1);
-const paper = new Color(1, 1, 1, 1);
-const stroke = new Color(1, 0, 0, 1);
+const ink = new Color(0, 0, 0, 255);
+const paper = new Color(1, 1, 1, 255);
+const stroke = new Color(1, 0, 0, 255);
 const primitive = new Primitive(null, 'no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });
 
 /** @type {{

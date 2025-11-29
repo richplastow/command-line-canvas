@@ -800,36 +800,20 @@ function index256ToRGB(index) {
     return { r: gray, g: gray, b: gray };
 }
 
-/** #### Checks that an alpha channel is a number between 0 and 1 inclusive
- * - Note that alpha values do not have to be integers
- * @param {number} alpha The alpha value to check
- * @param {string} [xpx='alpha'] Exception prefix, e.g. 'Color: a (alpha)'
+/** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
+ * - Note that RGBA values do not have to be integers
+ * @param {number} rgba The RGBA value to check
+ * @param {string} [xpx='rgba'] Exception prefix, e.g. 'Color: r (red)'
  */
-const validateAlpha = (alpha, xpx = 'alpha') => {
-    if (typeof alpha !== 'number') throw TypeError(
-        `${xpx} type is '${typeof alpha}' not 'number'`);
-    if (Number.isNaN(alpha)) throw RangeError(
-        `${xpx} ${alpha} is not a valid number`);
-    if (alpha < 0) throw RangeError(
-        `${xpx} ${alpha} is less than 0`);
-    if (alpha > 1) throw RangeError(
-        `${xpx} ${alpha} is greater than 1`);
-};
-
-/** #### Checks that an RGB channel is a number between 0 and 255 inclusive
- * - Note that RGB values do not have to be integers
- * @param {number} rgb The RGB value to check
- * @param {string} [xpx='rgb'] Exception prefix, e.g. 'Color: r (red)'
- */
-const validateRgb = (rgb, xpx = 'rgb') => {
-    if (typeof rgb !== 'number') throw TypeError(
-        `${xpx} type is '${typeof rgb}' not 'number'`);
-    if (Number.isNaN(rgb)) throw RangeError(
-        `${xpx} ${rgb} is not a valid number`);
-    if (rgb < 0) throw RangeError(
-        `${xpx} ${rgb} is less than 0`);
-    if (rgb > 255) throw RangeError(
-        `${xpx} ${rgb} is greater than 255`);
+const validateRgba = (rgba, xpx = 'rgba') => {
+    if (typeof rgba !== 'number') throw TypeError(
+        `${xpx} type is '${typeof rgba}' not 'number'`);
+    if (Number.isNaN(rgba)) throw RangeError(
+        `${xpx} ${rgba} is not a valid number`);
+    if (rgba < 0) throw RangeError(
+        `${xpx} ${rgba} is less than 0`);
+    if (rgba > 255) throw RangeError(
+        `${xpx} ${rgba} is greater than 255`);
 };
 
 /** #### A color with RGBA values */
@@ -846,21 +830,21 @@ class Color {
      * @type {number} */
     b = 0;
 
-    /** #### Alpha value (0-1)
+    /** #### Alpha value (0-255)
      * @type {number} */
-    a = 1;
+    a = 255;
 
     /**
      * @param {number} r The red value (0-255)
      * @param {number} g The green value (0-255)
      * @param {number} b The blue value (0-255)
-     * @param {number} a The alpha value (0-1)
+     * @param {number} a The alpha value (0-255)
      */
     constructor(r, g, b, a) {
-        validateRgb(r, 'Color: r (red)');
-        validateRgb(g, 'Color: g (green)');
-        validateRgb(b, 'Color: b (blue)');
-        validateAlpha(a, 'Color: a (alpha)');
+        validateRgba(r, 'Color: r (red)');
+        validateRgba(g, 'Color: g (green)');
+        validateRgba(b, 'Color: b (blue)');
+        validateRgba(a, 'Color: a (alpha)');
 
         this.r = r;
         this.g = g;
@@ -2543,7 +2527,7 @@ function rasterize(
                     // as the bounding box background.
                     if (shape.debugShapeAabb !== null) {
                         const debugColor = shape.debugShapeAabb;
-                        const alpha = debugColor.a;
+                        const alpha = debugColor.a / 255;
                         dstR = dstR * (1 - alpha) + (debugColor.r / 255) * alpha;
                         dstG = dstG * (1 - alpha) + (debugColor.g / 255) * alpha;
                         dstB = dstB * (1 - alpha) + (debugColor.b / 255) * alpha;
@@ -2561,7 +2545,7 @@ function rasterize(
                     ) continue;
 
                     const dbgColor = entry.color;
-                    const alpha = dbgColor.a;
+                    const alpha = dbgColor.a / 255;
                     dstR = dstR * (1 - alpha) + (dbgColor.r / 255) * alpha;
                     dstG = dstG * (1 - alpha) + (dbgColor.g / 255) * alpha;
                     dstB = dstB * (1 - alpha) + (dbgColor.b / 255) * alpha;
@@ -2600,8 +2584,8 @@ function rasterize(
 
                 // Translate coverage into opacity by multiplying by the
                 // source alpha channel.
-                const fillOpacity = fillCoverage * (fillColor?.a ?? 0);
-                const strokeOpacity = strokeCoverage * (shape.strokeColor?.a ?? 0);
+                const fillOpacity = fillCoverage * ((fillColor?.a ?? 0) / 255);
+                const strokeOpacity = strokeCoverage * ((shape.strokeColor?.a ?? 0) / 255);
 
                 // Skip the (expensive) blend, if they're both zero opacity.
                 if (fillOpacity <= 0 && strokeOpacity <= 0) continue;

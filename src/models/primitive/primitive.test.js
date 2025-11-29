@@ -46,7 +46,7 @@ throws(() => new Primitive(null, 'no-flip', 'union', 'circle', 0, 1,
 
 // `new Primitive` valid.
 
-const debugBlue = new Color(0, 0, 255, 0.5);
+const debugBlue = new Color(0, 0, 255, 128);
 
 eq(new Primitive(debugBlue, 'flip-y', 'union', 'circle', 0, 1,
     { x: 0, y: 0 }), {

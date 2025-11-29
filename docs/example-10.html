@@ -50,11 +50,11 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     const canvas = new Canvas(background, 96, 48);
 
     const inks = [
-        new Color(180, 210, 255, 1),
-        new Color(140, 180, 255, 1),
-        new Color(100, 150, 255, 1),
+        new Color(180, 210, 255, 255),
+        new Color(140, 180, 255, 255),
+        new Color(100, 150, 255, 255),
     ];
-    const paper = new Color(18, 18, 28, 1);
+    const paper = new Color(18, 18, 28, 255);
     const transparent = new Color(0, 0, 0, 0);
 
     const circle = new Primitive(null, 'no-flip', 'union', 'circle', 0, 1, { x: 0, y: 0 });

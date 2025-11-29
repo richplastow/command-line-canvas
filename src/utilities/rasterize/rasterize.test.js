@@ -104,7 +104,7 @@ eq(toRgb(resetPixels), [
 
 const inkBg = new Pixel(0, 0, 0);
 const inkPixels = makePixels(1, 1, 0, 0, 0);
-const inkColor = new Color(255, 0, 0, 1);
+const inkColor = new Color(255, 0, 0, 255);
 const inkPaper = new Color(0, 0, 0, 0);
 const inkCenter = pixelCenter(0, 0, 1, 1);
 const inkShape = circleShape({
@@ -127,8 +127,8 @@ eq(toRgb(inkPixels), [
 
 const paperBg = new Pixel(0, 0, 0);
 const paperPixels = makePixels(1, 1, 0, 0, 0);
-const paperInk = new Color(200, 10, 10, 1);
-const paperColor = new Color(0, 255, 0, 1);
+const paperInk = new Color(200, 10, 10, 255);
+const paperColor = new Color(0, 255, 0, 255);
 const paperCenter = pixelCenter(0, 0, 1, 1);
 const paperShape = circleShape({
     ink: paperInk,
@@ -154,7 +154,7 @@ const strokePixels = makePixels(1, 1, 5, 5, 5);
 const strokeShape = circleShape({
     ink: new Color(0, 0, 0, 0),
     paper: new Color(0, 0, 0, 0),
-    strokeColor: new Color(0, 0, 123, 1),
+    strokeColor: new Color(0, 0, 123, 255),
     strokePosition: 'outside',
     strokeWidth: 1,
     translate: { x: 5, y: 0 },
@@ -176,8 +176,8 @@ const mulBg = new Pixel(128, 128, 128);
 const mulPixels = makePixels(1, 1, 128, 128, 128);
 const mulShape = circleShape({
     blendMode: 'multiply',
-    ink: new Color(128, 128, 128, 1),
-    paper: new Color(128, 128, 128, 1),
+    ink: new Color(128, 128, 128, 255),
+    paper: new Color(128, 128, 128, 255),
     translate: pixelCenter(0, 0, 1, 1),
     scale: 5,
 });
@@ -197,8 +197,8 @@ const screenBg = new Pixel(128, 128, 128);
 const screenPixels = makePixels(1, 1, 128, 128, 128);
 const screenShape = circleShape({
     blendMode: 'screen',
-    ink: new Color(128, 128, 128, 1),
-    paper: new Color(128, 128, 128, 1),
+    ink: new Color(128, 128, 128, 255),
+    paper: new Color(128, 128, 128, 255),
     translate: pixelCenter(0, 0, 1, 1),
     scale: 5,
 });
@@ -219,8 +219,8 @@ const overlayBg = new Pixel(128, 128, 128);
 const overlayPixels = makePixels(1, 1, 128, 128, 128);
 const overlayShape = circleShape({
     blendMode: 'overlay',
-    ink: new Color(128, 128, 128, 1),
-    paper: new Color(128, 128, 128, 1),
+    ink: new Color(128, 128, 128, 255),
+    paper: new Color(128, 128, 128, 255),
     translate: pixelCenter(0, 0, 1, 1),
     scale: 5,
 });
@@ -238,7 +238,7 @@ eq(toRgb(overlayPixels), [
 // `rasterize()` debugShapeAabb background blend.
 const dbgBg = new Pixel(50, 60, 70);
 const dbgPixels = makePixels(1, 1, 50, 60, 70);
-const dbgColor = new Color(200, 100, 50, 0.5); // semi-transparent debug box
+const dbgColor = new Color(200, 100, 50, 128); // semi-transparent debug box
 const dbgShape = circleShape({
     ink: new Color(0, 0, 0, 0),
     paper: new Color(0, 0, 0, 0),
@@ -253,7 +253,7 @@ dbgShape.primitives = [ new Primitive(null, 'no-flip', 'union', 'circle', 0, 10,
 rasterize(0.85, dbgBg, dbgPixels, [ { id: 99, shape: dbgShape } ], 10, 1, 1);
 
 // expected blended channel: dst = bg*(1-alpha) + debug*(alpha)
-const a = dbgColor.a;
+const a = dbgColor.a / 255;
 const expR = Math.round(((50/255) * (1 - a) + (dbgColor.r/255) * a) * 255);
 const expG = Math.round(((60/255) * (1 - a) + (dbgColor.g/255) * a) * 255);
 const expB = Math.round(((70/255) * (1 - a) + (dbgColor.b/255) * a) * 255);
@@ -264,7 +264,7 @@ eq(toRgb(dbgPixels), [[{ r: expR, g: expG, b: expB }]]);
 // `rasterize()` debugPrimitiveAabb background blend.
 const dbgPrimBg = new Pixel(20, 30, 40);
 const dbgPrimPixels = makePixels(1, 1, 20, 30, 40);
-const dbgPrimColor = new Color(50, 200, 250, 0.4);
+const dbgPrimColor = new Color(50, 200, 250, 102);
 const dbgPrimShape = circleShape({
     ink: new Color(0, 0, 0, 0),
     paper: new Color(0, 0, 0, 0),
@@ -286,7 +286,7 @@ dbgPrimShape.primitives = [ new Primitive(
 rasterize(0.85, dbgPrimBg, dbgPrimPixels,
     [ { id: 100, shape: dbgPrimShape } ], 10, 1, 1);
 
-const alphaPrim = dbgPrimColor.a;
+const alphaPrim = dbgPrimColor.a / 255;
 const expPrimR = Math.round(((20/255) * (1 - alphaPrim)
     + (dbgPrimColor.r/255) * alphaPrim) * 255);
 const expPrimG = Math.round(((30/255) * (1 - alphaPrim)
