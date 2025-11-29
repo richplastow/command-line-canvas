@@ -10,6 +10,7 @@ import {
     validateCanvasExtent,
     validateColorDepth,
     validateOutputFormat,
+    validatePixels,
 } from './canvas-validators.js';
 
 /**
@@ -44,9 +45,13 @@ export class Canvas {
      * @type {boolean} */
     #needsUpdate = false;
 
-    /** #### Private 2D array containing the canvas's pixels
-     * @type {Color[][]} */
-    #pixels = [];
+    /** #### Private array of bytes containing the canvas's pixels (RGBA)
+     * - Can be a reference to an HTML Canvas context's pixel buffer, passed in 
+     *   to the constructor (in which case it's not truly private)
+     * - Or if not, will be created internally (in which case it is private)
+     * - Mutated in-place by `rasterize()`
+     * @type {Uint8ClampedArray} */
+    #pixels = null;
 
     /** #### Private list of Shapes
      * - In the order that they should be composited
@@ -61,30 +66,35 @@ export class Canvas {
      * @param {Color} background A color to clone across the canvas's background
      * @param {number} xExtent The canvas's width
      * @param {number} yExtent The canvas's height
+     * @param {Uint8ClampedArray} [pixels] Optional existing pixel buffer
      */
-    constructor(background, xExtent, yExtent) {
+    constructor(background, xExtent, yExtent, pixels) {
         validateColor(background, 'Canvas: background');
         validateCanvasExtent(xExtent, 'Canvas: xExtent');
         validateCanvasExtent(yExtent, 'Canvas: yExtent');
+        if (pixels) {
+            validatePixels(pixels, 'Canvas: pixels');
+            if (pixels.length !== xExtent * yExtent * 4) throw RangeError(
+                `Canvas: pixels length ${pixels.length} does not match ` +
+                `dimensions ${xExtent}x${yExtent}x4`)}
 
         this.#aaRegionPixels = 0.85; // anti-alias region width in pixels (1 would be a little too soft)
         this.background = background;
         this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
         this.xExtent = xExtent;
         this.yExtent = yExtent;
+        this.#pixels = pixels
+            ? pixels
+            : new Uint8ClampedArray(xExtent * yExtent * 4);
 
-        // Create a canvas of pixels with the specified dimensions, and fill
-        // it with the background colour.
-        this.#pixels = Array.from({ length: yExtent }, () =>
-            Array.from({ length: xExtent }, () =>
-                new Color(
-                    background.r,
-                    background.g,
-                    background.b,
-                    background.a,
-                )
-            )
-        );
+        // Fill the pixel buffer with background color, whether or not it was
+        // passed in externally.
+        for (let i = 0; i < this.#pixels.length; i += 4) {
+            this.#pixels[i] = background.r;
+            this.#pixels[i + 1] = background.g;
+            this.#pixels[i + 2] = background.b;
+            this.#pixels[i + 3] = background.a;
+        }
     }
 
     /** #### Appends a shape to the canvas
@@ -167,6 +177,7 @@ export class Canvas {
                 yMin: 0,
                 yMax: this.yExtent,
             },
+            this.xExtent,
             colorDepth,
             this.#pixels,
             xpx,

@@ -3,30 +3,32 @@ import { Color } from '../../models/color/color.js';
 import { encodeHtml } from './encode-html.js';
 
 
-const good2x5Pixels = [
+const good2x5Pixels = new Uint8ClampedArray([
     // Black and white.
-    [ new Color(  0,   0,   0, 255), new Color(255, 255, 255, 255)],
+    0, 0, 0, 255,          255, 255, 255, 255,
     // Yellow and red.
-    [ new Color(255, 255,   0, 255), new Color(255,   0,   0, 255)],
+    255, 255, 0, 255,      255, 0, 0, 255,
     // Both green, left just above, right just below threshold.
-    [ new Color(  0, 181,   0, 255), new Color(  0, 179,   0, 255)],
+    0, 181, 0, 255,        0, 179, 0, 255,
     // Both grey, just above and just below threshold.
-    [ new Color(128, 128, 128, 255), new Color(129, 129, 129, 255)],
+    128, 128, 128, 255,    129, 129, 129, 255,
     // And an extra row, out of bounds, to ensure it's ignored.
-    [ new Color(255,   0, 255, 255), new Color(  0, 255, 255, 255)],
-];
+    255, 0, 255, 255,      0, 255, 255, 255,
+]);
 
 
 // `encodeHtml()` invalid.
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 1.5, yMin: 0, yMax: 1.23 },
+    2,
     'monochrome',
     good2x5Pixels,
     'myFn():'
 ), { message: /^myFn\(\): bounds\.xMax 1\.5 is not an integer$/ });
 eq(encodeHtml(
     { xMin: 0, xMax: 1.5, yMin: 0, yMax: 0.123 }, // despite invalid bounds...
+    2,
     'monochrome',
     good2x5Pixels,
     'myFn():',
@@ -35,6 +37,7 @@ eq(encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
+    2,
     // @ts-expect-error
     'nope!',
     good2x5Pixels,
@@ -44,6 +47,7 @@ throws(() => encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
+    2,
     // @ts-expect-error
     'nope',
     good2x5Pixels,
@@ -51,13 +55,15 @@ throws(() => encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 2 },
+    2,
     '256color',
     // @ts-expect-error
     [[new Date(), {}], [{}, {}]],
-), { message: /^encodeHtml\(\): pixels\[0\]\[0\] is an instance of 'Date' not 'Color'$/ });
+), { message: /^encodeHtml\(\): pixels is an array, not a Uint8ClampedArray$/ });
 
 throws(() => encodeHtml(
     { xMin: 2, xMax: 4, yMin: 0, yMax: 2 },
+    2,
     'monochrome',
     good2x5Pixels,
     'test():'
@@ -65,6 +71,7 @@ throws(() => encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 3, yMin: 0, yMax: 2 },
+    2,
     'monochrome',
     good2x5Pixels,
     'test():'
@@ -72,6 +79,7 @@ throws(() => encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 1, yMin: 6, yMax: 8 },
+    2,
     'monochrome',
     good2x5Pixels,
     'test():'
@@ -79,6 +87,7 @@ throws(() => encodeHtml(
 
 throws(() => encodeHtml(
     { xMin: 0, xMax: 1, yMin: 1, yMax: 7 },
+    2,
     'monochrome',
     good2x5Pixels,
     'test():'
@@ -89,6 +98,7 @@ throws(() => encodeHtml(
 
 eq(encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    2,
     'monochrome',
     good2x5Pixels,
 ),`
@@ -98,6 +108,7 @@ eq(encodeHtml(
 
 eq(encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    2,
     '256color',
     good2x5Pixels,
 ), `
@@ -107,6 +118,7 @@ eq(encodeHtml(
 
 eq(encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    2,
     '8color',
     good2x5Pixels,
 ), `
@@ -116,6 +128,7 @@ eq(encodeHtml(
 
 eq(encodeHtml(
     { xMin: 0, xMax: 2, yMin: 0, yMax: 4 },
+    2,
     'truecolor',
     good2x5Pixels,
 ), `

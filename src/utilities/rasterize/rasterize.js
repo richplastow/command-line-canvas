@@ -17,7 +17,7 @@ import { samplePatternColor } from './sample-pattern-color.js';
  * - Mutates the provided pixels-array in-place.
  * @param {number} aaRegionPixels Anti-alias region width in pixels
  * @param {Color} background Background color pixel
- * @param {Color[][]} pixels Pixel grid to rasterize into
+ * @param {Uint8ClampedArray} pixels Pixel grid to rasterize into
  * @param {{id:number,shape:Shape}[]} shapes List of shapes to rasterize
  * @param {number} worldUnitsPerPixel World units per pixel
  * @param {number} xExtent Width of the pixel grid
@@ -35,7 +35,7 @@ export function rasterize(
     xpx = 'rasterize():',
 ) {
     // Reset pixel grid to background.
-    resetPixelGrid(background, pixels, xExtent, yExtent);
+    resetPixelGrid(background, pixels);
 
     // Convert an anti-aliasing width specified in pixels to world-space units.
     // The renderer maps the smaller canvas dimension to SIDE_IN_WORLD_UNITS.
@@ -59,11 +59,15 @@ export function rasterize(
             // math stays stable while multiple shapes accumulate colour.
             const worldX = worldXs[x];
             const worldY = worldYs[y];
-            const pixel = pixels[y][x];
 
-            let dstR = pixel.r / 255;
-            let dstG = pixel.g / 255;
-            let dstB = pixel.b / 255;
+            // Modern JS engines optimize both, so `* 4` isn’t reliably slower
+            // than `<< 2`. Also, `* 4` avoids surprises with negatives, and
+            // better matches intent.
+            const i = (y * xExtent + x) * 4;
+
+            let dstR = pixels[i] / 255;
+            let dstG = pixels[i + 1] / 255;
+            let dstB = pixels[i + 2] / 255;
 
             // Step through each shape in paint order, applying stroke, fill
             // and blend processing whenever the SDF says the pixel is hit.
@@ -164,9 +168,10 @@ export function rasterize(
 
             // Convert the accumulated floats back into byte channels for
             // downstream rendering.
-            pixel.r = toByte(dstR);
-            pixel.g = toByte(dstG);
-            pixel.b = toByte(dstB);
+            pixels[i] = toByte(dstR);
+            pixels[i + 1] = toByte(dstG);
+            pixels[i + 2] = toByte(dstB);
+            pixels[i + 3] = 255; // TODO alpha support here
         }
     }
 }

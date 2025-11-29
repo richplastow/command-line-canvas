@@ -1,5 +1,4 @@
 import { Canvas } from "./canvas.js";
-import { Color } from "../color/color.js";
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds
@@ -94,63 +93,27 @@ export const validateOutputFormat = (outputFormat, xpx = 'outputFormat') => {
         `${xpx} is not one of '${validFormats.join("'|'")}'`);
 };
 
-/** #### Checks that a 2D array of pixels is valid
- * @param {Color[][]} pixels The 2D array of pixels to check
+/** #### Checks that a pixel buffer is valid
+ * @param {Uint8ClampedArray} pixels The pixel buffer to check
  * @param {string} [xpx='pixels'] Exception prefix, e.g. 'canvas.render(): pixels'
  */
 export const validatePixels = (pixels, xpx = 'pixels') => {
-    // Validate the outer-array.
     if (pixels === null) throw TypeError(
         `${xpx} is null, not an object`);
-    if (typeof pixels !== 'object') throw TypeError(
-        `${xpx} is type '${typeof pixels}' not 'object'`);
-    if (!Array.isArray(pixels)) throw TypeError(
-        `${xpx} is not an array`);
-
-    // Validate the inner-arrays.
-    let extentX;
-    let y;
-    for (y = 0; y < pixels.length; y++) {
-        const row = pixels[y];
-        if (row === null) throw TypeError(
-            `${xpx}[${y}] is null, not an object`);
-        if (typeof row !== 'object') throw TypeError(
-            `${xpx}[${y}] is type '${typeof row}' not 'object'`);
-        if (!Array.isArray(row)) throw TypeError(
-            `${xpx}[${y}] is not an array`);
-        if (y === 0) {
-            extentX = row.length; // first row sets the 2D array width
-        } else if (row.length !== extentX) {
-            throw RangeError(
-                `${xpx}[${y}] extentX ${row.length} !== first row ${extentX}`);
-        }
-        for (let x = 0; x < row.length; x++) {
-
-            // Validate each pixel.
-            const pixel = row[x];
-            if (!(pixel instanceof Color)) {
-                if (pixel === null) throw TypeError(
-                    `${xpx}[${y}][${x}] is null, not an object`);
-                if (Array.isArray(pixel)) throw TypeError(
-                    `${xpx}[${y}][${x}] is an array, not an object`);
-                if (typeof pixel !== 'object') throw TypeError(
-                    `${xpx}[${y}][${x}] is type '${typeof pixel}' not 'object'`);
-                /** @type {{}} **/ const notPixel = pixel;
-                const notPixelName = notPixel.constructor.name;
-                throw TypeError(
-                    `${xpx}[${y}][${x}] is an instance of '${notPixelName}' not 'Color'`);
-            }
-        }
+    if (pixels === null) throw TypeError(
+        `${xpx} is null, not an object`);
+    if (!(pixels instanceof Uint8ClampedArray)) {
+        if (Array.isArray(pixels)) throw TypeError(
+            `${xpx} is an array, not a Uint8ClampedArray`);
+        if (typeof pixels !== 'object') throw TypeError(
+            `${xpx} is type '${typeof pixels}' not 'object'`);
+        /** @type {{}} **/ const notPixels = pixels;
+        const notPixelsName = notPixels.constructor.name;
+        throw TypeError(
+            `${xpx} is an instance of '${notPixelsName}' not 'Uint8ClampedArray'`);
     }
-
-    // Validate the width and height.
-    const extentY = y;
-    if (extentX < 1) throw RangeError(
-        `${xpx} extentX is zero`);
-    if (extentX > 3840) throw RangeError(
-        `${xpx} extentX ${extentX} is greater than 3840`);
-    if (extentY < 1) throw RangeError(
-        `${xpx} extentY is zero`);
-    if (extentY > 3840) throw RangeError(
-        `${xpx} extentY ${extentY} is greater than 3840`);
+    if (pixels.length === 0) throw RangeError(
+        `${xpx} length is zero`);
+    if (pixels.length % 4 !== 0) throw RangeError(
+        `${xpx} length ${pixels.length} is not a multiple of 4`);
 }

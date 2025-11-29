@@ -5,19 +5,29 @@ import { Shape } from '../../models/shape/shape.js';
 import { rasterize } from './rasterize.js';
 
 const makePixels = (width, height, r, g, b) => {
+    const out = new Uint8ClampedArray(width * height * 4);
+    for (let i = 0; i < out.length; i += 4) {
+        out[i] = r;
+        out[i + 1] = g;
+        out[i + 2] = b;
+        out[i + 3] = 255;
+    }
+    return out;
+};
+
+const toRgb = (pixels, width = 1) => {
     const out = [];
+    const height = pixels.length / (width * 4);
     for (let y = 0; y < height; y++) {
         const row = [];
         for (let x = 0; x < width; x++) {
-            row.push(new Color(r, g, b, 255));
+            const i = (y * width + x) * 4;
+            row.push({ r: pixels[i], g: pixels[i + 1], b: pixels[i + 2] });
         }
         out.push(row);
     }
     return out;
 };
-
-const toRgb = (pixels) => pixels.map((row) =>
-    row.map((px) => ({ r: px.r, g: px.g, b: px.b })));
 
 const pixelCenter = (x, y, width, height) => {
     const aspect = width / height;
@@ -87,7 +97,7 @@ const resetPixels = makePixels(2, 2, 99, 88, 77);
 
 rasterize(0.85, resetBg, resetPixels, [], 5, 2, 2);
 
-eq(toRgb(resetPixels), [
+eq(toRgb(resetPixels, 2), [
     [
         { r: 12, g: 34, b: 56 },
         { r: 12, g: 34, b: 56 },

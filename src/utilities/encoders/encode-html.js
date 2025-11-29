@@ -9,19 +9,21 @@ import {
     validatePixels,
 } from '../../models/canvas/canvas-validators.js';
 
-/** #### Renders a 2D array of pixels to an HTML string
+/** #### Renders a pixel buffer to an HTML string
  * - Note that only the `min` bounds are inclusive, so `xMax` and `yMax` are
  *   not encoded. If the `pixels` array has dimensions 3x2, `bounds` should be
  *   `{ xMin: 0, xMax: 3, yMin: 0, yMax: 2 }` to encode the whole canvas.
  * @param {Bounds} bounds The pixel bounds to encode within
+ * @param {number} canvasWidth The width of the canvas in pixels
  * @param {'256color'|'8color'|'monochrome'|'truecolor'} colorDepth The color depth to encode at
- * @param {Color[][]} pixels 2D array of pixels to encode
+ * @param {Uint8ClampedArray} pixels Pixel buffer to encode
  * @param {string} [xpx='encodeHtml():'] Exception prefix, e.g. 'fn():'
  * @param {boolean} [skipValidation=false]
  *     If true, skips validation - useful for tight loops, where args are known to be good
  */
 export const encodeHtml = (
     bounds,
+    canvasWidth,
     colorDepth,
     pixels,
     xpx = 'encodeHtml():',
@@ -31,8 +33,8 @@ export const encodeHtml = (
         validateBounds(bounds, `${xpx} bounds`);
         validateColorDepth(colorDepth, `${xpx} colorDepth`);
         validatePixels(pixels, `${xpx} pixels`);
-        const extentX = pixels[0].length;
-        const extentY = pixels.length;
+        const extentX = canvasWidth;
+        const extentY = pixels.length / (canvasWidth * 4);
         if (bounds.xMin > extentX - 1) throw RangeError(
             `${xpx} bounds.xMin ${bounds.xMin} exceeds pixels extentX ${extentX}`);
         if (bounds.xMax > extentX) throw RangeError(
@@ -77,16 +79,13 @@ export const encodeHtml = (
     const charCanvas = [];
     for (let y = bounds.yMin; y < bounds.yMax; y += 2) {
         const row = [];
-        const upperPixelRow = pixels[y];
-        const lowerPixelRow = pixels[y + 1];
-        if (!upperPixelRow) throw Error(
-            `${xpx} missing upper pixel row at y=${y}`);
-        if (!lowerPixelRow) throw Error(
-            `${xpx} missing lower pixel row at y=${y + 1}`);
         for (let x = bounds.xMin; x < bounds.xMax; x++) {
-            const upper = upperPixelRow[x];
-            const lower = lowerPixelRow[x];
-            const char = colorGetter(upper, lower);
+            const iUpper = (y * canvasWidth + x) * 4;
+            const iLower = ((y + 1) * canvasWidth + x) * 4;
+            const char = colorGetter(
+                pixels[iUpper], pixels[iUpper + 1], pixels[iUpper + 2],
+                pixels[iLower], pixels[iLower + 1], pixels[iLower + 2]
+            );
             row.push(char);
         }
         charCanvas.push(row.join('') + lineReset);
@@ -95,19 +94,23 @@ export const encodeHtml = (
 };
 
 /** #### Gets the HTML markup for a pair of pixels in 256-colour mode
- * @param {Color} upper The upper half color
- * @param {Color} lower The lower half color
+ * @param {number} ur Upper red
+ * @param {number} ug Upper green
+ * @param {number} ub Upper blue
+ * @param {number} lr Lower red
+ * @param {number} lg Lower green
+ * @param {number} lb Lower blue
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
-function getHtml256Color(upper, lower) {
+function getHtml256Color(ur, ug, ub, lr, lg, lb) {
     const upperIndex = 16
-        + (36 * Math.round(upper.r / 51))
-        + (6 * Math.round(upper.g / 51))
-        + Math.round(upper.b / 51);
+        + (36 * Math.round(ur / 51))
+        + (6 * Math.round(ug / 51))
+        + Math.round(ub / 51);
     const lowerIndex = 16
-        + (36 * Math.round(lower.r / 51))
-        + (6 * Math.round(lower.g / 51))
-        + Math.round(lower.b / 51);
+        + (36 * Math.round(lr / 51))
+        + (6 * Math.round(lg / 51))
+        + Math.round(lb / 51);
     
     // Convert 256-color indices back to RGB for inline styles.
     const upperRGB = index256ToRGB(upperIndex);
@@ -118,28 +121,40 @@ function getHtml256Color(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in 8-colour mode
- * @param {Color} upper The upper half color
- * @param {Color} lower The lower half color
+ * @param {number} ur Upper red
+ * @param {number} ug Upper green
+ * @param {number} ub Upper blue
+ * @param {number} lr Lower red
+ * @param {number} lg Lower green
+ * @param {number} lb Lower blue
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
-function getHtml8Color(upper, lower) {
-    const upperRgb = to8ColorRgb(upper);
-    const lowerRgb = to8ColorRgb(lower);
-    return `<b style="background:rgb(${upperRgb.r},${upperRgb.g},${upperRgb.b});`
-        + `color:rgb(${lowerRgb.r},${lowerRgb.g},${lowerRgb.b})">▄</b>`;
+function getHtml8Color(ur, ug, ub, lr, lg, lb) {
+    const ur8 = ur >= 128 ? 255 : 0;
+    const ug8 = ug >= 128 ? 255 : 0;
+    const ub8 = ub >= 128 ? 255 : 0;
+    const lr8 = lr >= 128 ? 255 : 0;
+    const lg8 = lg >= 128 ? 255 : 0;
+    const lb8 = lb >= 128 ? 255 : 0;
+    return `<b style="background:rgb(${ur8},${ug8},${ub8});`
+        + `color:rgb(${lr8},${lg8},${lb8})">▄</b>`;
 }
 
 /** #### Gets the Unicode 'Block Elements' character for rendering in monochrome
- * @param {Color} upper The upper half color
- * @param {Color} lower The lower half color
+ * @param {number} ur Upper red
+ * @param {number} ug Upper green
+ * @param {number} ub Upper blue
+ * @param {number} lr Lower red
+ * @param {number} lg Lower green
+ * @param {number} lb Lower blue
  * @returns {string} The Unicode 'Block Elements' character, or space
  */
-function getMonochrome(upper, lower) {
+function getMonochrome(ur, ug, ub, lr, lg, lb) {
     // Use an integer-only luminance approximation to be fast and portable to
     // environments like Rust or WGSL. Coefficients sum to 256 so we can shift
     // by 8 instead of dividing: (54*R + 183*G + 19*B) >> 8
-    const lumUpper = (54 * upper.r + 183 * upper.g + 19 * upper.b) >> 8;
-    const lumLower = (54 * lower.r + 183 * lower.g + 19 * lower.b) >> 8;
+    const lumUpper = (54 * ur + 183 * ug + 19 * ub) >> 8;
+    const lumLower = (54 * lr + 183 * lg + 19 * lb) >> 8;
     return lumUpper > 128
         ? lumLower > 128
             ? '\u2588' // Full block
@@ -151,25 +166,17 @@ function getMonochrome(upper, lower) {
 }
 
 /** #### Gets the HTML markup for a pair of pixels in Truecolor
- * @param {Color} upper The upper half color
- * @param {Color} lower The lower half color
+ * @param {number} ur Upper red
+ * @param {number} ug Upper green
+ * @param {number} ub Upper blue
+ * @param {number} lr Lower red
+ * @param {number} lg Lower green
+ * @param {number} lb Lower blue
  * @returns {string} The Unicode 'Lower Half Block' character, wrapped in HTML
  */
-function getHtmlTruecolor(upper, lower) {
-    return `<b style="background:rgb(${upper.r},${upper.g},${upper.b});`
-        + `color:rgb(${lower.r},${lower.g},${lower.b})">▄</b>`;
-}
-
-/** #### Quantises a pixel to 8-colour RGB values
- * @param {Color} pixel Color to quantise
- * @returns {{ b: number, g: number, r: number }} Quantised RGB components
- */
-function to8ColorRgb(pixel) {
-    return {
-        r: pixel.r >= 128 ? 255 : 0,
-        g: pixel.g >= 128 ? 255 : 0,
-        b: pixel.b >= 128 ? 255 : 0,
-    };
+function getHtmlTruecolor(ur, ug, ub, lr, lg, lb) {
+    return `<b style="background:rgb(${ur},${ug},${ub});`
+        + `color:rgb(${lr},${lg},${lb})">▄</b>`;
 }
 
 /** #### Converts a 256-color palette index to RGB values

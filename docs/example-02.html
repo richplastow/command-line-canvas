@@ -46,9 +46,19 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         )()
         : await import('./command-line-canvas.js'); // ...otherwise use build
 
-    // Create an 80x48 pixel canvas with light-blue background.
+    // Create an 800x480 pixel canvas with light-blue background.
     const lightBlue = new Color(173, 216, 230, 255);
-    const canvas = new Canvas(lightBlue, 800, 480);
+
+    // Setup HTML Canvas first
+    const canvasElement = document.getElementById('output');
+    canvasElement.width = 800;
+    canvasElement.height = 480;
+    const ctx = canvasElement.getContext('2d');
+    const imageData = ctx.createImageData(800, 480);
+    const data = imageData.data;
+
+    // Create a command-line-canvas Canvas using the HTML Canvas buffer
+    const canvas = new Canvas(lightBlue, 800, 480, data);
 
     // Create colors.
     const lightMagenta = new Color(255, 128, 255, 255);
@@ -118,13 +128,15 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 
     canvas.addShape(shape);
 
-    // Render to the canvas element.
-    const canvasElement = document.getElementById('output');
-    canvasElement.width = canvas.xExtent;
-    canvasElement.height = canvas.yExtent;
-    const ctx = canvasElement.getContext('2d');
-    const imageData = ctx.createImageData(canvas.xExtent, canvas.yExtent);
-    const data = imageData.data;
+    // Alternative, which avoids sharing the HTML Canvas buffer.
+    // const canvasElement = document.getElementById('output');
+    // canvasElement.width = canvas.xExtent;
+    // canvasElement.height = canvas.yExtent;
+    // const ctx = canvasElement.getContext('2d');
+    // const imageData = ctx.createImageData(canvas.xExtent, canvas.yExtent);
+    // const data = imageData.data;
+    // const pixelData = canvas.render('truecolor', 'buffer');
+    // data.set(pixelData);
 
     // Animate the shape rotation and rerender each frame.
     let lastTs = null;
@@ -140,8 +152,8 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
         // Mark the canvas as dirty, then rerender it to the buffer and copy
         // into canvas image data.
         canvas.requestUpdate();
-        const pixelData = canvas.render('truecolor', 'buffer');
-        data.set(pixelData);
+        canvas.render('truecolor', 'buffer');
+        // data.set(pixelData); // no need to copy, buffer is shared!
         ctx.putImageData(imageData, 0, 0);
 
         // Uncomment to run the animation:

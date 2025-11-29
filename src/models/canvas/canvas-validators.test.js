@@ -143,49 +143,19 @@ throws(() => validatePixels(123),
     { message: /^pixels is type 'number' not 'object'$/});
 // @ts-expect-error
 throws(() => validatePixels({}),
-    { message: /^pixels is not an array$/});
-throws(() => validatePixels([null]),
-    { message: /^pixels\[0\] is null, not an object$/});
+    { message: /^pixels is an instance of 'Object' not 'Uint8ClampedArray'$/});
 // @ts-expect-error
-throws(() => validatePixels(['abc']),
-    { message: /^pixels\[0\] is type 'string' not 'object'$/});
-// @ts-expect-error
-throws(() => validatePixels([new Date()]),
-    { message: /^pixels\[0\] is not an array$/});
-const p = new Color(1, 2, 3, 255);
-throws(() => validatePixels([[p, null, p]], 'myPixels'),
-    { message: /^myPixels\[0\]\[1\] is null, not an object$/});
-// @ts-expect-error
-throws(() => validatePixels([[p, p], [p, p], [[p], p]], 'arr'),
-    { message: /^arr\[2\]\[0\] is an array, not an object$/});
-// @ts-expect-error
-throws(() => validatePixels([[p, p, 'abc']], 'canvas.render(): pixels'),
-    { message: /^canvas\.render\(\): pixels\[0\]\[2\] is type 'string' not 'object'$/});
-// @ts-expect-error
-throws(() => validatePixels([[{}]]),
-    { message: /^pixels\[0\]\[0\] is an instance of 'Object' not 'Color'$/});
-throws(() => validatePixels([[]]),
-    { message: /^pixels extentX is zero$/});
-const over3840X = Array(3841).fill(null).map(() => new Color(0, 0, 0, 255));
-throws(() => validatePixels([over3840X]),
-    { message: /^pixels extentX 3841 is greater than 3840$/});
 throws(() => validatePixels([]),
-    { message: /^pixels extentY is zero$/});
-const over3840Y = Array(3841).fill(null).map(() => [new Color(0, 0, 0, 255)]);
-throws(() => validatePixels(over3840Y),
-    { message: /^pixels extentY 3841 is greater than 3840$/});
-const px = new Color(0, 0, 0, 255);
-throws(() => validatePixels([[px, px], [px], [px, px]], 'myPixels'),
-    { message: /^myPixels\[1\] extentX 1 !== first row 2$/});
+    { message: /^pixels is an array, not a Uint8ClampedArray$/});
+throws(() => validatePixels(new Uint8ClampedArray(0)),
+    { message: /^pixels length is zero$/});
+throws(() => validatePixels(new Uint8ClampedArray(3)),
+    { message: /^pixels length 3 is not a multiple of 4$/});
 
 
 // validatePixels() valid.
 
-const validPixels = [
-    [new Color(0, 0, 0, 255), new Color(10, 10, 10, 255)],
-    [new Color(20, 20, 20, 255), new Color(30, 30, 30, 255)],
-    [new Color(40, 40, 40, 255), new Color(50, 50, 50, 255)],
-];
+const validPixels = new Uint8ClampedArray(4 * 2 * 3); // 2x3 pixels
 eq(validatePixels(validPixels, 'testPixels'), void 0);
 
 
