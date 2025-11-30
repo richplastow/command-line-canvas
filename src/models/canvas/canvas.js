@@ -47,7 +47,7 @@ export class Canvas {
     #needsUpdate = false;
 
     /** #### Private array of bytes containing the canvas's pixels (RGBA)
-     * - Can be a reference to an HTML Canvas context's pixel buffer, passed in 
+     * - Can be a reference to an HTML Canvas context's pixel buffer, passed in
      *   to the constructor (in which case it's not truly private)
      * - Or if not, will be created internally (in which case it is private)
      * - Mutated in-place by `rasterize()`
@@ -114,7 +114,7 @@ export class Canvas {
 
     /** #### Request that the canvas be re-rasterized on next render()
      * - Useful when external code mutates Shapes directly.
-     * 
+     *
      * @todo replace this with setters on Shape properties?
      */
     requestUpdate() {

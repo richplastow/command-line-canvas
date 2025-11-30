@@ -11,11 +11,11 @@
         // Enable error reporting in JavaScript files in the src/ directory.
         // Same as adding `// @ts-check` at the top of every .js file.
         "checkJs": true,
-  
+
         // Generate .d.ts files from the src/ JavaScript files. The tsserver
         // uses these .d.ts files internally - they're not written to the repo.
         "declaration": true,
-  
+
         // Only output d.ts files, don't try to transpile JS files to JS files.
         "emitDeclarationOnly": true,
 

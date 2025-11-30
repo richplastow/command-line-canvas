@@ -111,11 +111,11 @@ function getHtml256Color(ur, ug, ub, lr, lg, lb) {
         + (36 * Math.round(lr / 51))
         + (6 * Math.round(lg / 51))
         + Math.round(lb / 51);
-    
+
     // Convert 256-color indices back to RGB for inline styles.
     const upperRGB = index256ToRGB(upperIndex);
     const lowerRGB = index256ToRGB(lowerIndex);
-    
+
     return `<b style="background:rgb(${upperRGB.r},${upperRGB.g},${upperRGB.b});`
         + `color:rgb(${lowerRGB.r},${lowerRGB.g},${lowerRGB.b})">▄</b>`;
 }
@@ -198,10 +198,10 @@ function index256ToRGB(index) {
         const b = i % 6;
         // The 6x6x6 cube uses these specific values, not a linear progression
         const levels = [0, 95, 135, 175, 215, 255];
-        return { 
-            r: levels[r], 
-            g: levels[g], 
-            b: levels[b] 
+        return {
+            r: levels[r],
+            g: levels[g],
+            b: levels[b]
         };
     }
     // 232-255: grayscale ramp.

@@ -10,12 +10,12 @@
  *
  * - 10.0 makes coordinates and SDF sizes intuitive and stable across different
  *   pixel resolutions.
- * 
+ *
  * Effect of changing 10.0:
  * - Larger value → more world units per pixel → shapes render larger on screen.
  * - Smaller value → everything shrinks in pixels.
  * - Changing this value is equivalent to zooming in/out on the canvas.
- * 
+ *
  * Example: for 80×24 canvas:
  * - min = 24 → worldUnitsPerPixel = 10 / 24 ≈ 0.4167
  * - aspectRatio = 80/24 ≈ 3.33 → xExtentWorld = 33.33, yExtentWorld = 10.0
@@ -606,11 +606,11 @@ function getHtml256Color(ur, ug, ub, lr, lg, lb) {
         + (36 * Math.round(lr / 51))
         + (6 * Math.round(lg / 51))
         + Math.round(lb / 51);
-    
+
     // Convert 256-color indices back to RGB for inline styles.
     const upperRGB = index256ToRGB(upperIndex);
     const lowerRGB = index256ToRGB(lowerIndex);
-    
+
     return `<b style="background:rgb(${upperRGB.r},${upperRGB.g},${upperRGB.b});`
         + `color:rgb(${lowerRGB.r},${lowerRGB.g},${lowerRGB.b})">▄</b>`;
 }
@@ -693,10 +693,10 @@ function index256ToRGB(index) {
         const b = i % 6;
         // The 6x6x6 cube uses these specific values, not a linear progression
         const levels = [0, 95, 135, 175, 215, 255];
-        return { 
-            r: levels[r], 
-            g: levels[g], 
-            b: levels[b] 
+        return {
+            r: levels[r],
+            g: levels[g],
+            b: levels[b]
         };
     }
     // 232-255: grayscale ramp.
@@ -1072,7 +1072,7 @@ const validatePrimitives = (primitives, xpx = 'primitives') => {
         `${xpx} is type '${typeof primitives}' not 'object'`);
     if (!Array.isArray(primitives)) throw TypeError(
         `${xpx} is not an array`);
-    
+
     for (let i = 0; i < primitives.length; i++) {
         const primitive = primitives[i];
         if (!(primitive instanceof Primitive)) {
@@ -2142,7 +2142,6 @@ const toPatternSpace = (shape, worldX, worldY) => {
     };
 };
 
-// 
 /** #### Used by computePatternCycleLocal() to cache results on shape instances
  * - Symbol used as a hidden property key on `Shape` instances to store a
  *   tiny cache object for the computed pattern cycle length.
@@ -2237,12 +2236,12 @@ const computePatternCycleLocal = (shape, worldUnitsPerPixel) => {
  * - The function integrates coverage across a one-dimensional interval that
  *   represents the pixel footprint projected into the pattern axis. This
  *   approach gives sub-pixel anti-aliased coverage for thin patterns.
- * 
+ *
  * Edge cases handled:
  * - Non-finite inputs fall back to a best-effort clamped `patternRatio`.
  * - Zero or negative `cycleLocal` yields a constant coverage equal to
  *   clamped `patternRatio`.
- * 
+ *
  * @param {number} coordCenter
  *   Center coordinate of the pixel footprint in pattern-local units along the stripe axis (either x or y after transformation).
  * @param {number} pixelWidthLocal
@@ -2572,7 +2571,7 @@ class Canvas {
     #needsUpdate = false;
 
     /** #### Private array of bytes containing the canvas's pixels (RGBA)
-     * - Can be a reference to an HTML Canvas context's pixel buffer, passed in 
+     * - Can be a reference to an HTML Canvas context's pixel buffer, passed in
      *   to the constructor (in which case it's not truly private)
      * - Or if not, will be created internally (in which case it is private)
      * - Mutated in-place by `rasterize()`
@@ -2639,7 +2638,7 @@ class Canvas {
 
     /** #### Request that the canvas be re-rasterized on next render()
      * - Useful when external code mutates Shapes directly.
-     * 
+     *
      * @todo replace this with setters on Shape properties?
      */
     requestUpdate() {

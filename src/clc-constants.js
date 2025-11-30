@@ -21,12 +21,12 @@ export const ENABLE_BOX_CULLING = true;
  *
  * - 10.0 makes coordinates and SDF sizes intuitive and stable across different
  *   pixel resolutions.
- * 
+ *
  * Effect of changing 10.0:
  * - Larger value → more world units per pixel → shapes render larger on screen.
  * - Smaller value → everything shrinks in pixels.
  * - Changing this value is equivalent to zooming in/out on the canvas.
- * 
+ *
  * Example: for 80×24 canvas:
  * - min = 24 → worldUnitsPerPixel = 10 / 24 ≈ 0.4167
  * - aspectRatio = 80/24 ≈ 3.33 → xExtentWorld = 33.33, yExtentWorld = 10.0

@@ -1,6 +1,6 @@
 import { Color } from '../color/color.js';
 import { Primitive } from '../primitive/primitive.js';
-import { Shape } from "./shape.js";
+import { Shape } from './shape.js';
 
 /**
  * @typedef {import('../../clc-types.js').Pattern} Pattern
@@ -130,7 +130,7 @@ export const validatePrimitives = (primitives, xpx = 'primitives') => {
         `${xpx} is type '${typeof primitives}' not 'object'`);
     if (!Array.isArray(primitives)) throw TypeError(
         `${xpx} is not an array`);
-    
+
     for (let i = 0; i < primitives.length; i++) {
         const primitive = primitives[i];
         if (!(primitive instanceof Primitive)) {

@@ -1,5 +1,5 @@
 import { Color } from '../color/color.js';
-import { Primitive } from "./primitive.js";
+import { Primitive } from './primitive.js';
 
 /** #### Checks that a debugPrimitiveAabb value is valid
  * @param {Color|null} debugPrimitiveAabb The colour for the debug box, or null

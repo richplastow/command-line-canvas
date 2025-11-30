@@ -7,7 +7,7 @@ import {
     validateRotate,
     validateScale,
     validateTranslate,
-} from "./primitive-validators.js";
+} from './primitive-validators.js';
 
 /** #### A primitive shape that can be combined to form complex shapes */
 export class Primitive {

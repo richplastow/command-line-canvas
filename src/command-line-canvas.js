@@ -1,7 +1,7 @@
 /**
  * @fileoverview src/command-line-canvas.js
  * Bundles public command-line-canvas API into a single file for distribution.
- * 
+ *
  * Note that src/utilities/ are used internally, but not exported by the bundle.
  */
 

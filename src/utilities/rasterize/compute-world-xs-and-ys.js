@@ -1,4 +1,4 @@
-import { SIDE_IN_WORLD_UNITS } from "../../clc-constants.js";
+import { SIDE_IN_WORLD_UNITS } from '../../clc-constants.js';
 
 /** #### Computes world-space X and Y coordinates for each pixel column and row
  *

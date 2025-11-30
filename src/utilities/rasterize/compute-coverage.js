@@ -1,5 +1,5 @@
-import { Color } from "../../models/color/color.js";
-import { clamp01 } from "./rasterization-utilities.js";
+import { Color } from '../../models/color/color.js';
+import { clamp01 } from './rasterization-utilities.js';
 
 /** #### Calculates anti-aliased fill coverage from an SDF distance.
  * @param {number} aaRegion The anti-alias region, in world units

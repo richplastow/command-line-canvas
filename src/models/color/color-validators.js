@@ -1,4 +1,4 @@
-import { Color } from "./color.js";
+import { Color } from './color.js';
 
 /** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
  * - Note that RGBA values do not have to be integers

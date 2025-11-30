@@ -66,7 +66,6 @@ export const toPatternSpace = (shape, worldX, worldY) => {
     };
 };
 
-// 
 /** #### Used by computePatternCycleLocal() to cache results on shape instances
  * - Symbol used as a hidden property key on `Shape` instances to store a
  *   tiny cache object for the computed pattern cycle length.
@@ -161,12 +160,12 @@ export const computePatternCycleLocal = (shape, worldUnitsPerPixel) => {
  * - The function integrates coverage across a one-dimensional interval that
  *   represents the pixel footprint projected into the pattern axis. This
  *   approach gives sub-pixel anti-aliased coverage for thin patterns.
- * 
+ *
  * Edge cases handled:
  * - Non-finite inputs fall back to a best-effort clamped `patternRatio`.
  * - Zero or negative `cycleLocal` yields a constant coverage equal to
  *   clamped `patternRatio`.
- * 
+ *
  * @param {number} coordCenter
  *   Center coordinate of the pixel footprint in pattern-local units along the stripe axis (either x or y after transformation).
  * @param {number} pixelWidthLocal

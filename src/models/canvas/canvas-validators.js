@@ -1,4 +1,4 @@
-import { Canvas } from "./canvas.js";
+import { Canvas } from './canvas.js';
 
 /**
  * @typedef {import('../../clc-types.js').Bounds} Bounds

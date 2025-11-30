@@ -1,4 +1,4 @@
-import { validateRgba } from "./color-validators.js";
+import { validateRgba } from './color-validators.js';
 
 /** #### A color with RGBA values */
 export class Color {

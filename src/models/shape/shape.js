@@ -16,7 +16,7 @@ import {
     validateStrokeUnit,
     validateStrokeWidth,
     validateTranslate,
-} from "./shape-validators.js";
+} from './shape-validators.js';
 
 /**
  * @typedef {import('../../clc-types.js').Pattern} Pattern

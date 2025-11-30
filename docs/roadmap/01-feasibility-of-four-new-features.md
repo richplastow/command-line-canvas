@@ -58,15 +58,15 @@ The pattern system is already well-designed for this extension:
        const flip = FLIP_SIGNS[shape.flip] || FLIP_SIGNS['no-flip'];
        const scale = shape.scale || 1;
        const invScale = scale === 0 ? 0 : 1 / scale;
-       
+
        // Current transform
        let x = (worldX - shape.translate.x) * flip.x * invScale;
        let y = (worldY - shape.translate.y) * flip.y * invScale;
-       
+
        // NEW: Apply pattern translation
        x -= shape.patternTranslate.x;
        y -= shape.patternTranslate.y;
-       
+
        // NEW: Apply pattern rotation (inverse)
        if (shape.patternRotate !== 0) {
            const cos = Math.cos(-shape.patternRotate);
@@ -76,7 +76,7 @@ The pattern system is already well-designed for this extension:
            x = rx;
            y = ry;
        }
-       
+
        return { x, y };
    };
    ```
@@ -141,14 +141,14 @@ The pattern system is already well-designed for this extension:
 
 export const sampleGradient = (gradient, worldX, worldY, shape, worldUnitsPerPixel) => {
     if (gradient instanceof Color) return gradient;
-    
+
     // Transform to appropriate coordinate space
     let x = worldX, y = worldY;
     if (gradient.unit === 'shape') {
         const local = toPatternSpace(shape, worldX, worldY);
         x = local.x; y = local.y;
     }
-    
+
     let t; // 0-1 position along gradient
     if (gradient.type === 'linear') {
         const cos = Math.cos(gradient.angle);
@@ -159,14 +159,14 @@ export const sampleGradient = (gradient, worldX, worldY, shape, worldUnitsPerPix
         const dy = y - gradient.center.y;
         t = Math.hypot(dx, dy) / gradient.radius;
     }
-    
+
     // Apply noise for dithering
     if (gradient.noise > 0) {
         t += (Math.random() - 0.5) * gradient.noise * 0.1;
     }
-    
+
     t = clamp01(t);
-    
+
     // Interpolate between stops
     return interpolateStops(gradient.stops, t);
 };
@@ -184,10 +184,10 @@ export const samplePatternColor = (shape, worldX, worldY, worldUnitsPerPixel) =>
     // Sample ink/paper as gradients instead of direct colors
     const inkColor = sampleGradient(shape.ink, worldX, worldY, shape, worldUnitsPerPixel);
     const paperColor = sampleGradient(shape.paper, worldX, worldY, shape, worldUnitsPerPixel);
-    
+
     if (shape.pattern === 'all-ink') return inkColor;
     if (shape.pattern === 'all-paper') return paperColor;
-    
+
     // ... rest of pattern sampling, using inkColor/paperColor
     return mixPatternColors(inkColor, paperColor, coverage);
 };
@@ -295,7 +295,7 @@ if (shape.glowInner) {
 
 // Shadow: offset sample point, then compute distance
 if (shape.shadowOuter) {
-    const shadowDist = sdfCompound(shape, 
+    const shadowDist = sdfCompound(shape,
         worldX - shape.shadowOuter.offset.x,
         worldY - shape.shadowOuter.offset.y
     );
@@ -306,11 +306,11 @@ if (shape.shadowOuter) {
 if (shape.bevelInner || shape.bevelOuter) {
     // Compute SDF gradient (normal) via central differences
     const eps = worldUnitsPerPixel * 0.5;
-    const nx = (sdfCompound(shape, worldX + eps, worldY) - 
+    const nx = (sdfCompound(shape, worldX + eps, worldY) -
                 sdfCompound(shape, worldX - eps, worldY)) / (2 * eps);
-    const ny = (sdfCompound(shape, worldX, worldY + eps) - 
+    const ny = (sdfCompound(shape, worldX, worldY + eps) -
                 sdfCompound(shape, worldX, worldY - eps)) / (2 * eps);
-    
+
     // Dot with light direction for shading
     const lightDot = nx * Math.cos(lightAngle) + ny * Math.sin(lightAngle);
     // Apply highlight/shadow based on lightDot
@@ -324,7 +324,7 @@ const computeGlowCoverage = (distance, config) => {
     const sizeWorld = convertToWorld(config.size, config.unit, ...);
     if (distance >= sizeWorld) return 0;
     if (distance <= 0) return 1;
-    
+
     // Smooth falloff
     const t = distance / sizeWorld;
     return Math.pow(1 - t, 2 + config.blur * 3); // Quadratic falloff
@@ -358,7 +358,7 @@ This requires restructuring the render loop to accumulate layers.
 - **Shadow with offset**: Requires 1 additional SDF evaluation per pixel
 - **Glow**: No additional SDF evaluations (reuses existing distance)
 
-**Mitigation**: 
+**Mitigation**:
 - Cache SDF gradient computation
 - Use AABB culling (already implemented) — expand AABB by effect size
 - Make effects optional (null = disabled)
@@ -449,7 +449,7 @@ Hard union:          Smooth union (smin):
  ●  ●   ●●●  ●        ●~~~~●
   ●●   ●   ●●          ●~~●
         ●●              ●●
-        
+
 (Sharp intersection)  (Blended organic form)
 ```
 
@@ -527,7 +527,7 @@ new features.
 All four proposed features are **feasible** within the current architecture:
 
 1. **Pattern Transform**: Trivial extension, 1-2 days
-2. **Gradients**: Moderate effort, clean integration, 3-5 days  
+2. **Gradients**: Moderate effort, clean integration, 3-5 days
 3. **Effects**: Most complex, requires render loop refactoring, 1-2 weeks
 4. **Primitive Blending**: Classic SDF technique, 2-3 days
 
