@@ -1,5 +1,12 @@
 /** @fileoverview constant values used throughout command-line-canvas */
 
+// Unforgeable brand symbols, set on instances in their respective constructors.
+// Used by src/ modules instead of `instanceof` to avoid circular imports.
+const CANVAS_BRAND = Symbol('Canvas');
+const COLOR_BRAND = Symbol('Color');
+const COMMAND_LINE_CANVAS_BRAND = Symbol('CommandLineCanvas');
+const PRIMITIVE_BRAND = Symbol('Primitive');
+const SHAPE_BRAND = Symbol('Shape');
 
 /** #### The canvas's shorter side, when measured in world units
  *
@@ -29,7 +36,8 @@
 const SIDE_IN_WORLD_UNITS = 10.0;
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('./canvas.mjs').Canvas} Canvas
  */
 
 /** #### Checks that an anti-alias region value is a non-negative number
@@ -56,7 +64,7 @@ const validateBounds = (bounds, xpx = 'bounds') => {
         `${xpx} is an array, not an object`);
     if (typeof bounds !== 'object') throw TypeError(
         `${xpx} is type '${typeof bounds}' not 'object'`);
-    const requiredProps = ['xMin', 'xMax', 'yMin', 'yMax'];
+    const requiredProps = /** @type {const} */ (['xMin', 'xMax', 'yMin', 'yMax']);
     for (const prop of requiredProps) {
         if (typeof bounds[prop] !== 'number') throw TypeError(
             `${xpx}.${prop} is type '${typeof bounds[prop]}' not 'number'`);
@@ -141,8 +149,8 @@ const validatePixels = (pixels, xpx = 'pixels') => {
 };
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/color/color.js').Color} Color
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('../../models/color/color.mjs').Color} Color
  */
 
 
@@ -324,8 +332,8 @@ function toAnsi8Index(r, g, b) {
 }
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/color/color.js').Color} Color
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('../../models/color/color.mjs').Color} Color
  */
 
 
@@ -420,8 +428,8 @@ function toBrailleChar(ur, ug, ub, ua, lr, lg, lb, la) {
 }
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/color/color.js').Color} Color
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('../../models/color/color.mjs').Color} Color
  */
 
 
@@ -499,8 +507,8 @@ const encodeBuffer = (
 };
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/color/color.js').Color} Color
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('../../models/color/color.mjs').Color} Color
  */
 
 
@@ -704,6 +712,8 @@ function index256ToRGB(index) {
     return { r: gray, g: gray, b: gray };
 }
 
+/** @typedef {import('./color.mjs').Color} Color */
+
 /** #### Checks that an RGBA channel is a number between 0 and 255 inclusive
  * - Note that RGBA values do not have to be integers
  * @param {number} rgba The RGBA value to check
@@ -731,7 +741,7 @@ const validateColor$1 = (color, xpx = 'color') => {
         `${xpx} is an array, not an object`);
     if (typeof color !== 'object') throw TypeError(
         `${xpx} is type '${typeof color}' not 'object'`);
-    if (!(color instanceof Color)) {
+    if (!color[COLOR_BRAND]) {
         /** @type {{}} **/ const notColor = color;
         const notColorName = notColor.constructor.name;
         throw TypeError(
@@ -769,12 +779,16 @@ class Color {
         validateRgba(b, 'Color: b (blue)');
         validateRgba(a, 'Color: a (alpha)');
 
+        this[COLOR_BRAND] = true;
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a;
     }
 }
+
+/** @typedef {import('../color/color.mjs').Color} Color */
+/** @typedef {import('./primitive.mjs').Primitive} Primitive */
 
 /** #### Checks that a debugPrimitiveAabb value is valid
  * @param {Color|null} debugPrimitiveAabb The colour for the debug box, or null
@@ -787,7 +801,7 @@ const validateDebugPrimitiveAabb = (debugPrimitiveAabb,
         `${xpx} is an array, not an object`);
     if (typeof debugPrimitiveAabb !== 'object') throw TypeError(
         `${xpx} is type '${typeof debugPrimitiveAabb}' not 'object'`);
-    if (!(debugPrimitiveAabb instanceof Color)) {
+    if (!debugPrimitiveAabb[COLOR_BRAND]) {
         /** @type {{}} **/ const notColor = debugPrimitiveAabb;
         const notColorName = notColor.constructor.name;
         throw TypeError(
@@ -934,6 +948,7 @@ class Primitive {
         validateScale$1(scale, 'Primitive: scale');
         validateTranslate$1(translate, 'Primitive: translate');
 
+        this[PRIMITIVE_BRAND] = true;
         this.debugPrimitiveAabb = debugPrimitiveAabb;
         this.flip = flip;
         this.joinMode = joinMode;
@@ -944,8 +959,12 @@ class Primitive {
     }
 }
 
+/** @typedef {import('../color/color.mjs').Color} Color */
+/** @typedef {import('../primitive/primitive.mjs').Primitive} Primitive */
+/** @typedef {import('./shape.mjs').Shape} Shape */
+
 /**
- * @typedef {import('../../clc-types.js').Pattern} Pattern
+ * @typedef {import('../../clc-types.mjs').Pattern} Pattern
  */
 
 /** #### Checks that a blendMode value is valid
@@ -971,7 +990,7 @@ const validateColor = (color, xpx = 'color') => {
         `${xpx} is an array, not an object`);
     if (typeof color !== 'object') throw TypeError(
         `${xpx} is type '${typeof color}' not 'object'`);
-    if (!(color instanceof Color)) {
+    if (!color[COLOR_BRAND]) {
         /** @type {{}} **/ const notColor = color;
         const notColorName = notColor.constructor.name;
         throw TypeError(
@@ -990,7 +1009,7 @@ const validateDebugShapeAabb = (debugShapeAabb,
         `${xpx} is an array, not an object`);
     if (typeof debugShapeAabb !== 'object') throw TypeError(
         `${xpx} is type '${typeof debugShapeAabb}' not 'object'`);
-    if (!(debugShapeAabb instanceof Color)) {
+    if (!debugShapeAabb[COLOR_BRAND]) {
         /** @type {{}} **/ const notColor = debugShapeAabb;
         const notColorName = notColor.constructor.name;
         throw TypeError(
@@ -1075,13 +1094,13 @@ const validatePrimitives = (primitives, xpx = 'primitives') => {
 
     for (let i = 0; i < primitives.length; i++) {
         const primitive = primitives[i];
-        if (!(primitive instanceof Primitive)) {
-            if (primitive === null) throw TypeError(
-                `${xpx}[${i}] is null, not an object`);
-            if (Array.isArray(primitive)) throw TypeError(
-                `${xpx}[${i}] is an array, not an object`);
-            if (typeof primitive !== 'object') throw TypeError(
-                `${xpx}[${i}] is type '${typeof primitive}' not 'object'`);
+        if (primitive === null) throw TypeError(
+            `${xpx}[${i}] is null, not an object`);
+        if (Array.isArray(primitive)) throw TypeError(
+            `${xpx}[${i}] is an array, not an object`);
+        if (typeof primitive !== 'object') throw TypeError(
+            `${xpx}[${i}] is type '${typeof primitive}' not 'object'`);
+        if (!primitive[PRIMITIVE_BRAND]) {
             /** @type {{}} **/ const notPrimitive = primitive;
             const notPrimitiveName = notPrimitive.constructor.name;
             throw TypeError(
@@ -1174,7 +1193,7 @@ const validateTranslate = (translate, xpx = 'translate') => {
 };
 
 /**
- * @typedef {import('../../clc-types.js').Pattern} Pattern
+ * @typedef {import('../../clc-types.mjs').Pattern} Pattern
  */
 
 /** #### Combines a list of primitives, with rendering instructions */
@@ -1194,11 +1213,11 @@ class Shape {
 
     /** #### The foreground color
      * @type {Color} */
-    ink = null;
+    ink = /** @type {*} */ (null);
 
     /** #### The background color
      * @type {Color} */
-    paper = null;
+    paper = /** @type {*} */ (null);
 
     /** #### The fill texture
      * @type {Pattern} */
@@ -1231,7 +1250,7 @@ class Shape {
 
     /** #### The outline color
      * @type {Color} */
-    strokeColor = null;
+    strokeColor = /** @type {*} */ (null);
 
     /** #### Where the outline is positioned relative to the shape edge
      * @type {'inside'|'center'|'outside'} */
@@ -1305,6 +1324,7 @@ class Shape {
         validateStrokeWidth(strokeWidth, 'Shape: strokeWidth');
         validateTranslate(translate, 'Shape: translate');
 
+        this[SHAPE_BRAND] = true;
         this.blendMode = blendMode;
         this.debugShapeAabb = debugShapeAabb;
         this.flip = flip;
@@ -1331,7 +1351,7 @@ class Shape {
  */
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
  */
 
 /** #### Signed distance function for a circle
@@ -1461,9 +1481,9 @@ const FLIP_SIGNS$1 = Object.freeze({
 });
 
 /**
- * @typedef {import('../../clc-types.js').Bounds} Bounds
- * @typedef {import('../../models/primitive/primitive.js').Primitive} Primitive
- * @typedef {import('../../models/shape/shape.js').Shape} Shape
+ * @typedef {import('../../clc-types.mjs').Bounds} Bounds
+ * @typedef {import('../../models/primitive/primitive.mjs').Primitive} Primitive
+ * @typedef {import('../../models/shape/shape.mjs').Shape} Shape
  */
 
 /** #### Composite signed distance function for a Shape made from primitives
@@ -1901,7 +1921,7 @@ function computeStrokeCoverage(
  * @param {number} dstB Destination blue channel, normalised 0..1
  * @param {number} dstG Destination green channel, normalised 0..1
  * @param {number} dstR Destination red channel, normalised 0..1
- * @param {Object} fillColor Fill colour object with channel data
+ * @param {{r: number, g: number, b: number}} fillColor Fill colour object with channel data
  * @param {number} fillOpacity Fill coverage multiplied by alpha
  * @param {Color} strokeColor Stroke colour object, including alpha channel
  * @param {number} strokeOpacity Stroke coverage multiplied by alpha
@@ -2062,10 +2082,12 @@ function computeWorldXsAndYs(xExtent, yExtent) {
     return { worldXs, worldYs };
 }
 
+/** @typedef {import('../../models/color/color.mjs').Color} Color */
+
 /** #### Fills a pixel grid with a background colour
  * - For efficiency, does not recreate any Pixel or array instances.
- * @param {Object} background The background color object with r, g, b properties
- * @param {Uint8ClampedArray} pixels Pixel buffer to be reset
+ * @param {Color} background The background colour with r, g, b, a properties.
+ * @param {Uint8ClampedArray} pixels Pixel buffer to be reset.
  */
 const resetPixelGrid = (background, pixels) => {
     const { r, g, b, a } = background;
@@ -2077,7 +2099,7 @@ const resetPixelGrid = (background, pixels) => {
     }
 };
 
-/** @typedef {import('../../models/shape/shape.js').Shape} Shape */
+/** @typedef {import('../../models/shape/shape.mjs').Shape} Shape */
 
 /** #### FLIP_SIGNS
  * - Mapping of human-readable flip modes to the numeric sign factors.
@@ -2184,7 +2206,7 @@ const computePatternCycleLocal = (shape, worldUnitsPerPixel) => {
         worldUnitsPerPixel,
     };
 
-    const cached = shape[PATTERN_CYCLE_CACHE];
+    const cached = /** @type {any} */ (shape)[PATTERN_CYCLE_CACHE];
     if (cached && cached.patternScale === key.patternScale
         && cached.patternUnit === key.patternUnit
         && cached.scale === key.scale
@@ -2295,13 +2317,13 @@ const computeStripeCoverage = (
  *   `coverage === 1` yields `ink`.
  * - The function handles early exit cases for 0 and 1 coverage to avoid
  *   unnecessary object allocations in hot code paths.
- * @param {import('../../models/color/color.js').Color} ink
+ * @param {import('../../models/color/color.mjs').Color} ink
  *   Color used for the ink portion of the pattern.
- * @param {import('../../models/color/color.js').Color} paper
+ * @param {import('../../models/color/color.mjs').Color} paper
  *   Background/paper color used where there is no ink.
  * @param {number} coverage
  *   Fraction of the pixel covered by ink, which will be clamped to 0..1.
- * @returns {import('../../models/color/color.js').Color}
+ * @returns {import('../../models/color/color.mjs').Color}
  *   A newly constructed `Color` instance representing the blended result.
  */
 const mixPatternColors = (ink, paper, coverage) => {
@@ -2336,7 +2358,7 @@ const mixPatternColors = (ink, paper, coverage) => {
  * @param {number} worldY Y coordinate in world units for the sample.
  * @param {number} worldUnitsPerPixel
  *   How many world units correspond to one screen pixel at the current raster resolution.
- * @returns {import('../../models/color/color.js').Color}
+ * @returns {import('../../models/color/color.mjs').Color}
  *   Sampled colour for the shape at the supplied world sample location.
  */
 const samplePatternColor = (
@@ -2539,7 +2561,7 @@ function rasterize(
 }
 
 /**
- * @typedef {import('../shape/shape.js').Shape} Shape
+ * @typedef {import('../shape/shape.mjs').Shape} Shape
  */
 
 /** #### An ANSI canvas */
@@ -2550,7 +2572,7 @@ class Canvas {
 
     /** A color to clone across the canvas's background
      * @type {Color} */
-    background = null;
+    background = /** @type {*} */ (null);
 
     /** #### The canvas's width
      * @type {number} */
@@ -2576,7 +2598,7 @@ class Canvas {
      * - Or if not, will be created internally (in which case it is private)
      * - Mutated in-place by `rasterize()`
      * @type {Uint8ClampedArray} */
-    #pixels = null;
+    #pixels = /** @type {*} */ (null);
 
     /** #### Private list of Shapes
      * - In the order that they should be composited
@@ -2605,6 +2627,7 @@ class Canvas {
                 `Canvas: pixels length ${pixels.length} does not match ` +
                 `dimensions ${xExtent}x${yExtent}x4`)}
 
+        this[CANVAS_BRAND] = true;
         this.antiAliasRegion = antiAliasRegion;
         this.background = background;
         this.#worldUnitsPerPixel = SIDE_IN_WORLD_UNITS / Math.min(xExtent, yExtent);
@@ -2712,4 +2735,44 @@ class Canvas {
     }
 }
 
-export { Canvas, Color, Primitive, Shape };
+const VERSION = '0.0.1';
+
+/** @typedef CommandLineCanvasOptions
+ * @property {number} antiAliasRegion Anti-aliasing region width in pixels.
+ * @property {Color} background A colour to fill across the canvas's background.
+ * @property {Uint8ClampedArray} [pixels] Optional existing pixel buffer.
+ * @property {number} xExtent The canvas's width in pixels.
+ * @property {number} yExtent The canvas's height in pixels.
+ */
+
+/** #### Main JavaScript entry point for CommandLineCanvas
+ * - Exposes `Color`, `Primitive`, and `Shape` as static properties.
+ * - Instantiates an internal `Canvas` accessible via the `canvas` property.
+ */
+class CommandLineCanvas {
+
+    static Color = Color;
+    static Primitive = Primitive;
+    static Shape = Shape;
+    static version = VERSION;
+
+    /** @type {Canvas} */
+    canvas;
+
+    constructor(/** @type {CommandLineCanvasOptions} */ options = /** @type {*} */ ({})) {
+        const { antiAliasRegion, background, pixels, xExtent, yExtent } = options;
+        // Brand this instance so src/ modules can verify it without importing
+        // this module (which would create a circular dependency).
+        this[COMMAND_LINE_CANVAS_BRAND] = true;
+
+        this.canvas = new Canvas(
+            antiAliasRegion,
+            background,
+            xExtent,
+            yExtent,
+            pixels,
+        );
+    }
+}
+
+export { CommandLineCanvas };

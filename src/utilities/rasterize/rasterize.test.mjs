@@ -1,0 +1,316 @@
+import { deepEqual as eq } from 'node:assert';
+import { Color } from '../../models/color/color.mjs';
+import { Primitive } from '../../models/primitive/primitive.mjs';
+import { Shape } from '../../models/shape/shape.mjs';
+import { rasterize } from './rasterize.mjs';
+
+
+const runRasterizeCases = () => {
+
+    const makePixels = (/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ r, /** @type {number} */ g, /** @type {number} */ b) => {
+        const out = new Uint8ClampedArray(width * height * 4);
+        for (let i = 0; i < out.length; i += 4) {
+            out[i] = r;
+            out[i + 1] = g;
+            out[i + 2] = b;
+            out[i + 3] = 255;
+        }
+        return out;
+    };
+
+    const toRgb = (/** @type {Uint8ClampedArray} */ pixels, width = 1) => {
+        const out = [];
+        const height = pixels.length / (width * 4);
+        for (let y = 0; y < height; y++) {
+            const row = [];
+            for (let x = 0; x < width; x++) {
+                const i = (y * width + x) * 4;
+                row.push({ r: pixels[i], g: pixels[i + 1], b: pixels[i + 2] });
+            }
+            out.push(row);
+        }
+        return out;
+    };
+
+    const pixelCenter = (/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height) => {
+        const aspect = width / height;
+        const worldW = aspect >= 1 ? 10 * aspect : 10;
+        const worldH = aspect >= 1 ? 10 : 10 / aspect;
+        const invW = 1 / width;
+        const invH = 1 / height;
+        return {
+            x: ((x + 0.5) * invW - 0.5) * worldW,
+            y: ((y + 0.5) * invH - 0.5) * worldH,
+        };
+    };
+
+    const circleShape = (/** @type {any} */ options) => {
+        const blendMode = options.blendMode ?? 'normal';
+        const debugPrimitiveAabb = options.debugPrimitiveAabb ?? null;
+        const debugShapeAabb = options.debugShapeAabb ?? null;
+        const flip = 'no-flip';
+        const ink = options.ink;
+        const paper = options.paper ?? options.ink;
+        const pattern = options.pattern ?? 'all-ink';
+        const patternRatio = options.patternRatio ?? 0.5;
+        const patternScale = options.patternScale ?? 1;
+        const patternUnit = options.patternUnit ?? 'pixel';
+        const prim = new Primitive(
+            debugPrimitiveAabb,
+            'no-flip',
+            'union',
+            'circle',
+            0,
+            1,
+            { x: 0, y: 0 },
+        );
+        const scale = options.scale ?? 3;
+        const strokeColor = options.strokeColor ?? new Color(0, 0, 0, 0);
+        const strokePosition = options.strokePosition ?? 'center';
+        const strokeUnit = options.strokeUnit ?? 'pixel';
+        const strokeWidth = options.strokeWidth ?? 0;
+        const translate = options.translate ?? { x: 0, y: 0 };
+
+        return new Shape(
+            blendMode,
+            debugShapeAabb,
+            flip,
+            ink,
+            paper,
+            pattern,
+            patternRatio,
+            patternScale,
+            patternUnit,
+            [ prim ],
+            0,
+            scale,
+            strokeColor,
+            strokePosition,
+            strokeUnit,
+            strokeWidth,
+            translate,
+        );
+    };
+
+
+    // `rasterize()` background reset.
+
+    const resetBg = new Color(12, 34, 56, 255);
+    const resetPixels = makePixels(2, 2, 99, 88, 77);
+
+    rasterize(0.85, resetBg, resetPixels, [], 5, 2, 2);
+
+    eq(toRgb(resetPixels, 2), [
+        [
+            { r: 12, g: 34, b: 56 },
+            { r: 12, g: 34, b: 56 },
+        ],
+        [
+            { r: 12, g: 34, b: 56 },
+            { r: 12, g: 34, b: 56 },
+        ],
+    ], 'rasterize() should reset every pixel to the background before drawing shapes');
+
+
+    // `rasterize()` fills with ink.
+
+    const inkBg = new Color(0, 0, 0, 255);
+    const inkPixels = makePixels(1, 1, 0, 0, 0);
+    const inkColor = new Color(255, 0, 0, 255);
+    const inkPaper = new Color(0, 0, 0, 0);
+    const inkCenter = pixelCenter(0, 0, 1, 1);
+    const inkShape = circleShape({
+        ink: inkColor,
+        paper: inkPaper,
+        translate: inkCenter,
+        scale: 5,
+    });
+
+    rasterize(0.85, inkBg, inkPixels, [ { id: 1, shape: inkShape } ], 10, 1, 1);
+
+    eq(toRgb(inkPixels), [
+        [
+            { r: 255, g: 0, b: 0 },
+        ],
+    ], 'rasterize() should fill covered pixels with the shape ink colour');
+
+
+    // `rasterize()` honours paper pattern.
+
+    const paperBg = new Color(0, 0, 0, 255);
+    const paperPixels = makePixels(1, 1, 0, 0, 0);
+    const paperInk = new Color(200, 10, 10, 255);
+    const paperColor = new Color(0, 255, 0, 255);
+    const paperCenter = pixelCenter(0, 0, 1, 1);
+    const paperShape = circleShape({
+        ink: paperInk,
+        paper: paperColor,
+        pattern: 'all-paper',
+        translate: paperCenter,
+        scale: 5,
+    });
+
+    rasterize(0.85, paperBg, paperPixels, [ { id: 2, shape: paperShape } ], 10, 1, 1);
+
+    eq(toRgb(paperPixels), [
+        [
+            { r: 0, g: 255, b: 0 },
+        ],
+    ], 'rasterize() should sample paper colour when the pattern resolves to paper');
+
+
+    // `rasterize()` applies outside stroke.
+
+    const strokeBg = new Color(10, 20, 30, 255);
+    const strokePixels = makePixels(1, 1, 5, 5, 5);
+    const strokeShape = circleShape({
+        ink: new Color(0, 0, 0, 0),
+        paper: new Color(0, 0, 0, 0),
+        strokeColor: new Color(0, 0, 123, 255),
+        strokePosition: 'outside',
+        strokeWidth: 1,
+        translate: { x: 5, y: 0 },
+        scale: 3,
+    });
+
+    rasterize(0.85, strokeBg, strokePixels, [ { id: 3, shape: strokeShape } ], 10, 1, 1);
+
+    eq(toRgb(strokePixels), [
+        [
+            { r: 0, g: 0, b: 123 },
+        ],
+    ], 'rasterize() should apply an outside stroke when the fill is transparent');
+
+
+    // `rasterize()` multiply blend.
+
+    const mulBg = new Color(128, 128, 128, 255);
+    const mulPixels = makePixels(1, 1, 128, 128, 128);
+    const mulShape = circleShape({
+        blendMode: 'multiply',
+        ink: new Color(128, 128, 128, 255),
+        paper: new Color(128, 128, 128, 255),
+        translate: pixelCenter(0, 0, 1, 1),
+        scale: 5,
+    });
+
+    rasterize(0.85, mulBg, mulPixels, [ { id: 4, shape: mulShape } ], 10, 1, 1);
+
+    eq(toRgb(mulPixels), [
+        [
+            { r: 64, g: 64, b: 64 },
+        ],
+    ], 'rasterize() should apply multiply blending against the background');
+
+
+    // `rasterize()` screen blend.
+
+    const screenBg = new Color(128, 128, 128, 255);
+    const screenPixels = makePixels(1, 1, 128, 128, 128);
+    const screenShape = circleShape({
+        blendMode: 'screen',
+        ink: new Color(128, 128, 128, 255),
+        paper: new Color(128, 128, 128, 255),
+        translate: pixelCenter(0, 0, 1, 1),
+        scale: 5,
+    });
+
+    rasterize(0.85, screenBg, screenPixels,
+        [ { id: 5, shape: screenShape } ], 10, 1, 1);
+
+    eq(toRgb(screenPixels), [
+        [
+            { r: 192, g: 192, b: 192 },
+        ],
+    ], 'rasterize() should apply screen blending against the background');
+
+
+    // `rasterize()` overlay blend.
+
+    const overlayBg = new Color(128, 128, 128, 255);
+    const overlayPixels = makePixels(1, 1, 128, 128, 128);
+    const overlayShape = circleShape({
+        blendMode: 'overlay',
+        ink: new Color(128, 128, 128, 255),
+        paper: new Color(128, 128, 128, 255),
+        translate: pixelCenter(0, 0, 1, 1),
+        scale: 5,
+    });
+
+    rasterize(0.85, overlayBg, overlayPixels,
+        [ { id: 6, shape: overlayShape } ], 10, 1, 1);
+
+    eq(toRgb(overlayPixels), [
+        [
+            { r: 128, g: 128, b: 128 },
+        ],
+    ], 'rasterize() should apply overlay blending against the background');
+
+
+    // `rasterize()` debugShapeAabb background blend.
+    const dbgBg = new Color(50, 60, 70, 255);
+    const dbgPixels = makePixels(1, 1, 50, 60, 70);
+    const dbgColor = new Color(200, 100, 50, 128); // semi-transparent debug box
+    const dbgShape = circleShape({
+        ink: new Color(0, 0, 0, 0),
+        paper: new Color(0, 0, 0, 0),
+        debugShapeAabb: dbgColor,
+        translate: { x: 0, y: 0 },
+        scale: 1,
+    });
+
+    // Add shape but ensure its AABB covers the pixel. Use large scale to be safe.
+    dbgShape.primitives = [ new Primitive(null, 'no-flip', 'union', 'circle', 0, 10, { x: 0, y: 0 }) ];
+
+    rasterize(0.85, dbgBg, dbgPixels, [ { id: 99, shape: dbgShape } ], 10, 1, 1);
+
+    // expected blended channel: dst = bg*(1-alpha) + debug*(alpha)
+    const a = dbgColor.a / 255;
+    const expR = Math.round(((50/255) * (1 - a) + (dbgColor.r/255) * a) * 255);
+    const expG = Math.round(((60/255) * (1 - a) + (dbgColor.g/255) * a) * 255);
+    const expB = Math.round(((70/255) * (1 - a) + (dbgColor.b/255) * a) * 255);
+
+    eq(toRgb(dbgPixels), [[{ r: expR, g: expG, b: expB }]], 'rasterize() should alpha blend debug shape AABB overlays over the background');
+
+
+    // `rasterize()` debugPrimitiveAabb background blend.
+    const dbgPrimBg = new Color(20, 30, 40, 255);
+    const dbgPrimPixels = makePixels(1, 1, 20, 30, 40);
+    const dbgPrimColor = new Color(50, 200, 250, 102);
+    const dbgPrimShape = circleShape({
+        ink: new Color(0, 0, 0, 0),
+        paper: new Color(0, 0, 0, 0),
+        debugPrimitiveAabb: dbgPrimColor,
+        translate: { x: 0, y: 0 },
+        scale: 1,
+    });
+
+    dbgPrimShape.primitives = [ new Primitive(
+        dbgPrimColor,
+        'no-flip',
+        'union',
+        'circle',
+        0,
+        10,
+        { x: 0, y: 0 },
+    ) ];
+
+    rasterize(0.85, dbgPrimBg, dbgPrimPixels,
+        [ { id: 100, shape: dbgPrimShape } ], 10, 1, 1);
+
+    const alphaPrim = dbgPrimColor.a / 255;
+    const expPrimR = Math.round(((20/255) * (1 - alphaPrim)
+        + (dbgPrimColor.r/255) * alphaPrim) * 255);
+    const expPrimG = Math.round(((30/255) * (1 - alphaPrim)
+        + (dbgPrimColor.g/255) * alphaPrim) * 255);
+    const expPrimB = Math.round(((40/255) * (1 - alphaPrim)
+        + (dbgPrimColor.b/255) * alphaPrim) * 255);
+
+    eq(toRgb(dbgPrimPixels), [[{ r: expPrimR, g: expPrimG, b: expPrimB }]], 'rasterize() should alpha blend debug primitive AABB overlays over the background');
+
+};
+
+export const testRasterize = () => {
+    runRasterizeCases();
+    console.log('OK: All rasterize() tests passed!');
+};

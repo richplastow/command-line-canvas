@@ -511,7 +511,7 @@ Each new property needs validators. The existing pattern in
 
 ### 4. Testing
 
-The existing test structure (`*.test.js` files alongside implementations) should
+The existing test structure (`*.test.mjs` files alongside implementations) should
 be extended for each new feature. E2E tests in e2e should cover visual
 regression.
 

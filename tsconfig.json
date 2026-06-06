@@ -1,6 +1,6 @@
 /**
  * This file tells VS Code's TypeScript server to highlight type errors in
- * JavaScript files in the src/ directory.
+ * JavaScript modules in this repo.
  *
  * You read that right: all our code is plain JavaScript, not TypeScript, but
  * the developer experience still benefits from live type checking.
@@ -8,11 +8,11 @@
 {
     "compilerOptions": {
 
-        // Enable error reporting in JavaScript files in the src/ directory.
-        // Same as adding `// @ts-check` at the top of every .js file.
+        // Enable error reporting in JavaScript modules in this repo.
+        // Same as adding `// @ts-check` at the top of every .mjs file.
         "checkJs": true,
 
-        // Generate .d.ts files from the src/ JavaScript files. The tsserver
+        // Generate .d.ts files from the JavaScript modules. The tsserver
         // uses these .d.ts files internally - they're not written to the repo.
         "declaration": true,
 
@@ -25,11 +25,15 @@
 
         // Use Node.js-style module resolution.
         "module": "NodeNext",
-        "moduleResolution": "NodeNext"
+        "moduleResolution": "NodeNext",
+
+        // Include @types/node for `node:*` protocol imports.
+        "types": ["node"]
     },
 
-    // Match all JavaScript files in the src/ directory.
+    // Match the top-level entry point plus all source JavaScript modules.
     "include": [
-        "src/**/*.js",
+        "*.mjs",
+        "src/**/*.mjs"
     ]
 }

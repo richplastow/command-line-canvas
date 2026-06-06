@@ -36,15 +36,10 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 }(document.body, location.hostname)</script>
 
 <script type="module">
-    const base = '../src/models/'; // shared path to source code models
-    const Ms = ['Canvas', 'Color', 'Primitive', 'Shape']; // model names
-    const { Canvas, Color, Primitive, Shape } = window.W4?.isDev
-        ? await (async () => // if dev mode, import each model...
-            (await Promise.all(Ms.map(M => M.toLowerCase()) // ...in parallel...
-                .map(m => import(`${base}${m}/${m}.js`))) // ...from source...
-            ).reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc }, {})
-        )()
-        : await import('./command-line-canvas.js'); // ...otherwise use build
+    const { CommandLineCanvas } = window.W4?.isDev
+        ? await import('../command-line-canvas.mjs')
+        : await import('./command-line-canvas.js');
+    const { Color, Primitive, Shape } = CommandLineCanvas;
 
     // Create an 800x480 pixel canvas with light-blue background.
     const lightBlue = new Color(173, 216, 230, 255);
@@ -58,7 +53,7 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
     const data = imageData.data;
 
     // Create a command-line-canvas Canvas using the HTML Canvas buffer
-    const canvas = new Canvas(0.85, lightBlue, 800, 480, data);
+    const canvas = new CommandLineCanvas({ antiAliasRegion: 0.85, background: lightBlue, xExtent: 800, yExtent: 480, pixels: data }).canvas;
 
     // Create colors.
     const lightMagenta = new Color(255, 128, 255, 255);

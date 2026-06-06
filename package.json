@@ -28,8 +28,10 @@
   "scripts": {
     "build": "rollup -c && echo '\\xE2\\x9C\\x85 Build succeeded!'",
     "check-types": "tsc --noEmit && echo '\\xE2\\x9C\\x85 No type-errors found!'",
+    "dev": "http-server -p 1234 ./",
     "ok": "npm test && npm run check-types && npm run build",
-    "test": "node test.js && echo '\\xE2\\x9C\\x85 All tests passed!'"
+    "start": "http-server -p 4567 ./docs/",
+    "test": "node test.mjs && echo '\\xE2\\x9C\\x85 All tests passed!'"
   },
   "dependencies": {},
   "devDependencies": {

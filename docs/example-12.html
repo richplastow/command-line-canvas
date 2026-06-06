@@ -31,18 +31,13 @@ if (is) $body.appendChild(document.createElement('div')).id = 'w4-dev-badge';
 }(document.body, location.hostname)</script>
 
 <script type="module">
-    const base = '../src/models/';
-    const Ms = ['Canvas', 'Color', 'Primitive', 'Shape'];
-    const { Canvas, Color, Primitive, Shape } = window.W4?.isDev
+    const { CommandLineCanvas } = window.W4?.isDev
         ? await (async () =>
-            (await Promise.all(Ms.map(M => M.toLowerCase())
-                .map(m => import(`${base}${m}/${m}.js`))))
-            .reduce((acc, js, i) => { acc[Ms[i]] = js[Ms[i]]; return acc; }, {})
-        )()
         : await import('./command-line-canvas.js');
+    const { Color, Primitive, Shape } = CommandLineCanvas;
 
     const background = new Color(0, 0, 0, 255);
-    const canvas = new Canvas(0.85, background, 80, 24);
+    const canvas = new CommandLineCanvas({ antiAliasRegion: 0.85, background, xExtent: 80, yExtent: 24 }).canvas;
 
     // Primitives for shapes.
     const circleSmall = new Primitive(
