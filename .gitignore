@@ -9,5 +9,5 @@ npm-debug.log*
 # Misc.
 .DS_Store
 *.pem
-.github
-tasks
+*_FOR_REFERENCE*
+*_FOR_REFERENCE

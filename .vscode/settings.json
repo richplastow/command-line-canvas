@@ -2,12 +2,22 @@
     "cSpell.words": [
         "AABB",
         "aabbs",
+        "bindgen",
+        "clippy",
         "denom",
         "plastow",
         "precalculating",
         "recomputation",
+        "rlib",
+        "rustup",
+        "sdfs",
+        "standalone",
         "truecolor",
         "unioned",
         "unioning"
-    ]
+    ],
+    "files.associations": {
+        "*.instructions.md": "markdown",
+        "*.prompt.md": "markdown"
+    }
 }
