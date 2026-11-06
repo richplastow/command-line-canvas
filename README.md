@@ -1,5 +1,9 @@
 # command-line-canvas
 
+> **Superseded on 6 November 2026.** This repository is archived and no
+> longer maintained. Its code was ported at commit `ad8d1f1` into a private
+> monorepo, where it continues.
+
 **Renders an array of shapes as ANSI art**
 
 - Version: 0.0.1
